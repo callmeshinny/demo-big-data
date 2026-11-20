@@ -1,40 +1,15 @@
 {
-  "model": "Popularity",
-  "subset": "toy",
-  "split": "validation",
-  "catalog": [
-    "p3",
-    "p4",
-    "p5",
-    "p6",
-    "p7",
-    "p8",
-    "p9",
-    "p10",
-    "p11",
-    "p12",
-    "p13",
-    "p14",
-    "p15",
-    "p16",
-    "p17",
-    "p18",
-    "p19",
-    "p20",
-    "p21",
-    "p22",
-    "p23",
-    "p24",
-    "p25"
-  ],
-  "sessions": [
+  "schema": "tv4-demo-data/v2",
+  "team_commit": "86bc1c8",
+  "runs": [
     {
-      "user_session": "rank1",
-      "prefix": [
-        "p4"
-      ],
-      "target": "p3",
-      "top20": [
+      "model": "Popularity",
+      "subset": "toy",
+      "split": "validation",
+      "run_id": "tv2-toy-day1",
+      "data_kind": "toy",
+      "catalog_sha256": "a1ae9388c355a4f5dcdacd52f87b521351caac4c69119b2e17b87d7dc467c184",
+      "catalog": [
         "p3",
         "p4",
         "p5",
@@ -54,16 +29,426 @@
         "p19",
         "p20",
         "p21",
-        "p22"
-      ]
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "rank1",
+          "prefix": [
+            "p4"
+          ],
+          "target": "p3",
+          "top20": [
+            "p3",
+            "p4",
+            "p5",
+            "p6",
+            "p7",
+            "p8",
+            "p9",
+            "p10",
+            "p11",
+            "p12",
+            "p13",
+            "p14",
+            "p15",
+            "p16",
+            "p17",
+            "p18",
+            "p19",
+            "p20",
+            "p21",
+            "p22"
+          ],
+          "target_rank": 1,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p9",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p18",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p21",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p22",
+              "score": null
+            }
+          ]
+        },
+        {
+          "user_session": "rank20",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p22",
+          "top20": [
+            "p3",
+            "p4",
+            "p5",
+            "p6",
+            "p7",
+            "p8",
+            "p9",
+            "p10",
+            "p11",
+            "p12",
+            "p13",
+            "p14",
+            "p15",
+            "p16",
+            "p17",
+            "p18",
+            "p19",
+            "p20",
+            "p21",
+            "p22"
+          ],
+          "target_rank": 20,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p9",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p18",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p21",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p22",
+              "score": null
+            }
+          ]
+        },
+        {
+          "user_session": "miss",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p23",
+          "top20": [
+            "p3",
+            "p4",
+            "p5",
+            "p6",
+            "p7",
+            "p8",
+            "p9",
+            "p10",
+            "p11",
+            "p12",
+            "p13",
+            "p14",
+            "p15",
+            "p16",
+            "p17",
+            "p18",
+            "p19",
+            "p20",
+            "p21",
+            "p22"
+          ],
+          "target_rank": null,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p9",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p18",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p21",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p22",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-toy-day1",
+        "eval_day": 2,
+        "experiment": null,
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "exact",
+        "score_available": false
+      }
     },
     {
-      "user_session": "rank20",
-      "prefix": [
-        "p3"
-      ],
-      "target": "p22",
-      "top20": [
+      "model": "Popularity",
+      "subset": "toy",
+      "split": "test",
+      "run_id": "smoke-e1-popularity-010",
+      "data_kind": "toy",
+      "catalog_sha256": "cabb3075529b72fc3a075e73e1edd07f9e846858063b0972f730ecf17de894fe",
+      "catalog": [
         "p3",
         "p4",
         "p5",
@@ -83,16 +468,162 @@
         "p19",
         "p20",
         "p21",
-        "p22"
-      ]
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "toy-final-test",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p25",
+          "top20": [
+            "p3",
+            "p25",
+            "p4",
+            "p5",
+            "p24",
+            "p6",
+            "p7",
+            "p8",
+            "p9",
+            "p10",
+            "p11",
+            "p12",
+            "p13",
+            "p14",
+            "p15",
+            "p16",
+            "p17",
+            "p18",
+            "p19",
+            "p20"
+          ],
+          "target_rank": 2,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p25",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p24",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p9",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p18",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p20",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-config-collector-smoke/smoke-e1-popularity-010",
+        "eval_day": 3,
+        "experiment": "E1",
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "line-endings-only",
+        "score_available": false
+      }
     },
     {
-      "user_session": "miss",
-      "prefix": [
-        "p3"
-      ],
-      "target": "p23",
-      "top20": [
+      "model": "gru",
+      "subset": "toy",
+      "split": "test",
+      "run_id": "smoke-e1-gru-010",
+      "data_kind": "toy",
+      "catalog_sha256": "cabb3075529b72fc3a075e73e1edd07f9e846858063b0972f730ecf17de894fe",
+      "catalog": [
         "p3",
         "p4",
         "p5",
@@ -112,8 +643,678 @@
         "p19",
         "p20",
         "p21",
-        "p22"
-      ]
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "toy-final-test",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p25",
+          "top20": [
+            "p8",
+            "p25",
+            "p12",
+            "p14",
+            "p7",
+            "p24",
+            "p20",
+            "p3",
+            "p6",
+            "p17",
+            "p5",
+            "p4",
+            "p16",
+            "p22",
+            "p13",
+            "p10",
+            "p15",
+            "p19",
+            "p11",
+            "p18"
+          ],
+          "target_rank": 2,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p25",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p24",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p22",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p18",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-config-collector-smoke/smoke-e1-gru-010",
+        "eval_day": 3,
+        "experiment": "E1",
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "line-endings-only",
+        "score_available": false
+      }
+    },
+    {
+      "model": "xlnet",
+      "subset": "toy",
+      "split": "test",
+      "run_id": "smoke-e1-xlnet-010",
+      "data_kind": "toy",
+      "catalog_sha256": "cabb3075529b72fc3a075e73e1edd07f9e846858063b0972f730ecf17de894fe",
+      "catalog": [
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10",
+        "p11",
+        "p12",
+        "p13",
+        "p14",
+        "p15",
+        "p16",
+        "p17",
+        "p18",
+        "p19",
+        "p20",
+        "p21",
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "toy-final-test",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p25",
+          "top20": [
+            "p11",
+            "p5",
+            "p3",
+            "p25",
+            "p20",
+            "p12",
+            "p15",
+            "p18",
+            "p17",
+            "p21",
+            "p10",
+            "p19",
+            "p8",
+            "p7",
+            "p6",
+            "p13",
+            "p22",
+            "p23",
+            "p4",
+            "p9"
+          ],
+          "target_rank": 4,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p25",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p18",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p21",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p22",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p23",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p9",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-config-collector-smoke/smoke-e1-xlnet-010",
+        "eval_day": 3,
+        "experiment": "E1",
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "line-endings-only",
+        "score_available": false
+      }
+    },
+    {
+      "model": "gru",
+      "subset": "toy",
+      "split": "validation",
+      "run_id": "smoke-e3-gru-010-b32",
+      "data_kind": "toy",
+      "catalog_sha256": "cabb3075529b72fc3a075e73e1edd07f9e846858063b0972f730ecf17de894fe",
+      "catalog": [
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10",
+        "p11",
+        "p12",
+        "p13",
+        "p14",
+        "p15",
+        "p16",
+        "p17",
+        "p18",
+        "p19",
+        "p20",
+        "p21",
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "v3",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p25",
+          "top20": [
+            "p8",
+            "p25",
+            "p12",
+            "p14",
+            "p7",
+            "p24",
+            "p20",
+            "p3",
+            "p6",
+            "p17",
+            "p5",
+            "p4",
+            "p16",
+            "p22",
+            "p13",
+            "p10",
+            "p15",
+            "p19",
+            "p11",
+            "p18"
+          ],
+          "target_rank": 2,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p25",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p24",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p22",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p18",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-config-collector-smoke/smoke-e3-gru-010-b32",
+        "eval_day": 3,
+        "experiment": "E3",
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "line-endings-only",
+        "score_available": false
+      }
+    },
+    {
+      "model": "gru",
+      "subset": "toy",
+      "split": "validation",
+      "run_id": "smoke-e3-gru-010-b128",
+      "data_kind": "toy",
+      "catalog_sha256": "cabb3075529b72fc3a075e73e1edd07f9e846858063b0972f730ecf17de894fe",
+      "catalog": [
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10",
+        "p11",
+        "p12",
+        "p13",
+        "p14",
+        "p15",
+        "p16",
+        "p17",
+        "p18",
+        "p19",
+        "p20",
+        "p21",
+        "p22",
+        "p23",
+        "p24",
+        "p25"
+      ],
+      "sessions": [
+        {
+          "user_session": "v3",
+          "prefix": [
+            "p3"
+          ],
+          "target": "p25",
+          "top20": [
+            "p8",
+            "p25",
+            "p12",
+            "p14",
+            "p7",
+            "p24",
+            "p20",
+            "p3",
+            "p6",
+            "p17",
+            "p5",
+            "p4",
+            "p16",
+            "p22",
+            "p13",
+            "p10",
+            "p15",
+            "p19",
+            "p11",
+            "p18"
+          ],
+          "target_rank": 2,
+          "recommendations": [
+            {
+              "rank": 1,
+              "product_id": "p8",
+              "score": null
+            },
+            {
+              "rank": 2,
+              "product_id": "p25",
+              "score": null
+            },
+            {
+              "rank": 3,
+              "product_id": "p12",
+              "score": null
+            },
+            {
+              "rank": 4,
+              "product_id": "p14",
+              "score": null
+            },
+            {
+              "rank": 5,
+              "product_id": "p7",
+              "score": null
+            },
+            {
+              "rank": 6,
+              "product_id": "p24",
+              "score": null
+            },
+            {
+              "rank": 7,
+              "product_id": "p20",
+              "score": null
+            },
+            {
+              "rank": 8,
+              "product_id": "p3",
+              "score": null
+            },
+            {
+              "rank": 9,
+              "product_id": "p6",
+              "score": null
+            },
+            {
+              "rank": 10,
+              "product_id": "p17",
+              "score": null
+            },
+            {
+              "rank": 11,
+              "product_id": "p5",
+              "score": null
+            },
+            {
+              "rank": 12,
+              "product_id": "p4",
+              "score": null
+            },
+            {
+              "rank": 13,
+              "product_id": "p16",
+              "score": null
+            },
+            {
+              "rank": 14,
+              "product_id": "p22",
+              "score": null
+            },
+            {
+              "rank": 15,
+              "product_id": "p13",
+              "score": null
+            },
+            {
+              "rank": 16,
+              "product_id": "p10",
+              "score": null
+            },
+            {
+              "rank": 17,
+              "product_id": "p15",
+              "score": null
+            },
+            {
+              "rank": 18,
+              "product_id": "p19",
+              "score": null
+            },
+            {
+              "rank": 19,
+              "product_id": "p11",
+              "score": null
+            },
+            {
+              "rank": 20,
+              "product_id": "p18",
+              "score": null
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "run_dir": "metrics/tv2-config-collector-smoke/smoke-e3-gru-010-b128",
+        "eval_day": 3,
+        "experiment": "E3",
+        "catalog_path": "evaluation/tests/fixtures/catalog.json",
+        "catalog_match": "line-endings-only",
+        "score_available": false
+      }
     }
   ]
 }

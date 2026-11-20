@@ -47,18 +47,26 @@ The team repo `tlmthuy/Big-Data` stays the **source of truth** for data, models,
 │   ├── data_contract.md   # copy of app/output_contract.md from the team repo (pinned commit)
 │   ├── SYNC.md            # how to pull data from / push UI back to the team repo
 │   └── upstream_TODO.md   # UI review findings carried over from the team repo
+│   ├── CONTRACT_NOTES.md  # where this repo extends the contract; report these to TV2
 ├── public/
-│   └── demo-data.json     # session predictions (Part A), toy for now
+│   ├── demo-data.json     # Part A: session predictions, { runs: [...] } (toy for now)
+│   └── run-results.json   # Part B: E1–E5 records, planned + toy smoke (no official package yet)
 ├── scripts/
-│   └── export_demo_data.py  # Part A adapter (needs a Big-Data clone, see SYNC.md)
+│   ├── export_demo_data.py    # Part A adapter (needs a Big-Data clone, see SYNC.md)
+│   └── export_run_results.py  # Part B adapter
 ├── src/
-│   ├── main.jsx
+│   ├── main.jsx           # app shell, tabs, data loading
+│   ├── data.js            # validation + formatting (pure JS, tested)
+│   ├── Recommendation.jsx # Part A view
+│   ├── Experiments.jsx    # Part B view (E1–E5)
+│   ├── ui.jsx             # badges, notices
 │   └── styles.css
+├── tests/
+│   ├── data.test.js       # node --test
+│   └── fixtures/          # empty / malformed / missing-field files for tests and browser checks
 ├── index.html
 └── package.json
 ```
-
-Planned (not created yet): `public/run-results.json` (Part B, E1–E5) and its adapter `scripts/export_run_results.py`. Their shape is defined in `docs/data_contract.md`, sections B7 and B8.
 
 ## 5. Commands
 
@@ -67,21 +75,30 @@ npm ci            # install
 npm run dev       # local dev server
 npm run build     # production build into dist/
 npm run preview   # serve dist/ locally
+npm test          # validator tests (node --test)
 ```
 
-Regenerate the toy session data (requires a local clone of `tlmthuy/Big-Data`, see `docs/SYNC.md`):
+Regenerate both JSON files (requires a local clone of `tlmthuy/Big-Data`, see `docs/SYNC.md`):
 
 ```bash
 cd ../Big-Data
+C=evaluation/tests/fixtures/catalog.json
+S=metrics/tv2-config-collector-smoke
 PYTHONPATH=. python3 ../tv4-demo-web/scripts/export_demo_data.py \
-  --run-dir metrics/tv2-toy-day1 \
-  --catalog evaluation/tests/fixtures/catalog.json \
+  --run metrics/tv2-toy-day1=$C \
+  --run $S/smoke-e1-popularity-010=$C --run $S/smoke-e1-gru-010=$C --run $S/smoke-e1-xlnet-010=$C \
+  --run $S/smoke-e3-gru-010-b32=$C --run $S/smoke-e3-gru-010-b128=$C \
   --output ../tv4-demo-web/public/demo-data.json
+python3 ../tv4-demo-web/scripts/export_run_results.py \
+  --matrix configs/experiments.json --collector-dir $S \
+  --output ../tv4-demo-web/public/run-results.json
 ```
+
+Test broken data in the browser (dev server only): `/?demo=/tests/fixtures/malformed.json`, `/?results=/tests/fixtures/bad-results.json#experiments`.
 
 ## 6. Definition of done for any UI change
 
-- `npm run build` passes.
+- `npm run build` and `npm test` pass.
 - Check in a browser:
   - sessions `rank1`, `rank20`, `miss`;
   - switch model and switch back;

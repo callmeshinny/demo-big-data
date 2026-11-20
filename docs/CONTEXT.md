@@ -104,9 +104,9 @@ Do not use `prediction_compute_seconds` for comparison; it is diagnostic only.
 ## 5. Known UI issues (from team review, `docs/upstream_TODO.md`)
 
 - [x] Original product IDs and the full 23-item catalog.
-- [ ] Selecting GRU/XLNet hides history and target. It should only replace the recommendation area with "Chưa có".
-- [ ] Validate the data shape before rendering (empty `sessions`, unknown session, missing `prefix`/`target`/`top20`).
-- [ ] Browser checks: `rank1`, `rank20`, `miss`, model switching, broken data, narrow screen.
+- [x] Selecting GRU/XLNet hides history and target. It should only replace the recommendation area with "Chưa có".
+- [x] Validate the data shape before rendering (empty `sessions`, unknown session, missing `prefix`/`target`/`top20`).
+- [x] Browser checks: `rank1`, `rank20`, `miss`, model switching, broken data, narrow screen.
 
 ## 6. What is still missing (open dependencies)
 

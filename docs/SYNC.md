@@ -19,14 +19,11 @@ workspace/
    cd Big-Data && git pull
    ```
 2. Take only artifacts that TV2 has delivered or confirmed: prediction run directories and the metrics package.
-3. Run the adapter from the team repo root, so its `evaluation` modules are importable:
-   ```bash
-   PYTHONPATH=. python3 ../tv4-demo-web/scripts/export_demo_data.py \
-     --run-dir <run dir delivered by TV2> \
-     --catalog <catalog of the same run> \
-     --output ../tv4-demo-web/public/demo-data.json
-   ```
-   The current adapter only accepts a Popularity toy run with K = 20. Extend it before using real or neural runs.
+3. Run both adapters from the team repo root (exact commands in `AGENTS.md`, section 5):
+   - `scripts/export_demo_data.py --run RUN_DIR=CATALOG ... --output public/demo-data.json`
+     (any model with K = 20; the catalog must match the run's recorded SHA-256);
+   - `scripts/export_run_results.py --matrix configs/experiments.json --collector-dir <TV2 package> --output public/run-results.json`.
+   A delivered run fills the planned record only when its `run_id` matches the matrix and `data_kind` is `real`.
 4. Commit only the small JSON in `public/`. Note the source run ID and the team commit in the commit message.
 
 ## 3. Push the UI back (this repo → team repo)
