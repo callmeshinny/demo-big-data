@@ -1,5 +1,6 @@
+import { t } from "./i18n.js";
 import React, { useMemo, useState } from "react";
-import { INVALID_PRODUCT_ID, MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
+import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
 import { presentationExamples } from "./presentation.js";
 import { ProductCard } from "./ProductCard.jsx";
 import { categoryHighlights } from "./product.js";
@@ -26,7 +27,7 @@ function runOptions(group) {
   }));
   for (const model of PROJECT_MODELS) {
     if (!group.runs.some((r) => r.modelKey === modelKey(model))) {
-      options.push({ value: `missing:${model}`, label: `${model} — chưa có dự đoán`, run: null, model });
+      options.push({ value: `missing:${model}`, label: t("0_predictions_pending", model), run: null, model });
     }
   }
   return options;
@@ -40,7 +41,7 @@ export default function Recommendation({ state, productInfo, presenting }) {
   const [sessionChoice, setSessionChoice] = useState(() => new URLSearchParams(window.location.search).get("session"));
 
   const group = groups.find((g) => g.key === groupKey) ?? groups[0];
-  const options = useMemo(() => (group ? runOptions(group) : []), [group]);
+  const options = group ? runOptions(group) : [];
   const option = options.find((o) => o.value === choice) ?? options[0];
 
   const sessionUsers = useMemo(() => usersBySession(group), [group]);
@@ -50,16 +51,16 @@ export default function Recommendation({ state, productInfo, presenting }) {
   const unknownSession = sessionChoice !== null && !sessionIds.includes(sessionChoice);
   const sessionId = sessionChoice ?? sessionIds[0] ?? "";
 
-  if (error) return <Notice kind="error" title="Không tải được dữ liệu gợi ý">{error}</Notice>;
+  if (error) return <Notice kind="error" title={t("could_not_load_recommendation_data")}>{error}</Notice>;
   if (fatal) {
     return (
       <>
-        <Notice kind="error" title="Dữ liệu gợi ý không hợp lệ">{fatal}</Notice>
+        <Notice kind="error" title={t("invalid_recommendation_data")}>{fatal}</Notice>
         <Issues issues={issues} key={String(presenting)} />
       </>
     );
   }
-  if (!group) return <Notice kind="error" title="Không có dữ liệu">demo-data.json không có run nào.</Notice>;
+  if (!group) return <Notice kind="error" title={t("no_data")}>{t("demo_data_json_contains_no_runs")}</Notice>;
 
   const selectionError = unknownUser || unknownSession;
   const run = option?.run ?? null;
@@ -88,78 +89,72 @@ export default function Recommendation({ state, productInfo, presenting }) {
     <>
       <Issues issues={issues} key={String(presenting)} />
 
-      <section className="controls" aria-label="Chọn dữ liệu">
-        <label>Bộ phiên
-          <select value={group.key} onChange={(e) => changeGroup(e.target.value)}>
+      <section className="controls" aria-label={t("choose_data")}>
+        <label>{t("session_group")} <select value={group.key} onChange={(e) => changeGroup(e.target.value)}>
             {groups.map((g) => <option key={g.key} value={g.key}>{groupLabel(g)}</option>)}
           </select>
         </label>
-        <label>Model
-          <select aria-label="Model" value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
+        <label>{t("model")} <select aria-label={t("model")} value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </label>
         {users.length > 0 && (
-          <label>Người dùng
-            <select value={unknownUser ? "" : userId} onChange={(event) => {
+          <label>{t("users")} <select value={unknownUser ? "" : userId} onChange={(event) => {
               setUserId(event.target.value);
               setSessionChoice(null);
             }}>
-              <option value="">Tất cả</option>
+              <option value="">{t("all")}</option>
               {users.map((id) => <option value={id} key={id}>{id}</option>)}
             </select>
           </label>
         )}
-        <label>Phiên xem
-          <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
-            {selectionError && <option value="" disabled>Chọn phiên</option>}
+        <label>{t("session")} <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
+            {selectionError && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
           </select>
         </label>
       </section>
 
       {examples && <section className="panel presentation-examples">
-        <p>Ví dụ minh hoạ: chọn theo kết quả để giải thích, không phải mẫu thống kê.</p>
-        {examples.unavailable.length > 0 && <p>Bỏ qua trường hợp chưa có: {examples.unavailable.join(", ")}.</p>}
+        <p>{t("illustrative_examples_selected_by_outcome_for")}</p>
+        {examples.unavailable.length > 0 && <p>{t("unavailable_cases_skipped")} {examples.unavailable.join(", ")}.</p>}
         <button type="button" disabled={!examples.ids.length} onClick={() => {
           const index = examples.ids.indexOf(sessionId);
           setUserId("");
           setSessionChoice(examples.ids[(index + 1) % examples.ids.length]);
           if (!run) setChoice(`run:${referenceRun.label}`);
-        }}>Ví dụ tiếp theo</button>
+        }}>{t("next_example")}</button>
       </section>}
-      <p className="definition"><strong>Cách đánh giá</strong> · Huấn luyện theo ngày t và đánh giá validation ngày t+1. Test ở ngày cuối D dùng checkpoint đã huấn luyện qua ngày liền trước D. Mỗi phiên có một Top-20, đối chiếu với sản phẩm cuối thực tế.</p>
-      <p className="definition">Split {group.split ?? MISSING} · Partition {group.evalPartition ?? MISSING}</p>
-      {sample && <p className="definition">Hiển thị {sample.n_selected ?? MISSING}/{sample.n_total ?? MISSING} session, chọn ngẫu nhiên cố định (seed {sample.seed ?? MISSING}), không chọn theo kết quả.</p>}
+      <p className="definition"><strong>{t("how_this_is_evaluated")}</strong> {t("train_on_day_t_and_validate")}</p>
+      <p className="definition">{t("split")} {group.split ?? t("not_available_yet")} {t("partition")} {group.evalPartition ?? t("not_available_yet")}</p>
+      {sample && <p className="definition">{t("showing")} {sample.n_selected ?? t("not_available_yet")}/{sample.n_total ?? t("not_available_yet")} {t("sessions_selected_with_a_fixed_seed")} {sample.seed ?? t("not_available_yet")}{t("independently_of_outcome")}</p>}
       {selectionError ? (
-        <Notice kind="warn" title={unknownUser ? "Không tìm thấy người dùng" : "Không tìm thấy phiên xem"}>
-          <p>{unknownUser ? `Mã người dùng: ${userId}` : `Mã phiên: ${sessionChoice}`}</p>
-          <button type="button" onClick={() => { setUserId(""); setSessionChoice(null); }}>
-            Chọn lại phiên
-          </button>
+        <Notice kind="warn" title={unknownUser ? t("user_not_found") : t("session_not_found")}>
+          <p>{unknownUser ? t("user_id_0", userId) : t("session_id_0", sessionChoice)}</p>
+          <button type="button" onClick={() => { setUserId(""); setSessionChoice(null); }}>{t("choose_another_session")} </button>
         </Notice>
       ) : (
         <>
           <div className="meta-row">
-            <span>Model: <strong>{modelLabel(run?.model ?? option?.model)}</strong></span>
-            <span>Run ID: <strong>{run?.run_id ?? MISSING}</strong></span>
-            <span>Subset: <strong>{group.subset ?? MISSING}</strong></span>
-            <span>Split: <strong>{group.split ?? MISSING}</strong></span>
-            <span>Catalog: <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : MISSING}</strong></span>
-            {run?.catalog_sha256 && <span>SHA-256 catalog <code>{run.catalog_sha256}</code></span>}
-            <span>Dự đoán <DataKindBadge kind={(run ?? group.runs[0])?.data_kind} /></span>
-            {productInfo.dataKind === "toy" && <span>Thông tin sản phẩm <DataKindBadge kind={productInfo.dataKind} /></span>}
+            <span>{t("model_2")} <strong>{modelLabel(run?.model ?? option?.model)}</strong></span>
+            <span>{t("run_id")} <strong>{run?.run_id ?? t("not_available_yet")}</strong></span>
+            <span>{t("subset_2")} <strong>{group.subset ?? t("not_available_yet")}</strong></span>
+            <span>{t("split_2")} <strong>{group.split ?? t("not_available_yet")}</strong></span>
+            <span>{t("catalog")} <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : t("not_available_yet")}</strong></span>
+            {run?.catalog_sha256 && <span>{t("catalog_sha_256")} <code>{run.catalog_sha256}</code></span>}
+            <span>{t("predictions")} <DataKindBadge kind={(run ?? group.runs[0])?.data_kind} /></span>
+            {productInfo.dataKind === "toy" && <span>{t("product_information")} <DataKindBadge kind={productInfo.dataKind} /></span>}
           </div>
 
           <section className="grid">
             <article className="panel">
               <div className="panel-heading">
-                <h2>Lịch sử xem</h2>
-                <span>{context.prefix ? `${context.prefix.length} lượt xem` : ""}</span>
+                <h2>{t("history")}</h2>
+                <span>{context.prefix ? t("0_views", context.prefix.length) : ""}</span>
               </div>
-              <p className="definition">Các sản phẩm đã xem trước sản phẩm cuối phiên.</p>
+              <p className="definition">{t("products_viewed_before_the_final_item")}</p>
               {context.prefix ? (
-                <ol className="history" aria-label="Lịch sử xem">
+                <ol className="history" aria-label={t("history")}>
                   {context.prefix.map((id, index) => (
                     <li key={index}>
                       {index > 0 && <span className="arrow" aria-hidden="true">→</span>}
@@ -167,48 +162,48 @@ export default function Recommendation({ state, productInfo, presenting }) {
                     </li>
                   ))}
                 </ol>
-              ) : <p className="missing">{MISSING}</p>}
+              ) : <p className="missing">{t("not_available_yet")}</p>}
             </article>
 
             <article className="panel actual-panel">
-              <h2>Thực tế khách xem tiếp</h2>
-              {context.target ? <ProductCard id={context.target} products={context.targetCatalog?.has(context.target) ? products : undefined} /> : <p className="missing">{MISSING}</p>}
+              <h2>{t("actual_next_item")}</h2>
+              {context.target ? <ProductCard id={context.target} products={context.targetCatalog?.has(context.target) ? products : undefined} /> : <p className="missing">{t("not_available_yet")}</p>}
             </article>
           </section>
 
           <section className="panel recommendations">
             <div className="panel-heading">
-              <h2>Top-20 gợi ý</h2>
+              <h2>{t("top_20_recommendations")}</h2>
               <span>{option ? (run ? modelLabel(run.model) : option.model) : ""}</span>
             </div>
 
             {!run ? (
               <div className="empty-state" role="status">
-                <strong>Chưa có dự đoán cho model này</strong>
+                <strong>{t("no_predictions_available_for_this_model")}</strong>
               </div>
             ) : !session ? (
               <div className="empty-state" role="status">
-                <strong>{MISSING}</strong>
-                <p>Run {run.label} không có session {sessionId}.</p>
+                <strong>{t("not_available_yet")}</strong>
+                <p>{t("run")} {run.label} {t("does_not_contain_session")} {sessionId}.</p>
               </div>
             ) : !session.recommendations ? (
               <div className="empty-state" role="status">
-                <strong>{MISSING}</strong>
-                <p>Dữ liệu gợi ý của phiên này bị thiếu hoặc sai định dạng.</p>
+                <strong>{t("not_available_yet")}</strong>
+                <p>{t("the_recommendations_for_this_session_are")}</p>
               </div>
             ) : (
               <>
                 {session.target && session.target !== INVALID_PRODUCT_ID && (
                   <p className={session.targetRank ? "match" : "miss"}>
-                    {session.targetRank ? `✅ Trúng ở hạng ${session.targetRank}` : "❌ Ngoài Top-20"}
+                    {session.targetRank ? t("hit_at_rank_0", session.targetRank) : t("not_in_top_20")}
                   </p>
                 )}
                 {summary && <p className="definition">{summary}</p>}
                 {!run.scoreAvailable && (
-                  <p className="definition">TV2 chưa xuất điểm cho từng sản phẩm.</p>
+                  <p className="definition">{t("tv2_has_not_exported_per_item")}</p>
                 )}
                 <table className="ranking">
-                  <thead><tr><th scope="col">Hạng</th><th scope="col">Sản phẩm</th><th scope="col">Điểm</th></tr></thead>
+                  <thead><tr><th scope="col">{t("rank")}</th><th scope="col">{t("products")}</th><th scope="col">{t("score")}</th></tr></thead>
                   <tbody>
                     {session.recommendations.map((r) => {
                       const isTarget = r.product_id === session.target;
@@ -218,11 +213,11 @@ export default function Recommendation({ state, productInfo, presenting }) {
                           <td className="rank">{r.rank}</td>
                           <td>
                             <ProductCard id={r.product_id} products={products} />
-                            {isTarget && <span className="tag tag-hit">Sản phẩm thực tế</span>}
-                            {matchingIds.has(r.product_id) && <span className="tag tag-category">Cùng nhóm</span>}
-                            {inHistory && <span className="tag">Đã xem</span>}
+                            {isTarget && <span className="tag tag-hit">{t("actual_item")}</span>}
+                            {matchingIds.has(r.product_id) && <span className="tag tag-category">{t("same_category")}</span>}
+                            {inHistory && <span className="tag">{t("in_history")}</span>}
                           </td>
-                          <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? MISSING : r.score}</td>
+                          <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? t("not_available_yet") : r.score}</td>
                         </tr>
                       );
                     })}

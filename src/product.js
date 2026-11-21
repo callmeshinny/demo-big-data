@@ -1,4 +1,5 @@
-import { INVALID_PRODUCT_ID, MISSING } from "./data.js";
+import { t } from "./i18n.js";
+import { INVALID_PRODUCT_ID } from "./data.js";
 
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const titleCase = (value) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -8,21 +9,21 @@ function topCategory(product) {
 }
 
 export function productDisplay(id, products) {
-  if (id === INVALID_PRODUCT_ID) return { name: "Mã không hợp lệ" };
+  if (id === INVALID_PRODUCT_ID) return { name: t("invalid_id") };
 
   const product = products?.get(id);
   const category = product?.category_code?.split(".").map(titleCase) ?? [];
   const leaf = category.at(-1);
   const brand = product?.brand && titleCase(product.brand);
   const name = brand && leaf ? `${brand} ${leaf}`
-    : leaf ? `${leaf} (không rõ hãng)`
-      : brand ? `${brand} (chưa rõ danh mục)` : `Sản phẩm #${id}`;
+    : leaf ? t("0_brand_unknown", leaf)
+      : brand ? t("0_category_unknown", brand) : t("product_0", id);
 
   return {
     name,
     breadcrumb: category.join(" › "),
     category: topCategory(product),
-    price: product?.price == null ? MISSING : usd.format(product.price),
+    price: product?.price == null ? t("not_available_yet") : usd.format(product.price),
   };
 }
 
@@ -47,7 +48,7 @@ export function categoryHighlights(prefix, prefixCatalog, recommendations, produ
     }
   }
   const summary = historyCategories.size && categorizedCount
-    ? `Nhóm đã xem: ${[...historyCategories].join(", ")}. ${matchingCount}/${categorizedCount} gợi ý có danh mục cùng nhóm.`
+    ? t("history_categories_0_1_2_categorized", [...historyCategories].join(", "), matchingCount, categorizedCount)
     : null;
   return { matchingIds, summary };
 }

@@ -1,14 +1,17 @@
+import { setLanguage, t } from "../src/i18n.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  INVALID_PRODUCT_ID, MISSING, NOT_APPLICABLE, compareConfig, displayCell, formatValue, loadJson,
+  INVALID_PRODUCT_ID, compareConfig, displayCell, formatValue, loadJson,
   normalizeDemo, normalizeResults, sessionContext, splitByKind, usersBySession,
 } from "../src/data.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const json = (path) => JSON.parse(read(path));
 const fakeFetch = (body, status = 200) => async () => ({ ok: status < 400, status, text: async () => body });
+
+setLanguage(process.env.TV4_TEST_LANGUAGE);
 
 test("shipped demo-data.json is valid and keeps artifact order", () => {
   const { groups, issues, fatal } = normalizeDemo(json("../public/demo-data.json"));
@@ -83,10 +86,10 @@ test("out-of-catalog context stays visible and technical IDs keep their position
   assert.equal(sessionContext(group, "invalid-target").target, INVALID_PRODUCT_ID);
   const [session] = group.runs[0].sessions;
   assert.deepEqual(session.recommendations.map(({ rank, product_id }) => [rank, product_id]), [[1, "p4"], [5, "p3"]]);
-  assert.match(issues[0], /Lịch sử: có mã sản phẩm không hợp lệ/);
-  assert.match(issues[0], /Lịch sử: mã sản phẩm không thuộc catalog/);
-  assert.match(issues[0], /Sản phẩm thực tế: mã sản phẩm không thuộc catalog/);
-  assert.match(issues[0], /ẩn 3 mã gợi ý/);
+  assert.ok(issues[0].includes(t("0_invalid_product_id", t("history_2"))));
+  assert.ok(issues[0].includes(t("0_product_id_is_absent_from", t("history_2"))));
+  assert.ok(issues[0].includes(t("0_product_id_is_absent_from", t("actual_item"))));
+  assert.ok(issues[0].includes(t("hid_0_technical_or_out_of", 3)));
 });
 
 test("user picker has no options for shipped sessions and reads user IDs from a test fixture", () => {
@@ -100,7 +103,7 @@ test("user picker has no options for shipped sessions and reads user IDs from a 
 });
 
 test("loadJson reports empty, malformed and HTTP errors", async () => {
-  assert.match((await loadJson("x", fakeFetch(read("./fixtures/empty.json")))).error, /rỗng/);
+  assert.equal((await loadJson("x", fakeFetch(read("./fixtures/empty.json")))).error, t("0_is_empty", "x"));
   assert.match((await loadJson("x", fakeFetch(read("./fixtures/malformed.json")))).error, /JSON/);
   assert.match((await loadJson("x", fakeFetch("", 404))).error, /404/);
   assert.deepEqual((await loadJson("x", fakeFetch('{"a":1}'))).data, { a: 1 });
@@ -123,12 +126,12 @@ test("bad run-results shape is a fatal error", () => {
 });
 
 test("formatting never turns missing into zero", () => {
-  assert.equal(formatValue(null), MISSING);
-  assert.equal(formatValue(undefined), MISSING);
+  assert.equal(formatValue(null), t("not_available_yet"));
+  assert.equal(formatValue(undefined), t("not_available_yet"));
   assert.equal(formatValue(0), "0");
   assert.equal(formatValue(3561836544), "3,561,836,544");
-  assert.equal(displayCell({ model: "Popularity" }, "peak_cuda_reserved_bytes", null), NOT_APPLICABLE);
-  assert.equal(displayCell({ model: "gru" }, "peak_cuda_reserved_bytes", null), MISSING);
+  assert.equal(displayCell({ model: "Popularity" }, "peak_cuda_reserved_bytes", null), t("not_applicable"));
+  assert.equal(displayCell({ model: "gru" }, "peak_cuda_reserved_bytes", null), t("not_available_yet"));
 });
 
 test("planned vs actual comparison flags differences only when both exist", () => {

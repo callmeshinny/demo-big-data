@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const count = (value) => Number.isSafeInteger(value) && value >= 0;
 
@@ -5,7 +6,7 @@ export function normalizeDataset(raw) {
   if (!object(raw) || raw.schema !== "tv4-dataset-overview/v1" ||
       !object(raw.raw_month) || !Array.isArray(raw.subsets) ||
       !raw.subsets.every((row) => object(row) && count(row.subset))) {
-    return { fatal: "dataset-overview.json không hợp lệ" };
+    return { fatal: t("invalid_dataset_overview_json") };
   }
   return { overview: raw };
 }

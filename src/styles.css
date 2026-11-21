@@ -180,3 +180,6 @@ footer code { overflow-wrap: anywhere; }
 .presenting { font-size: 1.2rem; }
 .presenting .definition { font-size: .95em; }
 .presenting .controls select, .presentation-examples button { font-size: 1em; }
+
+.language-switch { display: flex; gap: .5rem; margin-bottom: .75rem; }
+.language-switch [aria-pressed="true"] { font-weight: 800; background: var(--butter); }

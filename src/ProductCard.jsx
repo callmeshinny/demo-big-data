@@ -1,5 +1,6 @@
+import { t } from "./i18n.js";
 import React from "react";
-import { INVALID_PRODUCT_ID, MISSING } from "./data.js";
+import { INVALID_PRODUCT_ID } from "./data.js";
 import { productDisplay } from "./product.js";
 
 const icons = new Map([
@@ -21,7 +22,7 @@ export function ProductCard({ id, products }) {
         <strong>{name}</strong>
         {breadcrumb && <small>{breadcrumb}</small>}
         <small className="product-id">{id}</small>
-        <span className={price === MISSING ? "missing" : undefined}>
+        <span className={price === t("not_available_yet") ? "missing" : undefined}>
           {price}
         </span>
       </div>

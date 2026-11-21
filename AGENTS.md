@@ -26,10 +26,10 @@ The team repo `tlmthuy/Big-Data` stays the **source of truth** for data, models,
 
 ## 3. Hard rules (data integrity)
 
-1. **Never invent numbers.** A missing value is `null` in JSON and **"Chưa có"** in the UI. Never use `0` unless an artifact actually reports zero.
+1. **Never invent numbers.** A missing value is `null` in JSON and **"Not available yet" / "Chưa có"** in the UI. Never use `0` unless an artifact actually reports zero.
 2. **Never derive a score from rank or position.** Show a score only when TV2 has exported it.
 3. **Never recompute or redefine a metric.** Display metrics exactly as TV2 delivers them, with unit and measurement scope.
-4. **Keep planned configuration separate from measured results.** Use two columns: **Dự kiến** (from the experiment matrix) and **Thực tế** (from run artifacts). If they differ, flag the difference and never hide either value.
+4. **Keep planned configuration separate from measured results.** Use two columns: **Planned / Dự kiến** (from the experiment matrix) and **Actual / Thực tế** (from run artifacts). If they differ, flag the difference and never hide either value.
 5. **Label toy data.** Any data with `data_kind = "toy"` shows a visible toy badge and is never presented as a benchmark result.
 6. **Keep artifact order** for recommendations. Items already in the history may be recommended. Technical IDs (padding, null, OOV, mask) are never shown.
 7. **Always show original product IDs** (`p3`), never encoded IDs (`3`), using the run's own catalog.
@@ -105,7 +105,7 @@ Test broken data in the browser (dev server only): `/?demo=/tests/fixtures/malfo
   - an empty or malformed JSON file;
   - a narrow screen.
 - No hard-coded numbers in `src/`. Every number shown comes from a JSON file in `public/`.
-- Missing values show **"Chưa có"**, and toy data shows the toy badge.
+- Missing values show **"Not available yet" / "Chưa có"**, and toy data shows the toy badge.
 - Commit messages are short and describe the change. Do not push unless the user asks.
 
 ## 7. Deployment

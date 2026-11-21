@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 import { createElement } from "react";
 
 export function visiblePipelineMeasurements(measurements) {
@@ -6,6 +7,6 @@ export function visiblePipelineMeasurements(measurements) {
 
 export function PipelineMeasurementBadge({ measurements }) {
   return visiblePipelineMeasurements(measurements)
-    ? createElement("span", { className: "tag tag-diff" }, "Smoke / chờ TV2 xác nhận")
+    ? createElement("span", { className: "tag tag-diff" }, t("smoke_awaiting_tv2_confirmation"))
     : null;
 }

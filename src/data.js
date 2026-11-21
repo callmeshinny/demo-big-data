@@ -1,8 +1,7 @@
+import { t } from "./i18n.js";
 // Loading and validation for the two JSON files in public/.
 // Pure functions (no React) so they can be tested with `node --test`.
 
-export const MISSING = "Chưa có";
-export const NOT_APPLICABLE = "Không áp dụng";
 
 /** Known models of the project, in display order. Used only to list models that have no output yet. */
 export const PROJECT_MODELS = ["Popularity", "GRU", "XLNet"];
@@ -13,7 +12,7 @@ export function modelKey(name) {
 
 export function modelLabel(name) {
   const found = PROJECT_MODELS.find((m) => modelKey(m) === modelKey(name));
-  return found ?? (typeof name === "string" && name.trim() ? name : MISSING);
+  return found ?? (typeof name === "string" && name.trim() ? name : t("not_available_yet"));
 }
 
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -25,21 +24,21 @@ export async function loadJson(url, fetchImpl = fetch) {
   let response;
   try {
     response = await fetchImpl(url, { cache: "no-store" });
-    if (!response.ok) return { error: `Không tải được ${url}: HTTP ${response.status}` };
+    if (!response.ok) return { error: t("could_not_load_0_http_1", url, response.status) };
   } catch (cause) {
-    return { error: `Không tải được ${url}: ${cause.message}` };
+    return { error: t("could_not_load_0_1", url, cause.message) };
   }
   let text;
   try {
     text = await response.text();
   } catch (cause) {
-    return { error: `Không đọc được ${url}: ${cause.message}` };
+    return { error: t("could_not_read_0_1", url, cause.message) };
   }
-  if (!text.trim()) return { error: `${url} rỗng` };
+  if (!text.trim()) return { error: t("0_is_empty", url) };
   try {
     return { data: JSON.parse(text) };
   } catch (cause) {
-    return { error: `${url} không phải JSON hợp lệ: ${cause.message}` };
+    return { error: t("0_is_invalid_json_1", url, cause.message) };
   }
 }
 
@@ -73,22 +72,22 @@ function normalizeSession(raw, catalogSet, issues) {
   function contextId(value, field) {
     if (isCatalogProduct(value)) return value;
     if (!isId(value) || isReservedId(value) || /^[+-]?\d+$/.test(value.trim())) {
-      problems.push(`${field}: có mã sản phẩm không hợp lệ`);
+      problems.push(t("0_invalid_product_id", field));
       return INVALID_PRODUCT_ID;
     }
-    problems.push(`${field}: mã sản phẩm không thuộc catalog`);
+    problems.push(t("0_product_id_is_absent_from", field));
     return value;
   }
 
-  const prefix = Array.isArray(raw.prefix) ? raw.prefix.map((value) => contextId(value, "Lịch sử")) : null;
-  if (!prefix) problems.push("thiếu hoặc sai `prefix`");
-  const target = Object.hasOwn(raw, "target") ? contextId(raw.target, "Sản phẩm thực tế") : null;
-  if (target === null) problems.push("thiếu `target`");
+  const prefix = Array.isArray(raw.prefix) ? raw.prefix.map((value) => contextId(value, t("history_2"))) : null;
+  if (!prefix) problems.push(t("missing_or_invalid_prefix"));
+  const target = Object.hasOwn(raw, "target") ? contextId(raw.target, t("actual_item")) : null;
+  if (target === null) problems.push(t("missing_target"));
 
   let recommendations = null;
   if (Array.isArray(raw.recommendations)) {
     const rows = raw.recommendations.filter((r) => isObject(r) && Number.isInteger(r.rank));
-    if (rows.length !== raw.recommendations.length) problems.push("bỏ mục sai định dạng trong `recommendations`");
+    if (rows.length !== raw.recommendations.length) problems.push(t("skipped_malformed_entries_in_recommendations"));
     recommendations = rows.map((r) => ({
       rank: r.rank,
       product_id: r.product_id,
@@ -98,14 +97,14 @@ function normalizeSession(raw, catalogSet, issues) {
     // Artifact position gives rank. Filtering preserves the surviving ranks.
     recommendations = raw.top20.map((product_id, index) => ({ rank: index + 1, product_id, score: null }));
   } else {
-    problems.push("thiếu hoặc sai `top20`");
+    problems.push(t("missing_or_invalid_top20"));
   }
 
   if (recommendations) {
     const kept = recommendations.filter((r) => isCatalogProduct(r.product_id));
     const hidden = recommendations.length - kept.length;
     recommendations = catalogSet ? kept : null;
-    if (hidden) problems.push(`ẩn ${hidden} mã gợi ý kỹ thuật hoặc không thuộc catalog`);
+    if (hidden) problems.push(t("hid_0_technical_or_out_of", hidden));
   }
 
   let targetRank = null;
@@ -113,7 +112,7 @@ function normalizeSession(raw, catalogSet, issues) {
     const hit = recommendations.find((r) => r.product_id === target);
     targetRank = hit ? hit.rank : null;
     if (raw.target_rank !== undefined && raw.target_rank !== targetRank) {
-      problems.push(`target_rank trong file (${raw.target_rank}) khác thứ tự artifact (${targetRank ?? "ngoài Top-20"})`);
+      problems.push(t("target_rank_mismatch", raw.target_rank, targetRank ?? t("outside_top_20")));
     }
   }
 
@@ -125,36 +124,36 @@ function normalizeSession(raw, catalogSet, issues) {
 function normalizeRun(raw, index, issues) {
   const label = isId(raw?.run_id) ? raw.run_id : `run #${index + 1}`;
   if (!isObject(raw)) {
-    issues.push(`${label}: không phải object, bỏ qua`);
+    issues.push(t("0_skipped_non_object_record", label));
     return null;
   }
   if (!isId(raw.model)) {
-    issues.push(`${label}: thiếu \`model\`, bỏ qua`);
+    issues.push(t("0_skipped_record_without_model", label));
     return null;
   }
   if (!Array.isArray(raw.sessions)) {
-    issues.push(`${label}: thiếu mảng \`sessions\`, bỏ qua`);
+    issues.push(t("0_skipped_record_without_a_sessions", label));
     return null;
   }
   const catalog = isIdList(raw.catalog) && raw.catalog.length ? raw.catalog : null;
-  if (!catalog) issues.push(`${label}: thiếu catalog, không thể xác minh mã sản phẩm`);
+  if (!catalog) issues.push(t("0_catalog_missing_so_product_ids", label));
   const catalogSet = catalog ? new Set(catalog) : null;
 
   const seen = new Set();
   const sessions = [];
   for (const s of raw.sessions) {
     if (!isObject(s) || !isId(s.user_session)) {
-      issues.push(`${label}: một session thiếu \`user_session\`, bỏ qua`);
+      issues.push(t("0_skipped_session_without_user_session", label));
       continue;
     }
     if (seen.has(s.user_session)) {
-      issues.push(`${label}: session ${s.user_session} bị trùng, giữ bản đầu`);
+      issues.push(t("0_duplicate_session_1_kept_the", label, s.user_session));
       continue;
     }
     seen.add(s.user_session);
     sessions.push(normalizeSession(s, catalogSet, issues));
   }
-  if (!sessions.length) issues.push(`${label}: không có session hợp lệ`);
+  if (!sessions.length) issues.push(t("0_no_valid_sessions", label));
 
   const provenance = isObject(raw.provenance) ? raw.provenance : {};
   return {
@@ -188,12 +187,12 @@ function groupKey(run) {
  */
 export function normalizeDemo(raw) {
   const issues = [];
-  if (!isObject(raw)) return { groups: [], issues, fatal: "File dữ liệu không phải JSON object" };
+  if (!isObject(raw)) return { groups: [], issues, fatal: t("the_data_file_is_not_a") };
   const rawRuns = Array.isArray(raw.runs) ? raw.runs : Array.isArray(raw.sessions) ? [raw] : null;
-  if (!rawRuns) return { groups: [], issues, fatal: "Không tìm thấy `runs` hoặc `sessions`" };
+  if (!rawRuns) return { groups: [], issues, fatal: t("cannot_find_runs_or_sessions") };
 
   const runs = rawRuns.map((r, i) => normalizeRun(r, i, issues)).filter((r) => r && r.sessions.length);
-  if (!runs.length) return { groups: [], issues, fatal: "Không có run nào có session hợp lệ" };
+  if (!runs.length) return { groups: [], issues, fatal: t("no_run_contains_valid_sessions") };
 
   const groups = new Map();
   for (const run of runs) {
@@ -253,12 +252,12 @@ export const EXPERIMENTS = ["E1", "E2", "E3", "E4", "E5"];
 
 export function normalizeResults(raw) {
   const issues = [];
-  if (!isObject(raw)) return { runs: [], meta: {}, issues, fatal: "File kết quả không phải JSON object" };
-  if (!Array.isArray(raw.runs)) return { runs: [], meta: {}, issues, fatal: "Không tìm thấy mảng `runs`" };
+  if (!isObject(raw)) return { runs: [], meta: {}, issues, fatal: t("the_results_file_is_not_a") };
+  if (!Array.isArray(raw.runs)) return { runs: [], meta: {}, issues, fatal: t("cannot_find_the_runs_array") };
   const runs = [];
   raw.runs.forEach((r, i) => {
     if (!isObject(r) || !isId(r.run_id) || !isId(r.experiment)) {
-      issues.push(`Record #${i + 1}: thiếu \`run_id\` hoặc \`experiment\`, bỏ qua`);
+      issues.push(t("record_0_skipped_because_run_id", i + 1));
       return;
     }
     runs.push({
@@ -297,26 +296,26 @@ export function splitByKind(runs, experiment) {
 
 // ---------------------------------------------------------------- formatting
 
-/** Display a delivered value. Never invents: null/undefined -> "Chưa có". */
+/** Format a delivered value or a localized placeholder. */
 export function formatValue(value) {
-  if (value === null || value === undefined || value === "") return MISSING;
+  if (value === null || value === undefined || value === "") return t("not_available_yet");
   if (typeof value === "number") {
     if (!Number.isFinite(value)) return String(value);
     if (Number.isInteger(value)) return value.toLocaleString("en-US");
     return Number(value.toPrecision(4)).toLocaleString("en-US", { maximumFractionDigits: 10 });
   }
   if (typeof value === "boolean") return value ? "true" : "false";
-  if (Array.isArray(value)) return value.length ? value.map(formatValue).join(", ") : MISSING;
+  if (Array.isArray(value)) return value.length ? value.map(formatValue).join(", ") : t("not_available_yet");
   if (isObject(value)) {
     const entries = Object.entries(value);
-    return entries.length ? entries.map(([k, v]) => `${k}: ${formatValue(v)}`).join(" · ") : MISSING;
+    return entries.length ? entries.map(([k, v]) => `${k}: ${formatValue(v)}`).join(" · ") : t("not_available_yet");
   }
   return String(value);
 }
 
 /** Full-precision text for a tooltip. */
 export function exactValue(value) {
-  if (value === null || value === undefined) return MISSING;
+  if (value === null || value === undefined) return t("not_available_yet");
   return typeof value === "object" ? JSON.stringify(value) : String(value);
 }
 
@@ -332,7 +331,7 @@ export function isApplicable(run, field) {
 }
 
 export function displayCell(run, field, value) {
-  if ((value === null || value === undefined) && !isApplicable(run, field)) return NOT_APPLICABLE;
+  if ((value === null || value === undefined) && !isApplicable(run, field)) return t("not_applicable");
   return formatValue(value);
 }
 
