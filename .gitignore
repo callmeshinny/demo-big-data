@@ -15,3 +15,5 @@ __pycache__/
 !figures/data/*.csv
 
 tests/fixtures/large/
+
+screenshots/

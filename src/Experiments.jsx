@@ -230,9 +230,8 @@ function E5Panel({ runs }) {
   );
 }
 
-export default function Experiments({ state }) {
+export default function Experiments({ state, active }) {
   const { runs = [], meta = {}, issues = [], fatal, error } = state;
-  const [active, setActive] = useState("E1");
   const [showToy, setShowToy] = useState(true);
 
   if (error) return <Notice kind="error" title="Không tải được kết quả E1–E5">{error}</Notice>;
@@ -266,7 +265,7 @@ export default function Experiments({ state }) {
 
       <nav className="subtabs" aria-label="Thí nghiệm">
         {EXPERIMENTS.map((id) => (
-          <button key={id} type="button" className={id === active ? "active" : ""} aria-pressed={id === active} onClick={() => setActive(id)}>{id}</button>
+          <a key={id} href={`#experiments-${id.toLowerCase()}`} className={id === active ? "active" : ""} aria-current={id === active ? "page" : undefined}>{id}</a>
         ))}
         <label className="toggle">
           <input type="checkbox" checked={showToy} onChange={(e) => setShowToy(e.target.checked)} />

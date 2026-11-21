@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { INVALID_PRODUCT_ID, MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
+import { presentationExamples } from "./presentation.js";
 import { ProductCard } from "./ProductCard.jsx";
 import { categoryHighlights } from "./product.js";
 import { DataKindBadge, Issues, Notice } from "./ui.jsx";
@@ -31,7 +32,7 @@ function runOptions(group) {
   return options;
 }
 
-export default function Recommendation({ state, productInfo }) {
+export default function Recommendation({ state, productInfo, presenting }) {
   const { groups = [], issues = [], fatal, error } = state;
   const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
@@ -54,7 +55,7 @@ export default function Recommendation({ state, productInfo }) {
     return (
       <>
         <Notice kind="error" title="Dữ liệu gợi ý không hợp lệ">{fatal}</Notice>
-        <Issues issues={issues} />
+        <Issues issues={issues} key={String(presenting)} />
       </>
     );
   }
@@ -65,6 +66,8 @@ export default function Recommendation({ state, productInfo }) {
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
 
+  const referenceRun = run ?? group.runs[0];
+  const examples = presenting ? presentationExamples(referenceRun) : null;
   const sample = (run ?? group.runs[0]).sample;
   const products = productInfo.products;
   const { matchingIds, summary } = categoryHighlights(
@@ -83,7 +86,7 @@ export default function Recommendation({ state, productInfo }) {
 
   return (
     <>
-      <Issues issues={issues} />
+      <Issues issues={issues} key={String(presenting)} />
 
       <section className="controls" aria-label="Chọn dữ liệu">
         <label>Bộ phiên
@@ -92,7 +95,7 @@ export default function Recommendation({ state, productInfo }) {
           </select>
         </label>
         <label>Model
-          <select value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
+          <select aria-label="Model" value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </label>
@@ -115,6 +118,16 @@ export default function Recommendation({ state, productInfo }) {
         </label>
       </section>
 
+      {examples && <section className="panel presentation-examples">
+        <p>Ví dụ minh hoạ: chọn theo kết quả để giải thích, không phải mẫu thống kê.</p>
+        {examples.unavailable.length > 0 && <p>Bỏ qua trường hợp chưa có: {examples.unavailable.join(", ")}.</p>}
+        <button type="button" disabled={!examples.ids.length} onClick={() => {
+          const index = examples.ids.indexOf(sessionId);
+          setUserId("");
+          setSessionChoice(examples.ids[(index + 1) % examples.ids.length]);
+          if (!run) setChoice(`run:${referenceRun.label}`);
+        }}>Ví dụ tiếp theo</button>
+      </section>}
       <p className="definition"><strong>Cách đánh giá</strong> · Huấn luyện theo ngày t và đánh giá validation ngày t+1. Test ở ngày cuối D dùng checkpoint đã huấn luyện qua ngày liền trước D. Mỗi phiên có một Top-20, đối chiếu với sản phẩm cuối thực tế.</p>
       <p className="definition">Split {group.split ?? MISSING} · Partition {group.evalPartition ?? MISSING}</p>
       {sample && <p className="definition">Hiển thị {sample.n_selected ?? MISSING}/{sample.n_total ?? MISSING} session, chọn ngẫu nhiên cố định (seed {sample.seed ?? MISSING}), không chọn theo kết quả.</p>}

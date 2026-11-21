@@ -38,6 +38,7 @@ export default function Dataset({ state }) {
   const { overview } = state;
   const raw = overview.raw_month;
   const subset = overview.subsets.find((row) => String(row.subset) === selected) ?? overview.subsets[0];
+  const weeklySource = overview.subsets.find((row) => row.source)?.source;
   const buckets = histogramBuckets(subset?.session_length_histogram);
   const max = Math.max(0, ...buckets.map((bucket) => bucket.count ?? 0));
   return (
@@ -45,7 +46,7 @@ export default function Dataset({ state }) {
       {!overview.confirmed_by_tv1 && <Notice kind="warn" title="Số liệu lấy từ manifest TV1, chờ TV1 xác nhận hiển thị" />}
       <section className="panel">
         <h2>Dữ liệu thương mại điện tử</h2>
-        <p>Tập Kaggle eCommerce ghi lại hoạt động trong cửa hàng đa danh mục vào tháng 10/2019. Mỗi sự kiện là một lượt xem, thêm vào giỏ hoặc mua sản phẩm. Một phiên nhóm các sự kiện trong cùng lượt truy cập.</p>
+        <p>Tập Kaggle eCommerce ghi lại hoạt động trong cửa hàng đa danh mục vào tháng {raw.min_timestamp_utc?.slice(0, 7) ?? MISSING}. Mỗi sự kiện là một lượt xem, thêm vào giỏ hoặc mua sản phẩm. Một phiên nhóm các sự kiện trong cùng lượt truy cập.</p>
         <h3>Dữ liệu gốc cả tháng</h3>
         <dl className="env">
           {[
@@ -63,11 +64,12 @@ export default function Dataset({ state }) {
             <tbody>{ROWS.map(([label, field, key]) => <tr key={label}><th scope="row">{label}</th>{overview.subsets.map((row) => <td key={row.subset}>{formatValue(key ? row[field]?.[key] : row[field])}</td>)}</tr>)}</tbody>
           </table>
         </div>
-        <p className="definition">100% = tuần đầu tháng 10 (01–07/10 UTC). Chuỗi đủ điều kiện có ít nhất hai tương tác.</p>
+        <p className="definition">{overview.subsets.at(-1)?.subset ?? MISSING}% = tuần đầu tháng 10 (01–07/10 UTC). Chuỗi đủ điều kiện có ít nhất hai tương tác.</p>
+        <p className="definition">Nguồn <code>{formatValue(weeklySource)}</code></p>
       </section>
       <section className="panel">
         <h2>Độ dài phiên</h2>
-        {subset && <label>Tập con <select value={subset.subset} onChange={(event) => setSelected(event.target.value)}>
+        {subset && <label>Tập con <select aria-label="Tập con" value={subset.subset} onChange={(event) => setSelected(event.target.value)}>
           {overview.subsets.map((row) => <option key={row.subset} value={row.subset}>{row.subset}%</option>)}
         </select></label>}
         <p className="definition">Phiên có một sự kiện bị loại vì model cần một sản phẩm lịch sử và một sản phẩm mục tiêu.</p>

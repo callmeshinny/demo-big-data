@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { loadJson, normalizeDemo, normalizeProductInfo, normalizeResults, MISSING } from "./data.js";
 import Recommendation from "./Recommendation.jsx";
+import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
 import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
@@ -41,20 +42,19 @@ function useData(url, normalize) {
   return state;
 }
 
-function currentTab() {
-  const hash = window.location.hash.replace("#", "");
-  return TABS.some((t) => t.id === hash) ? hash : TABS[0].id;
+function currentRoute() {
+  return routeFromHash(window.location.hash);
 }
 
 function App() {
-  const [tab, setTab] = useState(currentTab);
+  const [{ tab, experiment, presenting }, setRoute] = useState(currentRoute);
   const demo = useData(DEMO_URL, normalizeDemo);
   const products = useData(PRODUCTS_URL, normalizeProductInfo);
   const dataset = useData(DATASET_URL, normalizeDataset);
   const results = useData(RESULTS_URL, normalizeResults);
 
   useEffect(() => {
-    const onHash = () => setTab(currentTab());
+    const onHash = () => setRoute(currentRoute());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -62,7 +62,7 @@ function App() {
   const state = { recommendation: demo, data: dataset, experiments: results }[tab];
 
   return (
-    <main className="shell">
+    <main className={presenting ? "shell presenting" : "shell"}>
       <header className="topbar">
         <div>
           <p className="eyebrow">Big Data · Bản demo TV4</p>
@@ -80,9 +80,12 @@ function App() {
         ))}
       </nav>
 
+      <div className="presentation-toggle">
+        <a href={presenting ? "#recommendation" : "#present"}>{presenting ? "Thoát chế độ trình bày" : "Chế độ trình bày"}</a>
+      </div>
       <div role="tabpanel">
         {state.loading ? <p className="loading">Đang tải dữ liệu…</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} presenting={presenting} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>
 
       <footer>
