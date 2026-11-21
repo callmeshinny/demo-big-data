@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
+import { INVALID_PRODUCT_ID, MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
 import { ProductCard, topCategory } from "./ProductCard.jsx";
 import { DataKindBadge, Issues, Notice } from "./ui.jsx";
 
@@ -76,7 +76,7 @@ export default function Recommendation({ state, productInfo }) {
 
   const products = productInfo.products;
   const categoryOf = (id) => topCategory(products?.get(id));
-  const historyCategories = new Set((context.prefix ?? []).map(categoryOf).filter(Boolean));
+  const historyCategories = new Set((context.prefix ?? []).map((id) => context.prefixCatalog?.has(id) ? categoryOf(id) : null).filter(Boolean));
   const categorized = (session?.recommendations ?? []).filter((item) => categoryOf(item.product_id));
   const sameCategory = (item) => historyCategories.has(categoryOf(item.product_id));
   const matchingCount = categorized.filter(sameCategory).length;
@@ -155,9 +155,9 @@ export default function Recommendation({ state, productInfo }) {
               {context.prefix ? (
                 <ol className="history" aria-label="Lịch sử xem">
                   {context.prefix.map((id, index) => (
-                    <li key={`${id}-${index}`}>
+                    <li key={index}>
                       {index > 0 && <span className="arrow" aria-hidden="true">→</span>}
-                      <ProductCard id={id} products={products} />
+                      <ProductCard id={id} products={context.prefixCatalog?.has(id) ? products : undefined} />
                     </li>
                   ))}
                 </ol>
@@ -166,7 +166,7 @@ export default function Recommendation({ state, productInfo }) {
 
             <article className="panel actual-panel">
               <h2>Thực tế khách xem tiếp</h2>
-              {context.target ? <ProductCard id={context.target} products={products} /> : <p className="missing">{MISSING}</p>}
+              {context.target ? <ProductCard id={context.target} products={context.targetCatalog?.has(context.target) ? products : undefined} /> : <p className="missing">{MISSING}</p>}
             </article>
           </section>
 
@@ -192,7 +192,7 @@ export default function Recommendation({ state, productInfo }) {
               </div>
             ) : (
               <>
-                {session.target && (
+                {session.target && session.target !== INVALID_PRODUCT_ID && (
                   <p className={session.targetRank ? "match" : "miss"}>
                     {session.targetRank ? `✅ Trúng ở hạng ${session.targetRank}` : "❌ Ngoài Top-20"}
                   </p>

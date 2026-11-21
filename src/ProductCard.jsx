@@ -1,5 +1,5 @@
 import React from "react";
-import { MISSING } from "./data.js";
+import { INVALID_PRODUCT_ID, MISSING } from "./data.js";
 
 const icons = new Map([
   ["electronics", "📱"],
@@ -17,6 +17,9 @@ export function topCategory(product) {
 }
 
 export function ProductCard({ id, products }) {
+  if (id === INVALID_PRODUCT_ID) {
+    return <div className="product-card missing">Mã không hợp lệ</div>;
+  }
   const product = products?.get(id);
   const category = product?.category_code?.split(".").map(titleCase) ?? [];
   const leaf = category.at(-1);

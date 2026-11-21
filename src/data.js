@@ -59,44 +59,57 @@ export function normalizeProductInfo(raw) {
 
 // ---------------------------------------------------------------- Part A
 
+export const INVALID_PRODUCT_ID = Symbol("invalid product ID");
+
+function isReservedId(value) {
+  return typeof value === "string" && /^(?:[<\[\s_]*)(?:pad(?:ding)?|null|oov|mask)(?:[>\]\s_]*)$/i.test(value);
+}
+
 function normalizeSession(raw, catalogSet, issues) {
   const id = raw.user_session;
   const problems = [];
-  const isCatalogProduct = (productId) => catalogSet?.has(productId) === true;
-  const prefix = isIdList(raw.prefix) && catalogSet ? raw.prefix.filter(isCatalogProduct) : null;
-  if (prefix && prefix.length !== raw.prefix.length) problems.push("ẩn ID lịch sử không thuộc catalog");
+  const isCatalogProduct = (value) => catalogSet?.has(value) === true && !isReservedId(value);
+
+  function contextId(value, field) {
+    if (isCatalogProduct(value)) return value;
+    if (!isId(value) || isReservedId(value) || /^[+-]?\d+$/.test(value.trim())) {
+      problems.push(`${field}: có mã sản phẩm không hợp lệ`);
+      return INVALID_PRODUCT_ID;
+    }
+    problems.push(`${field}: mã sản phẩm không thuộc catalog`);
+    return value;
+  }
+
+  const prefix = Array.isArray(raw.prefix) ? raw.prefix.map((value) => contextId(value, "Lịch sử")) : null;
   if (!prefix) problems.push("thiếu hoặc sai `prefix`");
-  const target = isCatalogProduct(raw.target) ? raw.target : null;
-  if (!target) problems.push("thiếu hoặc sai `target`");
+  const target = Object.hasOwn(raw, "target") ? contextId(raw.target, "Sản phẩm thực tế") : null;
+  if (target === null) problems.push("thiếu `target`");
 
   let recommendations = null;
   if (Array.isArray(raw.recommendations)) {
-    const ok = raw.recommendations.every((r) => isObject(r) && isId(r.product_id) && Number.isInteger(r.rank));
-    if (ok) {
-      recommendations = raw.recommendations.map((r) => ({
-        rank: r.rank,
-        product_id: r.product_id,
-        score: typeof r.score === "number" ? r.score : null,
-      }));
-    } else problems.push("sai `recommendations`");
-  } else if (isIdList(raw.top20)) {
-    // Contract fallback: artifact order gives the rank. No score is derived.
+    const rows = raw.recommendations.filter((r) => isObject(r) && Number.isInteger(r.rank));
+    if (rows.length !== raw.recommendations.length) problems.push("bỏ mục sai định dạng trong `recommendations`");
+    recommendations = rows.map((r) => ({
+      rank: r.rank,
+      product_id: r.product_id,
+      score: Number.isFinite(r.score) ? r.score : null,
+    }));
+  } else if (Array.isArray(raw.top20)) {
+    // Artifact position gives rank. Filtering preserves the surviving ranks.
     recommendations = raw.top20.map((product_id, index) => ({ rank: index + 1, product_id, score: null }));
   } else {
     problems.push("thiếu hoặc sai `top20`");
   }
 
-  let hidden = 0;
   if (recommendations) {
-    // Technical IDs (padding/null/OOV/mask) are not in the catalog and are never shown.
     const kept = recommendations.filter((r) => isCatalogProduct(r.product_id));
-    hidden = recommendations.length - kept.length;
+    const hidden = recommendations.length - kept.length;
     recommendations = catalogSet ? kept : null;
-    if (hidden) problems.push(`ẩn ${hidden} ID không thuộc catalog`);
+    if (hidden) problems.push(`ẩn ${hidden} mã gợi ý kỹ thuật hoặc không thuộc catalog`);
   }
 
   let targetRank = null;
-  if (recommendations && target) {
+  if (recommendations && target && target !== INVALID_PRODUCT_ID) {
     const hit = recommendations.find((r) => r.product_id === target);
     targetRank = hit ? hit.rank : null;
     if (raw.target_rank !== undefined && raw.target_rank !== targetRank) {
@@ -104,7 +117,7 @@ function normalizeSession(raw, catalogSet, issues) {
     }
   }
 
-  if (problems.length) issues.push(`Session ${id}: ${problems.join("; ")}`);
+  if (problems.length) issues.push(`Session ${id}: ${[...new Set(problems)].join("; ")}`);
   const userId = isId(raw.user_id) || Number.isSafeInteger(raw.user_id) ? String(raw.user_id) : null;
   return { user_session: id, userId, prefix, target, recommendations, targetRank, problems };
 }
@@ -124,7 +137,7 @@ function normalizeRun(raw, index, issues) {
     return null;
   }
   const catalog = isIdList(raw.catalog) && raw.catalog.length ? raw.catalog : null;
-  if (!catalog) issues.push(`${label}: thiếu catalog, ẩn sản phẩm chưa xác minh được ID`);
+  if (!catalog) issues.push(`${label}: thiếu catalog, không thể xác minh mã sản phẩm`);
   const catalogSet = catalog ? new Set(catalog) : null;
 
   const seen = new Set();
@@ -154,6 +167,7 @@ function normalizeRun(raw, index, issues) {
     data_kind: raw.data_kind ?? null,
     catalog_sha256: raw.catalog_sha256 ?? null,
     catalogSize: catalog ? catalog.length : null,
+    catalogSet,
     evalPartition: provenance.eval_day ?? null,
     experiment: provenance.experiment ?? null,
     scoreAvailable: sessions.some((s) => s.recommendations?.some((r) => r.score !== null)),
@@ -203,13 +217,21 @@ export function normalizeDemo(raw) {
 export function sessionContext(group, sessionId) {
   let prefix = null;
   let target = null;
+  let prefixCatalog = null;
+  let targetCatalog = null;
   for (const run of group.runs) {
     const s = run.sessions.find((x) => x.user_session === sessionId);
     if (!s) continue;
-    prefix ??= s.prefix;
-    target ??= s.target;
+    if (prefix === null && s.prefix !== null) {
+      prefix = s.prefix;
+      prefixCatalog = run.catalogSet;
+    }
+    if (target === null && s.target !== null) {
+      target = s.target;
+      targetCatalog = run.catalogSet;
+    }
   }
-  return { prefix, target };
+  return { prefix, target, prefixCatalog, targetCatalog };
 }
 
 // ---------------------------------------------------------------- Part B

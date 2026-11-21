@@ -69,7 +69,8 @@ test("missing prefix/target/top20 keep the other parts and report issues", () =>
 test("history and target come from the group even when a model has no run", () => {
   const { groups } = normalizeDemo(json("../public/demo-data.json"));
   const day1 = groups.find((g) => g.sessionIds.includes("miss"));
-  assert.deepEqual(sessionContext(day1, "miss"), { prefix: ["p3"], target: "p23" });
+  const { prefix, target } = sessionContext(day1, "miss");
+  assert.deepEqual({ prefix, target }, { prefix: ["p3"], target: "p23" });
 });
 
 test("loadJson reports empty, malformed and HTTP errors", async () => {
