@@ -13,7 +13,7 @@ Add either or both images to `src/branding/` using these exact filenames.
 | Logo | `src/branding/logo.png` | In the header, above the tab bar |
 | Cover | `src/branding/cover.jpg` | Full-width banner below the header |
 
-Use a transparent PNG for the logo and a wide JPG for the cover. Each slot appears automatically on the next build when its file is present. The site name is temporarily blank. When it is ready, set `siteName` in `src/main.jsx` and fill the `<title>` in `index.html`.
+Each image appears automatically on the next build. See the [branding guide](src/branding/README.md) for dimensions, file-size limits, and image sourcing. To change the site name, update `site_name` for both languages in `src/i18n.js` and set the English `<title>` in `index.html`.
 
 ```bash
 npm ci

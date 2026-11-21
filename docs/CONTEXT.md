@@ -11,6 +11,8 @@ Snapshot 21/11/2026, team commit `43841c9`. The team repo `tlmthuy/Big-Data` own
 
 The static demo defaults to English and offers Vietnamese. Show preliminary timings with a label in Dataset only. Describe day splits in text. Keep the Score column. Keep raw-month missing counts and omit the weekly missing rows. The TV3 VM block stays pending.
 
+- Presentation mode and product icons removed (21/11).
+
 ## Still pending
 
 | Owner | Delivery |

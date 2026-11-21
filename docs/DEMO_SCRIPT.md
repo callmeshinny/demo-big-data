@@ -14,9 +14,9 @@
 
 ### Recommendations · about one minute
 
-**English.** I’ll open Recommendations and select the example sessions. These are toy examples while we wait for real predictions. Here is the session history, and here is the actual next product. In the first example the model hits at rank one. In the next example it hits lower in the list. In the last example the actual item is outside the Top-20. I can switch models and still show the same history and actual item.
+**English.** I’ll open Recommendations and use the Popularity toy run. In the Session dropdown, I’ll choose `rank1`, `rank20`, then `miss`. The actual item appears at rank 1 in the first session and rank 20 in the second. In `miss`, it is outside the Top-20. These are toy examples while we wait for real predictions. Switching models keeps the same history and actual item on screen.
 
-*Tiếng Việt. Tôi mở tab Gợi ý sản phẩm và chọn từng phiên ví dụ. Đây là ví dụ toy trong lúc chờ dự đoán thật. Đây là lịch sử và sản phẩm tiếp theo thực tế. Ví dụ đầu trúng hạng một. Ví dụ tiếp theo trúng ở hạng thấp hơn. Ví dụ cuối có sản phẩm thực tế nằm ngoài Top-20. Khi đổi model, lịch sử và sản phẩm thực tế vẫn hiển thị.*
+*Tiếng Việt. Tôi mở tab Gợi ý sản phẩm và dùng lượt chạy toy của Popularity. Trong danh sách Phiên xem, tôi chọn `rank1`, `rank20`, rồi `miss`. Sản phẩm thực tế ở hạng 1 trong phiên đầu và hạng 20 trong phiên thứ hai. Ở phiên `miss`, sản phẩm nằm ngoài Top-20. Đây là các ví dụ toy trong lúc chờ dự đoán thật. Khi đổi model, lịch sử và sản phẩm thực tế vẫn hiển thị.*
 
 ### Experiments · about one minute
 

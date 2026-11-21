@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir } from "node:fs/promises";
+import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -13,7 +13,45 @@ const server = await preview({ root, preview: { host: "127.0.0.1", port: 0 } });
 const home = `http://127.0.0.1:${server.httpServer.address().port}`;
 const widths = [1280, 375];
 
+async function assetExists(file) {
+  try {
+    return (await stat(path.join(root, "src/branding", file))).isFile();
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    return false;
+  }
+}
+
+async function contrast(locator) {
+  return locator.evaluate((element) => {
+    const channels = (color) => color.match(/[\d.]+/g).map(Number);
+    const luminance = (color) => channels(color).slice(0, 3).map((channel) => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    }).reduce((total, value, index) => total + value * [0.2126, 0.7152, 0.0722][index], 0);
+    let background = element;
+    while (channels(getComputedStyle(background).backgroundColor).at(3) === 0) background = background.parentElement;
+    const foreground = luminance(getComputedStyle(element).color);
+    const behind = luminance(getComputedStyle(background).backgroundColor);
+    return (Math.max(foreground, behind) + 0.05) / (Math.min(foreground, behind) + 0.05);
+  });
+}
+
+async function checkKeyboardFocus(page, locator) {
+  await locator.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  const focusVisible = await locator.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return element.matches(":focus-visible") && style.outlineStyle === "solid" && parseFloat(style.outlineWidth) >= 2;
+  });
+  assert.ok(focusVisible, "Expected a visible keyboard focus outline");
+}
+
+
 try {
+  const hasLogo = await assetExists("logo.png");
+  const hasCover = await assetExists("cover.jpg");
   const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || "chrome" });
   try {
     for (const locale of ["en", "vi"]) {
@@ -51,6 +89,24 @@ try {
           await page.locator("html[lang=en]").waitFor();
           assert.equal(await page.getByLabel(messages.en.session, { exact: true }).inputValue(), "rank20");
         }
+        const heading = page.getByRole("heading", { name: t("site_name"), exact: true });
+        await heading.waitFor();
+        assert.equal(await page.title(), t("site_name"));
+        for (const [selector, exists] of [[".brand-logo", hasLogo], [".brand-cover", hasCover]]) {
+          const image = page.locator(selector);
+          assert.equal(await image.count(), Number(exists));
+          if (exists) assert.ok(await image.evaluate(async (node) => { await node.decode(); return node.naturalWidth > 0; }));
+        }
+        assert.equal(await page.locator("img").count(), Number(hasLogo) + Number(hasCover));
+        const activeLanguage = page.getByRole("button", { name: locale.toUpperCase(), exact: true });
+        const inactiveLanguage = page.getByRole("button", { name: locale === "en" ? "VI" : "EN", exact: true });
+        assert.equal(await activeLanguage.getAttribute("aria-pressed"), "true");
+        assert.equal(await inactiveLanguage.getAttribute("aria-pressed"), "false");
+        const weight = (button) => button.evaluate((node) => Number(getComputedStyle(node).fontWeight));
+        assert.ok(await weight(activeLanguage) > await weight(inactiveLanguage));
+        await checkKeyboardFocus(page, inactiveLanguage);
+        await checkKeyboardFocus(page, page.getByRole("tab").first());
+
         const session = page.getByLabel(t("session"), { exact: true });
         const model = page.getByLabel("Model", { exact: true });
         for (const [id, result] of [
@@ -61,19 +117,33 @@ try {
           await session.selectOption(id);
           await page.locator(".recommendations").getByText(result, { exact: true }).waitFor();
           const score = page.locator(".ranking td.score").first();
+          assert.equal(await score.innerText(), t("not_available_yet"));
           assert.ok(await score.evaluate((cell) => {
             const text = document.createRange();
             text.selectNodeContents(cell);
             return text.getBoundingClientRect().width <= cell.clientWidth && getComputedStyle(cell).whiteSpace === "nowrap";
           }));
           assert.equal(await page.locator(".product-icon").count(), 0);
+          assert.ok(await contrast(score) >= 4.5);
+          for (const className of ["tag-category", "tag-history", "tag-hit"]) {
+            for (const tag of await page.locator(`.${className}`).all()) {
+              assert.ok(await contrast(tag) >= 4.5, `${className} text contrast`);
+            }
+          }
+          const badge = page.getByText(t("toy_data_not_a_benchmark_result"), { exact: true }).first();
+          await badge.waitFor();
+          assert.ok(await contrast(badge) >= 4.5);
           await capture(id);
         }
         await page.getByText(t("price_unavailable"), { exact: true }).first().waitFor();
+        const context = page.locator(".history, .actual-panel .product-card");
+        const beforeSwitch = await context.allInnerTexts();
+        assert.equal(beforeSwitch.length, 2);
         await model.selectOption("missing:GRU");
         await page.getByText(t("no_predictions_available_for_this_model")).waitFor();
         await page.getByRole("heading", { name: t("actual_next_item") }).waitFor();
         await page.getByRole("heading", { name: t("history") }).waitFor();
+        assert.deepEqual(await context.allInnerTexts(), beforeSwitch);
         await capture("gru-no-output");
         await model.selectOption({ label: "Popularity" });
         assert.equal(await session.inputValue(), "miss");
@@ -106,6 +176,7 @@ try {
           if (["e1", "e3"].includes(id)) await toy.locator(".badge-toy").first().waitFor();
           if (id === "e3") {
             const checkbox = page.getByRole("checkbox");
+            await checkKeyboardFocus(page, checkbox);
             await checkbox.uncheck();
             await checkbox.check();
             assert.equal(await checkbox.evaluate((input) => getComputedStyle(input).accentColor), "rgb(98, 69, 31)");

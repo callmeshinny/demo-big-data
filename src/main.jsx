@@ -9,9 +9,7 @@ import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
 import "./styles.css";
 
-// Leave blank until the site name is ready.
-const siteName = "";
-const branding = import.meta.glob("./branding/*.{png,jpg}", {
+const branding = import.meta.glob(["./branding/logo.png", "./branding/cover.jpg"], {
   eager: true, query: "?url", import: "default",
 });
 const logo = branding["./branding/logo.png"];
@@ -58,10 +56,11 @@ function currentRoute() {
 function App() {
   const [language, updateLanguage] = useState(readLanguage);
   setLanguage(language);
+  const siteName = t("site_name");
   useEffect(() => {
     document.documentElement.lang = language;
-
-  }, [language]);
+    document.title = siteName;
+  }, [language, siteName]);
   function chooseLanguage(next) {
     try { localStorage.setItem("tv4-language", next); } catch { /* Storage is optional. */ }
     updateLanguage(next);
@@ -89,10 +88,10 @@ function App() {
               aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
           </div>
         </div>
-        {(logo || siteName) && <div className="brand">
-          {logo && <img className="brand-logo" src={logo} alt={siteName ? "" : t("site_logo")} />}
-          {siteName && <h1>{siteName}</h1>}
-        </div>}
+        <div className="brand">
+          {logo && <img className="brand-logo" src={logo} alt="" />}
+          <h1>{siteName}</h1>
+        </div>
         <nav className="tabs" role="tablist" aria-label={t("views_2")}>
           {TABS().map(({ id, label }) => (
             <a key={id} href={`#${id}`} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""}>{label}</a>
