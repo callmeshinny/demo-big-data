@@ -22,3 +22,22 @@
 | `environment.driver` | `null` for toy runs: their environment snapshot (`9dabb07…`) is not committed, and `metrics/tv2-model-smoke/environment.json` has a different hash. |
 | Metric keys not yet in any artifact | E2 pipeline: `n_events`, `pipeline_read_seconds`, `preprocessing_seconds`, `first_seen_seconds`. E4: `preprocessing_elapsed_seconds` (= contract `preprocessing.elapsed_seconds`). Shown as "Chưa có" until delivered; names to be confirmed. |
 | `input_format` (actual) | `null` for model runs: `metrics.json` does not record it. |
+
+## Part C — `public/product-info.json` (proposal, NEED TV1)
+
+This optional companion file is keyed by original `product_id`. It does not
+change the prediction payload. The UI works without the file or an individual
+entry and shows `Sản phẩm #<id>` as the fallback name. Price is in USD and
+missing values are null. TV1 must confirm the subset and provenance. The
+proposed price rule is **last observed price in the subset week**.
+
+```json
+{
+  "data_kind": "toy",
+  "source": "toy sample metadata for UI testing, not from dataset",
+  "price_rule": "last observed price in the subset week",
+  "products": {
+    "p3": { "brand": "samsung", "category_code": "electronics.smartphone", "price": 130.76 }
+  }
+}
+```

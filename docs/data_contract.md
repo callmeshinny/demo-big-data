@@ -295,22 +295,3 @@ for row, session in zip(rows, demo["sessions"]):
 print("Catalog sizes", len(catalog.products), len(demo["catalog"]))
 PY
 ```
-
-### Local proposal · Optional product display lookup (NEED TV1)
-
-`public/product-info.json` is an optional companion file keyed by original
-`product_id`. It does not change the prediction payload. TV1 must confirm the
-subset, provenance and last-observed price rule before publishing real metadata.
-The display uses USD. Missing values are null. The UI uses the original ID when
-a product or the file is missing. Example with toy display metadata:
-
-```json
-{
-  "data_kind": "toy",
-  "source": "toy sample metadata for UI testing, not from dataset",
-  "price_rule": "last observed price in the subset week",
-  "products": {
-    "p3": { "brand": "samsung", "category_code": "electronics.smartphone", "price": 130.76 }
-  }
-}
-```
