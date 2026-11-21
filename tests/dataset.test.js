@@ -11,3 +11,14 @@ test("keeps missing buckets distinct from observed zero and sums longer buckets"
 test("rejects a malformed dataset overview", () => {
   assert.ok(normalizeDataset({ subsets: [] }).fatal);
 });
+
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { PipelineMeasurementBadge, visiblePipelineMeasurements } from "../src/pipeline-measurements.js";
+
+test("pipeline section and badge are opt-in", () => {
+  const render = (measurements) => renderToStaticMarkup(createElement(PipelineMeasurementBadge, { measurements }));
+  assert.equal(visiblePipelineMeasurements({ show: false, e2: [{}] }), null);
+  assert.equal(render({ show: false }), "");
+  assert.match(render({ show: true }), /Smoke \/ chờ TV2 xác nhận/);
+});

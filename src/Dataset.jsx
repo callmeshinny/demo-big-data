@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { formatValue, MISSING } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
+import PipelineMeasurements from "./PipelineMeasurements.jsx";
 import { Notice } from "./ui.jsx";
 
 const ROWS = [
@@ -83,6 +84,7 @@ export default function Dataset({ state }) {
         <h2>Quy trình xử lý</h2>
         <ol className="pipeline">{PIPELINE.map(([label, description, owner]) => <li key={label}><strong>{label}</strong> · {owner}<p>{description}</p></li>)}</ol>
       </section>
+      <PipelineMeasurements measurements={overview.pipeline_measurements} />
     </>
   );
 }

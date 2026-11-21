@@ -33,7 +33,7 @@ def raw_audit():
     }
 
 
-def export(raw_only):
+def export(raw_only, show_measurements):
     index = {}
     smoke = None
     if not raw_only:
@@ -61,7 +61,7 @@ def export(raw_only):
             for subset in SUBSETS
         ],
         "pipeline_measurements": {
-            "status": "unconfirmed", "show": False,
+            "status": "unconfirmed", "show": show_measurements,
             "e2": [{"subset": subset, **{key: row.get(key) for key in TIMINGS}} for subset, row in index.items()],
             "e4_smoke": [] if smoke is None else [{**smoke, "source": str(SMOKE)}],
         },
@@ -72,9 +72,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--raw-only", action="store_true", help="Export the raw audit when verified manifests are unavailable")
+    parser.add_argument("--show-pipeline-measurements", action="store_true")
     args = parser.parse_args()
     try:
-        content = json.dumps(export(args.raw_only), ensure_ascii=False, indent=2) + "\n"
+        content = json.dumps(export(args.raw_only, args.show_pipeline_measurements), ensure_ascii=False, indent=2) + "\n"
         if len(content.encode("utf-8")) >= 200_000:
             raise ValueError("Dataset overview must be under 200 KB")
         args.output.write_text(content, encoding="utf-8")
