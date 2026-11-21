@@ -171,7 +171,7 @@ BASELINE_FIELDS = (
 )
 
 
-def environment_baseline(root):
+def environment_baseline(root, commit):
     readme = Path("environment/README.md")
     inspect = Path("environment/logs/04-docker-image-inspect.json")
     heading = "## Bản ghi runtime chính thức"
@@ -197,7 +197,7 @@ def environment_baseline(root):
     return {
         **{key: rows[key] for key in BASELINE_FIELDS},
         "merlin_image_digest": digests[0],
-        "source": {"files": [str(readme), str(inspect)], "team_commit": team_commit(root)},
+        "source": {"files": [str(readme), str(inspect)], "team_commit": commit},
         "scope": "VM runtime verified 21/11, not tied to a specific run",
     }
 
@@ -208,8 +208,10 @@ def main():
     parser.add_argument("--collector-dir", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--without-vm-baseline", action="store_true", help="Export when the verified TV3 inputs are unavailable")
+    parser.add_argument("--team-commit", help="Source revision when exporting from a Git archive")
     args = parser.parse_args()
     team_root = Path.cwd().resolve()
+    commit = args.team_commit or team_commit(team_root)
     try:
         matrix = json.loads(args.matrix.read_text(encoding="utf-8"))
         entries = {entry["run_id"]: entry for entry in matrix["runs"]}
@@ -235,10 +237,10 @@ def main():
             "schema": "tv4-run-results/v1",
             "package_id": None,
             "confirmed_by_tv2": False,
-            "team_commit": team_commit(team_root),
+            "team_commit": commit,
             "generated_at": date.today().isoformat(),
             "data_kind": "unconfirmed",
-            "environment_baseline": None if args.without_vm_baseline else environment_baseline(team_root),
+            "environment_baseline": None if args.without_vm_baseline else environment_baseline(team_root, commit),
             "matrix_decisions": matrix.get("decisions"),
             "runs": list(records.values()),
         }

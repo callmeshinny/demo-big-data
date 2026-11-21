@@ -13,3 +13,5 @@ __pycache__/
 *.ckpt
 
 !figures/data/*.csv
+
+tests/fixtures/large/

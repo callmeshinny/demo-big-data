@@ -20,7 +20,7 @@ def main():
         for chart, _, metrics in charts:
             path = args.output / f"{experiment.lower()}-{chart}.csv"
             with path.open("w", encoding="utf-8", newline="") as output:
-                writer = csv.writer(output)
+                writer = csv.writer(output, lineterminator="\n")
                 writer.writerow(("team_commit", "generated_at", "run_id", "series", "status", "metric", "value", "unit", "scope"))
                 for run in runs:
                     for metric in metrics:
@@ -28,7 +28,7 @@ def main():
                         value = entry.get("value")
                         writer.writerow((
                             payload["team_commit"], payload.get("generated_at"), run["run_id"],
-                            "toy" if run["data_kind"] == "toy" else "official", run["status"],
+                            "toy" if run["data_kind"] == "toy" else "official" if run["data_kind"] == "real" else "planned", run["status"],
                             metric, value if type(value) in {float, int} else None, entry.get("unit"), entry.get("scope"),
                         ))
 

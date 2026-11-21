@@ -169,6 +169,7 @@ function normalizeRun(raw, index, issues) {
     catalogSize: catalog ? catalog.length : null,
     catalogSet,
     evalPartition: provenance.eval_day ?? null,
+    sample: isObject(provenance.sample) ? provenance.sample : null,
     experiment: provenance.experiment ?? null,
     scoreAvailable: sessions.some((s) => s.recommendations?.some((r) => r.score !== null)),
     sessions,

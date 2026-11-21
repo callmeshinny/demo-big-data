@@ -54,3 +54,27 @@ and require TV2 confirmation for benchmark use.
 
 The proposed Part B `environment_baseline` records a VM snapshot and source
 commit at file level. The run-level environment continues to come from run artifacts.
+
+### Part A sampling (needs TV2 agreement)
+
+With `--sample N --sample-seed S`, the adapter orders session IDs by
+`sha256(f"{seed}:{user_session}")` and retains the first N. All runs in the
+same subset, split and evaluation partition must have identical membership
+for this export. Each run records `rule`, `seed`, `n_selected` and the
+artifact's `n_sessions` as `n_total` in `provenance.sample`. Without sampling
+or the optional provenance stamp, the legacy output bytes are preserved.
+
+#### Synthetic catalog check
+
+For 63,398 catalog IDs and 30 sessions the adapter exported 1,220,237 bytes
+raw and 161,975 bytes gzip. Five fresh Chrome pages per viewport on the
+local Vite dev server gave these medians:
+
+| Viewport | JSON.parse | Parse start to recommendation DOM | Navigation to recommendation DOM |
+| --- | ---: | ---: | ---: |
+| 1280 px | 4.4 ms | 17.3 ms | 91.9 ms |
+| 375 px | 4.5 ms | 14.7 ms | 89.5 ms |
+
+A MutationObserver captured the first recommendation DOM insertion.
+Navigation time includes dev server and transfer time. The catalog remained
+below the gzip threshold for proposing a shape change.

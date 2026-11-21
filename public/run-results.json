@@ -3,6 +3,9 @@
   "package_id": null,
   "confirmed_by_tv2": false,
   "team_commit": "86bc1c8",
+  "generated_at": "2026-11-21",
+  "data_kind": "unconfirmed",
+  "environment_baseline": null,
   "matrix_decisions": "E1=10%; E2/E5=GRU; E3=GRU 10% batch 32 vs128, confirmed by user 2026-11-19",
   "runs": [
     {

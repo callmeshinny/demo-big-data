@@ -66,7 +66,7 @@ def data_kind(metadata, collector):
     return "toy" if metadata.get("subset") == "toy" else None
 
 
-def export_run(run_dir, catalog_path):
+def export_run(run_dir, catalog_path, allow_missing_total=False):
     artifact_dir, collector = locate(run_dir)
     metadata = json.loads((artifact_dir / "metrics.json").read_text(encoding="utf-8"))
     if metadata.get("K") != K:
@@ -112,7 +112,8 @@ def export_run(run_dir, catalog_path):
             ],
         })
 
-    if not sessions or len(sessions) != metadata["n_sessions"]:
+    total = metadata.get("n_sessions") if allow_missing_total else metadata["n_sessions"]
+    if not sessions or (total is not None and len(sessions) != total):
         raise ValueError(f"{run_dir}: prediction count does not match n_sessions")
 
     return {
@@ -135,6 +136,28 @@ def export_run(run_dir, catalog_path):
     }
 
 
+def sample_runs(runs, limit, seed):
+    groups = {}
+    for run in runs:
+        key = (run["subset"], run["split"], run["provenance"]["eval_day"])
+        groups.setdefault(key, []).append(run)
+    for key, group in groups.items():
+        by_id = [{row["user_session"]: row for row in run["sessions"]} for run in group]
+        if any(index.keys() != by_id[0].keys() for index in by_id):
+            raise ValueError(f"{key}: sampling requires identical session membership across runs")
+        selected = sorted(by_id[0], key=lambda session: sha256_bytes(f"{seed}:{session}".encode("utf-8")))[:limit]
+        for run, index in zip(group, by_id):
+            artifact_dir, _ = locate(Path(run["provenance"]["run_dir"]))
+            metrics = json.loads((artifact_dir / "metrics.json").read_text(encoding="utf-8"))
+            run["sessions"] = [index[session] for session in selected]
+            run["provenance"]["sample"] = {
+                "rule": "sha256(seed:user_session)",
+                "seed": seed,
+                "n_selected": len(selected),
+                "n_total": metrics.get("n_sessions"),
+            }
+
+
 def team_commit():
     try:
         return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
@@ -148,18 +171,25 @@ def main():
     parser.add_argument("--run", action="append", required=True, metavar="RUN_DIR=CATALOG")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--stamp", action="store_true", help="Include export date and file-level data kind")
+    parser.add_argument("--sample", type=int, metavar="N")
+    parser.add_argument("--sample-seed", type=int, default=0, metavar="S")
+    parser.add_argument("--team-commit", help="Source revision when exporting from a Git archive")
     args = parser.parse_args()
+    if args.sample is not None and args.sample <= 0:
+        parser.error("--sample must be positive")
     try:
         runs = []
         for spec in args.run:
             run_dir, sep, catalog = spec.partition("=")
             if not sep:
                 raise ValueError(f"--run needs RUN_DIR=CATALOG, got {spec!r}")
-            runs.append(export_run(Path(run_dir), Path(catalog)))
+            runs.append(export_run(Path(run_dir), Path(catalog), allow_missing_total=args.sample is not None))
         if len({run["run_id"] for run in runs}) != len(runs):
             raise ValueError("Duplicate run_id")
-        payload = {"schema": "tv4-demo-data/v2", "team_commit": team_commit(), "runs": runs}
-        if args.stamp:
+        if args.sample is not None:
+            sample_runs(runs, args.sample, args.sample_seed)
+        payload = {"schema": "tv4-demo-data/v2", "team_commit": args.team_commit or team_commit(), "runs": runs}
+        if args.stamp or args.sample is not None:
             kinds = {run["data_kind"] for run in runs}
             payload.update(generated_at=date.today().isoformat(),
                            data_kind=next(iter(kinds)) if kinds in ({"toy"}, {"real"}) else "unconfirmed")

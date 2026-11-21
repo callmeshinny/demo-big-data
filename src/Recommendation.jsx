@@ -65,6 +65,7 @@ export default function Recommendation({ state, productInfo }) {
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
 
+  const sample = (run ?? group.runs[0]).sample;
   const products = productInfo.products;
   const { matchingIds, summary } = categoryHighlights(
     context.prefix, context.prefixCatalog, session?.recommendations, products,
@@ -114,6 +115,9 @@ export default function Recommendation({ state, productInfo }) {
         </label>
       </section>
 
+      <p className="definition"><strong>Cách đánh giá</strong> · Huấn luyện theo ngày t và đánh giá validation ngày t+1. Test ở ngày cuối D dùng checkpoint đã huấn luyện qua ngày liền trước D. Mỗi phiên có một Top-20, đối chiếu với sản phẩm cuối thực tế.</p>
+      <p className="definition">Split {group.split ?? MISSING} · Partition {group.evalPartition ?? MISSING}</p>
+      {sample && <p className="definition">Hiển thị {sample.n_selected ?? MISSING}/{sample.n_total ?? MISSING} session, chọn ngẫu nhiên cố định (seed {sample.seed ?? MISSING}), không chọn theo kết quả.</p>}
       {selectionError ? (
         <Notice kind="warn" title={unknownUser ? "Không tìm thấy người dùng" : "Không tìm thấy phiên xem"}>
           <p>{unknownUser ? `Mã người dùng: ${userId}` : `Mã phiên: ${sessionChoice}`}</p>
