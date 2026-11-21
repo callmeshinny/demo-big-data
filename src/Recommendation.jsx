@@ -34,8 +34,8 @@ export default function Recommendation({ state, productInfo }) {
   const { groups = [], issues = [], fatal, error } = state;
   const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
-  const [userId, setUserId] = useState("");
-  const [sessionChoice, setSessionChoice] = useState(null);
+  const [userId, setUserId] = useState(() => new URLSearchParams(window.location.search).get("user") ?? "");
+  const [sessionChoice, setSessionChoice] = useState(() => new URLSearchParams(window.location.search).get("session"));
 
   const group = groups.find((g) => g.key === groupKey) ?? groups[0];
   const options = useMemo(() => (group ? runOptions(group) : []), [group]);
@@ -54,6 +54,8 @@ export default function Recommendation({ state, productInfo }) {
   }, [group]);
   const users = [...new Set(sessionUsers.values())];
   const sessionIds = group?.sessionIds.filter((id) => !userId || sessionUsers.get(id) === userId) ?? [];
+  const unknownUser = userId !== "" && !users.includes(userId);
+  const unknownSession = sessionChoice !== null && !sessionIds.includes(sessionChoice);
   const sessionId = sessionChoice ?? sessionIds[0] ?? "";
 
   if (error) return <Notice kind="error" title="Không tải được dữ liệu gợi ý">{error}</Notice>;
@@ -67,6 +69,7 @@ export default function Recommendation({ state, productInfo }) {
   }
   if (!group) return <Notice kind="error" title="Không có dữ liệu">demo-data.json không có run nào.</Notice>;
 
+  const selectionError = unknownUser || unknownSession;
   const run = option?.run ?? null;
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
@@ -105,7 +108,7 @@ export default function Recommendation({ state, productInfo }) {
         </label>
         {users.length > 0 && (
           <label>Người dùng
-            <select value={userId} onChange={(event) => {
+            <select value={unknownUser ? "" : userId} onChange={(event) => {
               setUserId(event.target.value);
               setSessionChoice(null);
             }}>
@@ -115,107 +118,119 @@ export default function Recommendation({ state, productInfo }) {
           </label>
         )}
         <label>Phiên xem
-          <select value={sessionId} onChange={(e) => setSessionChoice(e.target.value)}>
+          <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
+            {selectionError && <option value="" disabled>Chọn phiên</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
           </select>
         </label>
       </section>
 
-      <div className="meta-row">
-        <span>Model: <strong>{modelLabel(run?.model ?? option?.model)}</strong></span>
-        <span>Run ID: <strong>{run?.run_id ?? MISSING}</strong></span>
-        <span>Subset: <strong>{group.subset ?? MISSING}</strong></span>
-        <span>Split: <strong>{group.split ?? MISSING}</strong></span>
-        <span>Catalog: <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : MISSING}</strong></span>
-        {run?.catalog_sha256 && <span>SHA-256 catalog <code>{run.catalog_sha256}</code></span>}
-        {productInfo.dataKind === "toy" && (run ?? group.runs[0])?.data_kind !== "toy" && <DataKindBadge kind="toy" />}
-        {run ? <DataKindBadge kind={run.data_kind} /> : <DataKindBadge kind={group.runs[0]?.data_kind} />}
-      </div>
-
-      <section className="grid">
-        <article className="panel">
-          <div className="panel-heading">
-            <h2>Lịch sử xem</h2>
-            <span>{context.prefix ? `${context.prefix.length} lượt xem` : ""}</span>
+      {selectionError ? (
+        <Notice kind="warn" title={unknownUser ? "Không tìm thấy người dùng" : "Không tìm thấy phiên xem"}>
+          <p>{unknownUser ? `Mã người dùng: ${userId}` : `Mã phiên: ${sessionChoice}`}</p>
+          <button type="button" onClick={() => { setUserId(""); setSessionChoice(null); }}>
+            Chọn lại phiên
+          </button>
+        </Notice>
+      ) : (
+        <>
+          <div className="meta-row">
+            <span>Model: <strong>{modelLabel(run?.model ?? option?.model)}</strong></span>
+            <span>Run ID: <strong>{run?.run_id ?? MISSING}</strong></span>
+            <span>Subset: <strong>{group.subset ?? MISSING}</strong></span>
+            <span>Split: <strong>{group.split ?? MISSING}</strong></span>
+            <span>Catalog: <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : MISSING}</strong></span>
+            {run?.catalog_sha256 && <span>SHA-256 catalog <code>{run.catalog_sha256}</code></span>}
+            {productInfo.dataKind === "toy" && (run ?? group.runs[0])?.data_kind !== "toy" && <DataKindBadge kind="toy" />}
+            {run ? <DataKindBadge kind={run.data_kind} /> : <DataKindBadge kind={group.runs[0]?.data_kind} />}
           </div>
-          <p className="definition">Các sản phẩm đã xem trước sản phẩm cuối phiên.</p>
-          {context.prefix ? (
-            <ol className="history" aria-label="Lịch sử xem">
-              {context.prefix.map((id, index) => (
-                <li key={`${id}-${index}`}>
-                  {index > 0 && <span className="arrow" aria-hidden="true">→</span>}
-                  <ProductCard id={id} products={products} />
-                </li>
-              ))}
-            </ol>
-          ) : <p className="missing">{MISSING}</p>}
-        </article>
 
-        <article className="panel actual-panel">
-          <h2>Thực tế khách xem tiếp</h2>
-          {context.target ? <ProductCard id={context.target} products={products} /> : <p className="missing">{MISSING}</p>}
-        </article>
-      </section>
+          <section className="grid">
+            <article className="panel">
+              <div className="panel-heading">
+                <h2>Lịch sử xem</h2>
+                <span>{context.prefix ? `${context.prefix.length} lượt xem` : ""}</span>
+              </div>
+              <p className="definition">Các sản phẩm đã xem trước sản phẩm cuối phiên.</p>
+              {context.prefix ? (
+                <ol className="history" aria-label="Lịch sử xem">
+                  {context.prefix.map((id, index) => (
+                    <li key={`${id}-${index}`}>
+                      {index > 0 && <span className="arrow" aria-hidden="true">→</span>}
+                      <ProductCard id={id} products={products} />
+                    </li>
+                  ))}
+                </ol>
+              ) : <p className="missing">{MISSING}</p>}
+            </article>
 
-      <section className="panel recommendations">
-        <div className="panel-heading">
-          <h2>Top-20 gợi ý</h2>
-          <span>{option ? (run ? modelLabel(run.model) : option.model) : ""}</span>
-        </div>
+            <article className="panel actual-panel">
+              <h2>Thực tế khách xem tiếp</h2>
+              {context.target ? <ProductCard id={context.target} products={products} /> : <p className="missing">{MISSING}</p>}
+            </article>
+          </section>
 
-        {!run ? (
-          <div className="empty-state" role="status">
-            <strong>Chưa có dự đoán cho model này</strong>
-          </div>
-        ) : !session ? (
-          <div className="empty-state" role="status">
-            <strong>{MISSING}</strong>
-            <p>Run {run.label} không có session {sessionId}.</p>
-          </div>
-        ) : !session.recommendations ? (
-          <div className="empty-state" role="status">
-            <strong>{MISSING}</strong>
-            <p>Dữ liệu gợi ý của phiên này bị thiếu hoặc sai định dạng.</p>
-          </div>
-        ) : (
-          <>
-            {session?.recommendations && session.target ? (
-            <p className={session.targetRank ? "match" : "miss"}>
-              {session.targetRank ? `✅ Trúng ở hạng ${session.targetRank}` : "❌ Ngoài Top-20"}
-            </p>
-          ) : null}
-            {historyCategories.size > 0 && categorized.length > 0 && (
-              <p className="definition">
-                Nhóm đã xem: {[...historyCategories].join(", ")}. {matchingCount}/{categorized.length} gợi ý có danh mục cùng nhóm.
-              </p>
+          <section className="panel recommendations">
+            <div className="panel-heading">
+              <h2>Top-20 gợi ý</h2>
+              <span>{option ? (run ? modelLabel(run.model) : option.model) : ""}</span>
+            </div>
+
+            {!run ? (
+              <div className="empty-state" role="status">
+                <strong>Chưa có dự đoán cho model này</strong>
+              </div>
+            ) : !session ? (
+              <div className="empty-state" role="status">
+                <strong>{MISSING}</strong>
+                <p>Run {run.label} không có session {sessionId}.</p>
+              </div>
+            ) : !session.recommendations ? (
+              <div className="empty-state" role="status">
+                <strong>{MISSING}</strong>
+                <p>Dữ liệu gợi ý của phiên này bị thiếu hoặc sai định dạng.</p>
+              </div>
+            ) : (
+              <>
+                {session.target && (
+                  <p className={session.targetRank ? "match" : "miss"}>
+                    {session.targetRank ? `✅ Trúng ở hạng ${session.targetRank}` : "❌ Ngoài Top-20"}
+                  </p>
+                )}
+                {historyCategories.size > 0 && categorized.length > 0 && (
+                  <p className="definition">
+                    Nhóm đã xem: {[...historyCategories].join(", ")}. {matchingCount}/{categorized.length} gợi ý có danh mục cùng nhóm.
+                  </p>
+                )}
+                {!run.scoreAvailable && (
+                  <p className="definition">TV2 chưa xuất điểm cho từng sản phẩm.</p>
+                )}
+                <table className="ranking">
+                  <thead><tr><th scope="col">Hạng</th><th scope="col">Sản phẩm</th><th scope="col">Điểm</th></tr></thead>
+                  <tbody>
+                    {session.recommendations.map((r) => {
+                      const isTarget = r.product_id === session.target;
+                      const inHistory = session.prefix?.includes(r.product_id);
+                      return (
+                        <tr className={isTarget ? "hit" : ""} key={`${r.rank}-${r.product_id}`}>
+                          <td className="rank">{r.rank}</td>
+                          <td>
+                            <ProductCard id={r.product_id} products={products} />
+                            {isTarget && <span className="tag tag-hit">Sản phẩm thực tế</span>}
+                            {sameCategory(r) && <span className="tag tag-category">Cùng nhóm</span>}
+                            {inHistory && <span className="tag">Đã xem</span>}
+                          </td>
+                          <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? MISSING : r.score}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </>
             )}
-            {!run.scoreAvailable && (
-              <p className="definition">TV2 chưa xuất điểm cho từng sản phẩm.</p>
-            )}
-            <table className="ranking">
-              <thead><tr><th scope="col">Hạng</th><th scope="col">Sản phẩm</th><th scope="col">Điểm</th></tr></thead>
-              <tbody>
-                {session.recommendations.map((r) => {
-                  const isTarget = r.product_id === session.target;
-                  const inHistory = session.prefix?.includes(r.product_id);
-                  return (
-                    <tr className={isTarget ? "hit" : ""} key={`${r.rank}-${r.product_id}`}>
-                      <td className="rank">{r.rank}</td>
-                      <td>
-                        <ProductCard id={r.product_id} products={products} />
-                        {isTarget && <span className="tag tag-hit">Sản phẩm thực tế</span>}
-                        {sameCategory(r) && <span className="tag tag-category">Cùng nhóm</span>}
-                        {inHistory && <span className="tag">Đã xem</span>}
-                      </td>
-                      <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? MISSING : r.score}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </>
-        )}
-      </section>
+          </section>
+        </>
+      )}
     </>
   );
 }

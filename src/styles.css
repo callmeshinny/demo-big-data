@@ -143,3 +143,6 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 .tag-category { background: #f4effc; color: #664495; }
 .meta-row { min-width: 0; overflow-wrap: anywhere; }
 .meta-row > span { min-width: 0; }
+
+.badge-toy { white-space: normal; max-width: 100%; }
+.controls label { min-width: 0; }

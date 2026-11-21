@@ -25,11 +25,16 @@ export async function loadJson(url, fetchImpl = fetch) {
   let response;
   try {
     response = await fetchImpl(url, { cache: "no-store" });
+    if (!response.ok) return { error: `Không tải được ${url}: HTTP ${response.status}` };
   } catch (cause) {
     return { error: `Không tải được ${url}: ${cause.message}` };
   }
-  if (!response.ok) return { error: `Không tải được ${url}: HTTP ${response.status}` };
-  const text = await response.text();
+  let text;
+  try {
+    text = await response.text();
+  } catch (cause) {
+    return { error: `Không đọc được ${url}: ${cause.message}` };
+  }
   if (!text.trim()) return { error: `${url} rỗng` };
   try {
     return { data: JSON.parse(text) };
