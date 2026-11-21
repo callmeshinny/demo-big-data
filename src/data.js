@@ -100,7 +100,8 @@ function normalizeSession(raw, catalogSet, issues) {
   }
 
   if (problems.length) issues.push(`Session ${id}: ${problems.join("; ")}`);
-  return { user_session: id, prefix, target, recommendations, targetRank, problems };
+  const userId = isId(raw.user_id) || Number.isSafeInteger(raw.user_id) ? String(raw.user_id) : null;
+  return { user_session: id, userId, prefix, target, recommendations, targetRank, problems };
 }
 
 function normalizeRun(raw, index, issues) {
