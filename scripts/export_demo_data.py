@@ -18,6 +18,7 @@ Rules applied (see AGENTS.md):
 """
 
 import argparse
+import csv
 from datetime import date
 import hashlib
 import json
@@ -27,6 +28,8 @@ from pathlib import Path
 from evaluation.data import Catalog, encoded_id
 
 K = 20
+CSV_RUN_FIELDS = ("run_id", "model", "subset", "split", "data_kind", "catalog_sha256")
+CSV_FIELDS = (*CSV_RUN_FIELDS, "user_session", "prefix", "target", "target_rank", "rank", "product_id", "score")
 PREDICTION_KEYS = {"user_session", "prefix", "target", "top20", "product_ids"}
 
 
@@ -54,13 +57,23 @@ def catalog_match(catalog_path, recorded_sha, *, allow_toy_line_endings):
 
 
 def locate(run_dir):
-    if (run_dir / "metrics.json").is_file():
-        return run_dir, None
-    artifacts = run_dir / "artifacts"
-    if (artifacts / "metrics.json").is_file():
-        run_json = run_dir / "run.json"
-        return artifacts, (json.loads(run_json.read_text(encoding="utf-8")) if run_json.is_file() else None)
+    for artifact_dir in (run_dir, run_dir / "artifacts"):
+        if (artifact_dir / "metrics.json").is_file():
+            run_json = run_dir / "run.json"
+            collector = json.loads(run_json.read_text(encoding="utf-8")) if run_json.is_file() else None
+            return artifact_dir, collector
     raise ValueError(f"{run_dir}: no metrics.json found")
+
+
+def recorded_checksum(sources, *keys):
+    for source in sources:
+        artifacts = source.get("artifacts") or {}
+        for key in keys:
+            artifact = artifacts.get(key)
+            checksum = source.get(f"{key}_sha256") or (artifact.get("sha256") if isinstance(artifact, dict) else None)
+            if checksum:
+                return checksum
+    return None
 
 
 def data_kind(metadata, collector):
@@ -72,7 +85,11 @@ def data_kind(metadata, collector):
 
 def export_run(run_dir, catalog_path, allow_missing_total=False):
     artifact_dir, collector = locate(run_dir)
-    metadata = json.loads((artifact_dir / "metrics.json").read_text(encoding="utf-8"))
+    metrics_path = artifact_dir / "metrics.json"
+    metrics_bytes = metrics_path.read_bytes()
+    metadata = json.loads(metrics_bytes)
+    collector_metadata = (collector or {}).get("metadata") or {}
+    sources = (metadata, collector_metadata, collector or {})
     if metadata.get("K") != K:
         raise ValueError(f"{run_dir}: expected K={K}, found {metadata.get('K')}")
     recorded_sha = metadata["artifacts"]["catalog"]["sha256"]
@@ -132,6 +149,10 @@ def export_run(run_dir, catalog_path, allow_missing_total=False):
         "sessions": sessions,
         "provenance": {
             "run_dir": run_dir.as_posix(),
+            "metrics_path": metrics_path.as_posix(),
+            "metrics_sha256": sha256_bytes(metrics_bytes),
+            "mapping_sha256": recorded_checksum(sources, "mapping", "id_mapping"),
+            "vocabulary_sha256": recorded_checksum(sources, "vocabulary", "vocab"),
             "eval_day": metadata.get("eval_day"),
             "experiment": (collector or {}).get("metadata", {}).get("run", {}).get("experiment"),
             "catalog_path": catalog_path.as_posix(),
@@ -161,6 +182,18 @@ def sample_runs(runs, limit, seed):
                 "n_selected": len(selected),
                 "n_total": metrics.get("n_sessions"),
             }
+
+
+def write_sample_csv(path, runs):
+    with path.open("w", encoding="utf-8", newline="") as output:
+        writer = csv.writer(output, lineterminator="\n")
+        writer.writerow(CSV_FIELDS)
+        for run in runs:
+            run_values = tuple(run[key] for key in CSV_RUN_FIELDS)
+            for session in run["sessions"]:
+                session_values = (session["user_session"], " > ".join(session["prefix"]), session["target"], session["target_rank"])
+                for recommendation in session["recommendations"]:
+                    writer.writerow((*run_values, *session_values, recommendation["rank"], recommendation["product_id"], recommendation["score"]))
 
 
 def team_commit():
@@ -198,11 +231,15 @@ def main():
             kinds = {run["data_kind"] for run in runs}
             payload.update(generated_at=date.today().isoformat(),
                            data_kind=next(iter(kinds)) if kinds in ({"toy"}, {"real"}) else "unconfirmed")
+        csv_path = args.output.with_name("sample-predictions.csv")
+        if args.output == csv_path:
+            raise ValueError("--output must be a JSON path distinct from sample-predictions.csv")
         args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_sample_csv(csv_path, runs)
         for run in runs:
             print(f"{run['run_id']}: {run['model']}, {len(run['sessions'])} sessions, "
                   f"data_kind={run['data_kind']}, catalog {run['provenance']['catalog_match']}")
-        print(f"Wrote {args.output}")
+        print(f"Wrote {args.output} and {csv_path}")
     except (OSError, KeyError, TypeError, ValueError) as error:
         parser.exit(1, f"Export failed: {error}\n")
 

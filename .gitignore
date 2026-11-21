@@ -17,3 +17,5 @@ __pycache__/
 tests/fixtures/large/
 
 screenshots/
+
+!public/sample-predictions.csv

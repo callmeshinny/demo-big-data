@@ -16,7 +16,7 @@ class PredictionAdapterTest(unittest.TestCase):
         self.run = self.workspace / "run"
         artifacts = self.run / "artifacts"
         artifacts.mkdir(parents=True)
-        self.write(self.run / "run.json", {"metadata": {"data_kind": "real"}})
+        self.write(self.run / "run.json", {"metadata": {"data_kind": "real", "artifacts": {"mapping": {"sha256": "a" * 64}}}})
         self.catalog = self.workspace / "catalog.json"
         self.write(self.catalog, {
             "subset": "10",
@@ -42,6 +42,15 @@ class PredictionAdapterTest(unittest.TestCase):
         self.assertEqual(row["target"], "p-target")
         self.assertEqual(row["top20"], ["p-target"])
         self.assertIsNone(row["recommendations"][0]["score"])
+
+    def test_copies_checksums_from_artifact_and_collector(self):
+        run = export_run(self.run, self.catalog)
+        provenance = run["provenance"]
+        path = self.run / "artifacts/metrics.json"
+        self.assertEqual(provenance["metrics_path"], path.as_posix())
+        self.assertEqual(provenance["metrics_sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
+        self.assertEqual(provenance["mapping_sha256"], "a" * 64)
+        self.assertIsNone(provenance["vocabulary_sha256"])
 
     def test_requires_exact_catalog_from_the_run(self):
         message = f"Ask TV2 for catalog.json with SHA-256 {self.sha} from the same run"

@@ -61,8 +61,8 @@ With `--sample N --sample-seed S`, the adapter orders session IDs by
 `sha256(f"{seed}:{user_session}")` and retains the first N. All runs in the
 same subset, split and evaluation partition must have identical membership
 for this export. Each run records `rule`, `seed`, `n_selected` and the
-artifact's `n_sessions` as `n_total` in `provenance.sample`. Without sampling
-or the optional provenance stamp, the legacy output bytes are preserved.
+artifact's `n_sessions` as `n_total` in `provenance.sample`. Without sampling the original session order is preserved. The CSV and additional
+run provenance fields are documented in [SAMPLE_PREDICTION.md](SAMPLE_PREDICTION.md).
 
 #### Synthetic catalog check
 
