@@ -109,7 +109,7 @@ export default function Recommendation({ state, productInfo, presenting, protoco
             </select>
           </label>
         )}
-        <label>{t("session")} <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
+        <label>{t("session")} <select aria-label={t("session")} value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
             {selectionError && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
           </select>

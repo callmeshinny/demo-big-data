@@ -2,10 +2,12 @@
 
 ## Chuẩn bị
 
-- [ ] Render URL: **Chưa có**. Điền URL sau khi triển khai.
+- [ ] Render URL: <https://demo-big-data.onrender.com/>.
 - [ ] Mở bản offline từ thư mục demo với `npm run build && npm run preview`.
-- [ ] Sau khi build, chạy `node scripts/capture_screens.mjs` với Google Chrome đã cài. Ảnh PNG desktop và điện thoại nằm trong `screenshots/`.
+- [ ] Sau khi build, chạy `node scripts/capture_screens.mjs` với Google Chrome đã cài. Ảnh PNG tiếng Anh và tiếng Việt cho desktop và điện thoại nằm trong `screenshots/en/` và `screenshots/vi/`.
 - [ ] Mở sẵn `#present`, `#data` và `#experiments-e1`.
+
+English talk track and Q&A: [DEMO_SCRIPT.md](DEMO_SCRIPT.md).
 
 ## Trình tự
 

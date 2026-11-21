@@ -186,3 +186,5 @@ footer code { overflow-wrap: anywhere; }
 
 .dataset-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
 .dataset-cards article { padding: .75rem; border: 1px solid var(--line); border-radius: .5rem; overflow-wrap: anywhere; }
+
+.preliminary-badge { max-width: 100%; white-space: normal; }

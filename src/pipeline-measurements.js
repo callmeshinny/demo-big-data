@@ -7,6 +7,6 @@ export function visiblePipelineMeasurements(measurements) {
 
 export function PipelineMeasurementBadge({ measurements }) {
   return visiblePipelineMeasurements(measurements)
-    ? createElement("span", { className: "tag tag-diff" }, t("smoke_awaiting_tv2_confirmation"))
+    ? createElement("span", { className: "tag tag-diff preliminary-badge" }, t("smoke_awaiting_tv2_confirmation"))
     : null;
 }
