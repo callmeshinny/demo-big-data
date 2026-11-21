@@ -22,8 +22,7 @@ export function productDisplay(id, products) {
   return {
     name,
     breadcrumb: category.join(" › "),
-    category: topCategory(product),
-    price: product?.price == null ? t("not_available_yet") : usd.format(product.price),
+    price: product?.price == null ? t("price_unavailable") : usd.format(product.price),
   };
 }
 

@@ -60,8 +60,16 @@ try {
         ]) {
           await session.selectOption(id);
           await page.locator(".recommendations").getByText(result, { exact: true }).waitFor();
+          const score = page.locator(".ranking td.score").first();
+          assert.ok(await score.evaluate((cell) => {
+            const text = document.createRange();
+            text.selectNodeContents(cell);
+            return text.getBoundingClientRect().width <= cell.clientWidth && getComputedStyle(cell).whiteSpace === "nowrap";
+          }));
+          assert.equal(await page.locator(".product-icon").count(), 0);
           await capture(id);
         }
+        await page.getByText(t("price_unavailable"), { exact: true }).first().waitFor();
         await model.selectOption("missing:GRU");
         await page.getByText(t("no_predictions_available_for_this_model")).waitFor();
         await page.getByRole("heading", { name: t("actual_next_item") }).waitFor();
@@ -70,14 +78,6 @@ try {
         await model.selectOption({ label: "Popularity" });
         assert.equal(await session.inputValue(), "miss");
         await page.locator(".recommendations table").waitFor();
-
-        await page.getByRole("link", { name: t("presentation_mode"), exact: true }).click();
-        const next = page.getByRole("button", { name: t("next_example") });
-        for (const id of ["rank1", "rank20", "miss"]) {
-          await next.click();
-          assert.equal(await session.inputValue(), id);
-        }
-        await capture("presentation");
 
         await page.getByRole("tab", { name: t("dataset") }).click();
         await page.getByRole("heading", { name: t("session_length") }).waitFor();
@@ -104,6 +104,12 @@ try {
           assert.equal(await panel.locator(".metric-chart meter").count(), await toy.locator("meter").count());
           assert.ok((await panel.locator(".metric-chart").first().innerText()).includes(t("not_available_yet")));
           if (["e1", "e3"].includes(id)) await toy.locator(".badge-toy").first().waitFor();
+          if (id === "e3") {
+            const checkbox = page.getByRole("checkbox");
+            await checkbox.uncheck();
+            await checkbox.check();
+            assert.equal(await checkbox.evaluate((input) => getComputedStyle(input).accentColor), "rgb(98, 69, 31)");
+          }
           await capture(`experiments-${id}`);
         }
         await page.route("**/dataset-overview.json", (route) => route.fulfill({ body: "{", contentType: "application/json" }));

@@ -9,6 +9,14 @@ import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
 import "./styles.css";
 
+// Leave blank until the site name is ready.
+const siteName = "";
+const branding = import.meta.glob("./branding/*.{png,jpg}", {
+  eager: true, query: "?url", import: "default",
+});
+const logo = branding["./branding/logo.png"];
+const cover = branding["./branding/cover.jpg"];
+
 const TABS = () => [
   { id: "recommendation", label: t("recommendations") },
   { id: "data", label: t("dataset") },
@@ -52,13 +60,13 @@ function App() {
   setLanguage(language);
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = t("next_item_recommendation");
+
   }, [language]);
   function chooseLanguage(next) {
     try { localStorage.setItem("tv4-language", next); } catch { /* Storage is optional. */ }
     updateLanguage(next);
   }
-  const [{ tab, experiment, presenting }, setRoute] = useState(currentRoute);
+  const [{ tab, experiment }, setRoute] = useState(currentRoute);
   const demo = useData(DEMO_URL, normalizeDemo, language);
   const products = useData(PRODUCTS_URL, normalizeProductInfo, language);
   const dataset = useData(DATASET_URL, normalizeDataset, language);
@@ -73,34 +81,34 @@ function App() {
   const state = { recommendation: demo, data: dataset, experiments: results }[tab];
 
   return (
-    <main className={presenting ? "shell presenting" : "shell"}>
+    <main className="shell">
       <header className="topbar">
-        <div className="language-switch" role="group" aria-label={t("language")}>
-          {["en", "vi"].map((code) => <button type="button" key={code}
-            aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
+        <div className="header-utility">
+          <div className="language-switch" role="group" aria-label={t("language")}>
+            {["en", "vi"].map((code) => <button type="button" key={code}
+              aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
+          </div>
         </div>
-        <div>
-          <p className="eyebrow">{t("big_data_tv4_demo")}</p>
-          <h1>{t("next_item_recommendation")}</h1>
-          <p className="lede">{t("a_session_is_one_visit_an")}</p>
-          <p className="definition">{t("recall_20_measures_how_often_the")}</p>
-          <p className="definition">{t("popularity_is_the_baseline_all_three")}</p>
-          <p className="definition">{t("the_demo_replays_saved_predictions_see")}</p>
-        </div>
+        {(logo || siteName) && <div className="brand">
+          {logo && <img className="brand-logo" src={logo} alt={siteName ? "" : t("site_logo")} />}
+          {siteName && <h1>{siteName}</h1>}
+        </div>}
+        <nav className="tabs" role="tablist" aria-label={t("views_2")}>
+          {TABS().map(({ id, label }) => (
+            <a key={id} href={`#${id}`} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""}>{label}</a>
+          ))}
+        </nav>
       </header>
-
-      <nav className="tabs" role="tablist" aria-label={t("views_2")}>
-        {TABS().map((t) => (
-          <a key={t.id} href={`#${t.id}`} role="tab" aria-selected={tab === t.id} className={tab === t.id ? "active" : ""}>{t.label}</a>
-        ))}
-      </nav>
-
-      <div className="presentation-toggle">
-        <a href={presenting ? "#recommendation" : "#present"}>{presenting ? t("exit_presentation_mode") : t("presentation_mode")}</a>
-      </div>
+      {cover && <img className="brand-cover" src={cover} alt="" />}
+      <section className="site-intro" aria-label={t("demo_intro")}>
+        <p className="lede">{t("a_session_is_one_visit_an")}</p>
+        <p className="definition">{t("recall_20_measures_how_often_the")}</p>
+        <p className="definition">{t("popularity_is_the_baseline_all_three")}</p>
+        <p className="definition">{t("the_demo_replays_saved_predictions_see")}</p>
+      </section>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} presenting={presenting} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>
 
       <footer>

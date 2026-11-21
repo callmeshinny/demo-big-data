@@ -26,7 +26,7 @@ test("category breadcrumb is readable", () => {
 test("USD price displays two decimals, including true zero", () => {
   assert.equal(display(smartphone).price, "$130.76");
   assert.equal(display({ price: 0 }).price, "$0.00");
-  assert.equal(display({ price: null }).price, t("not_available_yet"));
+  assert.equal(display({ price: null }).price, t("price_unavailable"));
 });
 
 test("missing file or entry falls back to the original product ID", async () => {

@@ -14,9 +14,9 @@
 
 ### Recommendations · about one minute
 
-**English.** I’ll open Presentation mode. These are toy examples while we wait for real predictions. Here is the session history, and here is the actual next product. In the first example the model hits at rank one. In the next example it hits lower in the list. In the last example the actual item is outside the Top-20. I can switch models and still show the same history and actual item.
+**English.** I’ll open Recommendations and select the example sessions. These are toy examples while we wait for real predictions. Here is the session history, and here is the actual next product. In the first example the model hits at rank one. In the next example it hits lower in the list. In the last example the actual item is outside the Top-20. I can switch models and still show the same history and actual item.
 
-*Tiếng Việt. Tôi mở Chế độ trình bày. Đây là ví dụ toy trong lúc chờ dự đoán thật. Đây là lịch sử và sản phẩm tiếp theo thực tế. Ví dụ đầu trúng hạng một. Ví dụ tiếp theo trúng ở hạng thấp hơn. Ví dụ cuối có sản phẩm thực tế nằm ngoài Top-20. Khi đổi model, lịch sử và sản phẩm thực tế vẫn hiển thị.*
+*Tiếng Việt. Tôi mở tab Gợi ý sản phẩm và chọn từng phiên ví dụ. Đây là ví dụ toy trong lúc chờ dự đoán thật. Đây là lịch sử và sản phẩm tiếp theo thực tế. Ví dụ đầu trúng hạng một. Ví dụ tiếp theo trúng ở hạng thấp hơn. Ví dụ cuối có sản phẩm thực tế nằm ngoài Top-20. Khi đổi model, lịch sử và sản phẩm thực tế vẫn hiển thị.*
 
 ### Experiments · about one minute
 

@@ -2,7 +2,6 @@ import { t } from "./i18n.js";
 import React, { useMemo, useState } from "react";
 import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
-import { presentationExamples } from "./presentation.js";
 import { ProductCard } from "./ProductCard.jsx";
 import { categoryHighlights } from "./product.js";
 import { DataKindBadge, Issues, Notice } from "./ui.jsx";
@@ -34,7 +33,7 @@ function runOptions(group) {
   return options;
 }
 
-export default function Recommendation({ state, productInfo, presenting, protocol }) {
+export default function Recommendation({ state, productInfo, protocol }) {
   const { groups = [], issues = [], fatal, error } = state;
   const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
@@ -57,7 +56,7 @@ export default function Recommendation({ state, productInfo, presenting, protoco
     return (
       <>
         <Notice kind="error" title={t("invalid_recommendation_data")}>{fatal}</Notice>
-        <Issues issues={issues} key={String(presenting)} />
+        <Issues issues={issues} />
       </>
     );
   }
@@ -68,8 +67,6 @@ export default function Recommendation({ state, productInfo, presenting, protoco
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
 
-  const referenceRun = run ?? group.runs[0];
-  const examples = presenting ? presentationExamples(referenceRun) : null;
   const sample = (run ?? group.runs[0]).sample;
   const products = productInfo.products;
   const { matchingIds, summary } = categoryHighlights(
@@ -88,7 +85,7 @@ export default function Recommendation({ state, productInfo, presenting, protoco
 
   return (
     <>
-      <Issues issues={issues} key={String(presenting)} />
+      <Issues issues={issues} />
 
       <section className="controls" aria-label={t("choose_data")}>
         <label>{t("session_group")} <select value={group.key} onChange={(e) => changeGroup(e.target.value)}>
@@ -116,16 +113,6 @@ export default function Recommendation({ state, productInfo, presenting, protoco
         </label>
       </section>
 
-      {examples && <section className="panel presentation-examples">
-        <p>{t("illustrative_examples_selected_by_outcome_for")}</p>
-        {examples.unavailable.length > 0 && <p>{t("unavailable_cases_skipped")} {examples.unavailable.join(", ")}.</p>}
-        <button type="button" disabled={!examples.ids.length} onClick={() => {
-          const index = examples.ids.indexOf(sessionId);
-          setUserId("");
-          setSessionChoice(examples.ids[(index + 1) % examples.ids.length]);
-          if (!run) setChoice(`run:${referenceRun.label}`);
-        }}>{t("next_example")}</button>
-      </section>}
       <EvaluationProtocol protocol={protocol} />
       <p className="definition">{t("split")} {group.split ?? t("not_available_yet")} {t("partition")} {group.evalPartition ?? t("not_available_yet")}</p>
       {sample && <p className="definition">{t("showing")} {sample.n_selected ?? t("not_available_yet")}/{sample.n_total ?? t("not_available_yet")} {t("sessions_selected_with_a_fixed_seed")} {sample.seed ?? t("not_available_yet")}{t("independently_of_outcome")}</p>}
@@ -213,7 +200,7 @@ export default function Recommendation({ state, productInfo, presenting, protoco
                             <ProductCard id={r.product_id} products={products} />
                             {isTarget && <span className="tag tag-hit">{t("actual_item")}</span>}
                             {matchingIds.has(r.product_id) && <span className="tag tag-category">{t("same_category")}</span>}
-                            {inHistory && <span className="tag">{t("in_history")}</span>}
+                            {inHistory && <span className="tag tag-history">{t("in_history")}</span>}
                           </td>
                           <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? t("not_available_yet") : r.score}</td>
                         </tr>
