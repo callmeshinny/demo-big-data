@@ -38,14 +38,30 @@ export async function loadJson(url, fetchImpl = fetch) {
   }
 }
 
+export function normalizeProductInfo(raw) {
+  if (!isObject(raw) || !isObject(raw.products)) return {};
+  const products = new Map();
+  for (const [id, info] of Object.entries(raw.products)) {
+    if (!isObject(info)) continue;
+    products.set(id, {
+      brand: isId(info.brand) ? info.brand.trim() : null,
+      category_code: isId(info.category_code) ? info.category_code.trim().toLowerCase() : null,
+      price: Number.isFinite(info.price) ? info.price : null,
+    });
+  }
+  return { products, dataKind: raw.data_kind };
+}
+
 // ---------------------------------------------------------------- Part A
 
 function normalizeSession(raw, catalogSet, issues) {
   const id = raw.user_session;
   const problems = [];
-  const prefix = isIdList(raw.prefix) ? raw.prefix : null;
+  const isCatalogProduct = (productId) => catalogSet?.has(productId) === true;
+  const prefix = isIdList(raw.prefix) && catalogSet ? raw.prefix.filter(isCatalogProduct) : null;
+  if (prefix && prefix.length !== raw.prefix.length) problems.push("ẩn ID lịch sử không thuộc catalog");
   if (!prefix) problems.push("thiếu hoặc sai `prefix`");
-  const target = isId(raw.target) ? raw.target : null;
+  const target = isCatalogProduct(raw.target) ? raw.target : null;
   if (!target) problems.push("thiếu hoặc sai `target`");
 
   let recommendations = null;
@@ -66,11 +82,11 @@ function normalizeSession(raw, catalogSet, issues) {
   }
 
   let hidden = 0;
-  if (recommendations && catalogSet) {
+  if (recommendations) {
     // Technical IDs (padding/null/OOV/mask) are not in the catalog and are never shown.
-    const kept = recommendations.filter((r) => catalogSet.has(r.product_id));
+    const kept = recommendations.filter((r) => isCatalogProduct(r.product_id));
     hidden = recommendations.length - kept.length;
-    recommendations = kept;
+    recommendations = catalogSet ? kept : null;
     if (hidden) problems.push(`ẩn ${hidden} ID không thuộc catalog`);
   }
 
@@ -102,7 +118,7 @@ function normalizeRun(raw, index, issues) {
     return null;
   }
   const catalog = isIdList(raw.catalog) && raw.catalog.length ? raw.catalog : null;
-  if (!catalog) issues.push(`${label}: thiếu catalog, không lọc được ID kỹ thuật`);
+  if (!catalog) issues.push(`${label}: thiếu catalog, ẩn sản phẩm chưa xác minh được ID`);
   const catalogSet = catalog ? new Set(catalog) : null;
 
   const seen = new Set();

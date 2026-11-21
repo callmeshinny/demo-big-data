@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
+import { ProductCard } from "./ProductCard.jsx";
 import { DataKindBadge, Issues, Notice } from "./ui.jsx";
 
 function groupLabel(group) {
@@ -29,7 +30,7 @@ function runOptions(group) {
   return options;
 }
 
-export default function Recommendation({ state }) {
+export default function Recommendation({ state, productInfo }) {
   const { groups = [], issues = [], fatal, error } = state;
   const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
@@ -94,6 +95,7 @@ export default function Recommendation({ state }) {
         <span>Subset: <strong>{group.subset ?? MISSING}</strong></span>
         <span>Split: <strong>{group.split ?? MISSING}</strong></span>
         <span>Catalog: <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : MISSING}</strong></span>
+        {productInfo.dataKind === "toy" && (run ?? group.runs[0])?.data_kind !== "toy" && <DataKindBadge kind="toy" />}
         {run ? <DataKindBadge kind={run.data_kind} /> : <DataKindBadge kind={group.runs[0]?.data_kind} />}
       </div>
 
@@ -109,7 +111,7 @@ export default function Recommendation({ state }) {
               {context.prefix.map((id, index) => (
                 <li key={`${id}-${index}`}>
                   {index > 0 && <span className="arrow" aria-hidden="true">→</span>}
-                  <span className="product-chip">{id}</span>
+                  <ProductCard id={id} products={productInfo.products} />
                 </li>
               ))}
             </ol>
@@ -119,7 +121,7 @@ export default function Recommendation({ state }) {
         <article className="panel actual-panel">
           <p className="eyebrow">Ground truth</p>
           <h2>Actual next item</h2>
-          <div className={context.target ? "actual-id" : "actual-id missing"}>{context.target ?? MISSING}</div>
+          {context.target ? <ProductCard id={context.target} products={productInfo.products} /> : <p className="missing">{MISSING}</p>}
           {session?.recommendations && session.target ? (
             <p className={session.targetRank ? "match" : "miss"}>
               {session.targetRank ? `Hit · rank ${session.targetRank} / 20` : "Miss · ngoài Top-20"}
@@ -164,7 +166,7 @@ export default function Recommendation({ state }) {
                     <tr className={isTarget ? "hit" : ""} key={`${r.rank}-${r.product_id}`}>
                       <td className="rank">{r.rank}</td>
                       <td>
-                        <span className="rank-id">{r.product_id}</span>
+                        <ProductCard id={r.product_id} products={productInfo.products} />
                         {isTarget && <span className="tag tag-hit">Actual next item</span>}
                         {inHistory && <span className="tag">Đã có trong history</span>}
                       </td>

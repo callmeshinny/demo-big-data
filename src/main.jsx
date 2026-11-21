@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { loadJson, normalizeDemo, normalizeResults } from "./data.js";
+import { loadJson, normalizeDemo, normalizeProductInfo, normalizeResults } from "./data.js";
 import Recommendation from "./Recommendation.jsx";
 import Experiments from "./Experiments.jsx";
 import "./styles.css";
@@ -18,6 +18,7 @@ function source(param, fallback) {
 }
 const base = import.meta.env.BASE_URL;
 const DEMO_URL = source("demo", `${base}demo-data.json`);
+const PRODUCTS_URL = source("products", `${base}product-info.json`);
 const RESULTS_URL = source("results", `${base}run-results.json`);
 
 function useData(url, normalize) {
@@ -41,6 +42,7 @@ function currentTab() {
 function App() {
   const [tab, setTab] = useState(currentTab);
   const demo = useData(DEMO_URL, normalizeDemo);
+  const products = useData(PRODUCTS_URL, normalizeProductInfo);
   const results = useData(RESULTS_URL, normalizeResults);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ function App() {
 
       <div role="tabpanel">
         {state.loading ? <p className="loading">Đang tải dữ liệu…</p>
-          : tab === "recommendation" ? <Recommendation state={state} /> : <Experiments state={state} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} /> : <Experiments state={state} />}
       </div>
 
       <footer>

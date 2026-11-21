@@ -45,3 +45,20 @@ Then make one clean commit and push (or open a PR).
 ## 4. Contract changes
 
 `docs/data_contract.md` is a pinned copy at team commit `5b2df90`. Edit the contract in the team repo (`app/output_contract.md`) first, then refresh the copy here. Never let the two drift.
+
+## Product display lookup (optional, pending TV1)
+
+Use the CSV export of the same subset week as the demo run. It must contain
+original `product_id`, `brand`, `category_code`, `price` (USD) and
+`event_time` (ISO date and time). The adapter picks the most recent event
+for each product. For equal timestamps, the later CSV row wins. A blank
+price on the selected event is exported as null.
+
+```bash
+python3 scripts/export_product_info.py /path/to/tv1-subset.csv \
+  --source "TV1 artifact name and subset version" --data-kind real \
+  --output public/product-info.json
+```
+
+Check the output size before committing. Keep the public lookup limited to
+products used by the demo if the delivered subset is large.

@@ -56,11 +56,8 @@ select:focus { outline: 3px solid #dbe8ff; border-color: var(--blue); }
 
 .history { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 56px; list-style: none; margin: 0; padding: 0; }
 .history li { display: flex; align-items: center; gap: 8px; }
-.product-chip { display: grid; place-items: center; min-width: 52px; height: 52px; padding: 0 10px; border: 1px solid #aebbd0; border-radius: 10px; background: #f8fafc; font-family: var(--mono); font-weight: 800; }
 .arrow { color: #9aa6b8; }
 .actual-panel { background: linear-gradient(145deg, #fff 0%, #edf4ff 100%); text-align: center; }
-.actual-id { display: grid; place-items: center; min-width: 92px; width: fit-content; height: 92px; padding: 0 16px; margin: 18px auto 12px; border: 2px solid var(--blue); border-radius: 18px; background: white; color: var(--blue-ink); font: 800 24px var(--mono); }
-.actual-id.missing { font: italic 600 16px Inter, sans-serif; border-style: dashed; color: var(--soft); border-color: #b9c4d8; }
 .match, .miss { margin: 0; font-size: 13px; font-weight: 800; }
 .match { color: var(--green); }
 .miss { color: var(--red); }
@@ -75,11 +72,9 @@ select:focus { outline: 3px solid #dbe8ff; border-color: var(--blue); }
 .ranking td:first-child { border-left: 1px solid #edf0f5; border-radius: 10px 0 0 10px; width: 60px; }
 .ranking td:last-child { border-right: 1px solid #edf0f5; border-radius: 0 10px 10px 0; }
 .ranking .rank { color: #8a96a8; font-weight: 800; text-align: center; }
-.ranking .rank-id { font-family: var(--mono); font-weight: 800; }
 .ranking tr.hit td { background: var(--green-bg); border-color: #65bd8b; }
 .ranking tr.hit .rank { color: var(--green); }
 .ranking .score { white-space: nowrap; width: 90px; }
-.ranking .rank-id { margin-right: 4px; }
 .tag { display: inline-block; margin-left: 6px; border-radius: 999px; background: #eef3fb; color: #53627b; padding: 4px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; }
 .tag-hit { background: #d8f3e5; color: #106b3d; }
 .tag-diff { background: #fde7e4; color: var(--red); }
@@ -132,3 +127,16 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
   .metric-table thead th { min-width: 150px; }
   .scroll-hint { display: block; }
 }
+
+.product-card { display: flex; align-items: flex-start; gap: 9px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: white; text-align: left; overflow-wrap: anywhere; }
+.product-card > div { display: grid; gap: 3px; min-width: 0; }
+.product-card small { color: var(--muted); }
+.product-card .product-id { font-family: var(--mono); }
+.product-icon { flex: none; font-size: 19px; }
+.actual-panel .product-card { margin: 12px 0; }
+.history li { max-width: 100%; }
+.ranking { table-layout: fixed; }
+.ranking .score { white-space: normal; overflow-wrap: anywhere; }
+.ranking th:first-child, .ranking td:first-child { width: 52px; }
+.ranking th:last-child, .ranking td:last-child { width: 80px; }
+.ranking th { overflow-wrap: anywhere; }
