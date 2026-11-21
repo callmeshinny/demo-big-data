@@ -11,10 +11,8 @@ AUDIT = Path("data/raw_audit.csv")
 VERIFIED = Path("data/manifests/e2_preprocessing_verified.json")
 SMOKE = VERIFIED.with_name("e4_preprocessing_smoke.json")
 SUBSETS = (10, 25, 50, 100)
-FIELDS = (
-    "n_events", "events_after_repeat_removal", "distinct", "missing", "event_types",
-    "session_length_histogram", "sequence_count", "vocabulary_size",
-)
+FIELDS = ("n_events", "events_after_repeat_removal", "sequence_count", "vocabulary_size")
+PROFILE_FIELDS = ("distinct", "missing", "event_types", "session_length_histogram")
 TIMINGS = (
     "preprocessing_seconds", "read_seconds", "workflow_seconds", "split_seconds",
     "input_format", "input_bytes",
@@ -37,13 +35,25 @@ def export(raw_only, show_measurements):
     index = {}
     smoke = None
     if not raw_only:
-        records = json.loads(VERIFIED.read_text(encoding="utf-8"))["subsets"]
+        records = json.loads(VERIFIED.read_text(encoding="utf-8"))["runs"]
         index = {int(row["subset"]): row for row in records}
         if len(records) != len(index) or set(index) != set(SUBSETS):
             raise ValueError(f"{VERIFIED}: expected one record per cuDF subset")
         smoke = json.loads(SMOKE.read_text(encoding="utf-8"))
         if not isinstance(smoke["smoke_scope"], str):
             raise ValueError(f"{SMOKE}: expected smoke_scope text")
+        formats = {row["input_format"]: row for row in smoke["runs"]}
+        if len(smoke["runs"]) != 2 or formats.keys() != {"csv", "parquet"}:
+            raise ValueError(f"{SMOKE}: expected one CSV and one Parquet smoke run")
+        smoke = {
+            "smoke_scope": smoke["smoke_scope"],
+            "formats": [
+                {"format": name, "input_bytes": row["input_bytes"], "bytes": row["input_bytes"],
+                 "read_seconds": row.get("read_seconds"), "preprocessing_seconds": row.get("preprocessing_seconds")}
+                for name, row in formats.items()
+            ],
+            "source": str(SMOKE),
+        }
     commit = team_commit(Path.cwd())
     if not commit:
         raise ValueError("Cannot identify the team commit")
@@ -56,14 +66,15 @@ def export(raw_only, show_measurements):
         "raw_month": raw_audit(),
         "subsets": [
             {"subset": subset, "scope": "first week of 2019-10, cuDF weekly cleanup",
-             **{key: index.get(subset, {}).get(key) for key in FIELDS},
+             **{key: index[subset][key] if subset in index else None for key in FIELDS},
+             **{key: index[subset]["profile"].get(key) if subset in index else None for key in PROFILE_FIELDS},
              "source": str(VERIFIED) if subset in index else None}
             for subset in SUBSETS
         ],
         "pipeline_measurements": {
             "status": "unconfirmed", "show": show_measurements,
             "e2": [{"subset": subset, **{key: row.get(key) for key in TIMINGS}} for subset, row in index.items()],
-            "e4_smoke": [] if smoke is None else [{**smoke, "source": str(SMOKE)}],
+            "e4_smoke": [] if smoke is None else [smoke],
         },
     }
 

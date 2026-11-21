@@ -1,6 +1,6 @@
 {
   "schema": "tv4-demo-data/v2",
-  "team_commit": "86bc1c8",
+  "team_commit": "43841c9",
   "runs": [
     {
       "model": "Popularity",

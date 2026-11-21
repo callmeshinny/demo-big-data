@@ -22,6 +22,8 @@ def main():
             with path.open("w", encoding="utf-8", newline="") as output:
                 writer = csv.writer(output, lineterminator="\n")
                 writer.writerow(("team_commit", "generated_at", "run_id", "series", "status", "metric", "value", "unit", "scope"))
+                if not runs:
+                    writer.writerow((payload["team_commit"], payload.get("generated_at"), "", "", "", "", "", "", ""))
                 for run in runs:
                     for metric in metrics:
                         entry = {} if run["status"] in {"failed", "excluded"} else run.get("metrics", {}).get(metric) or {}
