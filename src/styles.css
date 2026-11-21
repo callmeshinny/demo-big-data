@@ -183,3 +183,6 @@ footer code { overflow-wrap: anywhere; }
 
 .language-switch { display: flex; gap: .5rem; margin-bottom: .75rem; }
 .language-switch [aria-pressed="true"] { font-weight: 800; background: var(--butter); }
+
+.dataset-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.dataset-cards article { padding: .75rem; border: 1px solid var(--line); border-radius: .5rem; overflow-wrap: anywhere; }

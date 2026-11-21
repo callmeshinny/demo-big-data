@@ -2,6 +2,8 @@ import { t } from "./i18n.js";
 import React, { useState } from "react";
 import { formatValue } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
+import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
+import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import PipelineMeasurements from "./PipelineMeasurements.jsx";
 import { Notice } from "./ui.jsx";
 
@@ -13,8 +15,6 @@ const ROWS = () => [
   [t("products"), "distinct", "product_id"],
   [t("categories"), "distinct", "category_code"],
   [t("brands"), "distinct", "brand"],
-  [t("missing_brand"), "missing", "brand"],
-  [t("missing_category"), "missing", "category_code"],
   [t("views"), "event_types", "view"],
   [t("add_to_cart"), "event_types", "cart"],
   [t("purchases"), "event_types", "purchase"],
@@ -57,6 +57,8 @@ export default function Dataset({ state }) {
         </dl>
         <p className="definition">{t("source")} <code>{formatValue(raw.source)}</code></p>
       </section>
+      <SubsetSelection sampling={overview.sampling} />
+      <FiveVs overview={overview} />
       <section className="panel">
         <h2>{t("weekly_cudf_subsets")}</h2>
         <div className="table-scroll">
@@ -66,6 +68,7 @@ export default function Dataset({ state }) {
           </table>
         </div>
         <p className="definition">{overview.subsets.at(-1)?.subset ?? t("not_available_yet")}{t("covers_the_first_week_of_october")}</p>
+        <p className="definition">{t("subset_diversity")}</p>
         <p className="definition">{t("source")} <code>{formatValue(weeklySource)}</code></p>
       </section>
       <section className="panel">
@@ -87,6 +90,7 @@ export default function Dataset({ state }) {
         <h2>{t("processing_pipeline")}</h2>
         <ol className="pipeline">{PIPELINE().map(([label, description, owner]) => <li key={label}><strong>{label}</strong> · {owner}<p>{description}</p></li>)}</ol>
       </section>
+      <section className="panel"><EvaluationProtocol protocol={overview.evaluation_protocol} diagram /></section>
       <PipelineMeasurements measurements={overview.pipeline_measurements} />
     </>
   );

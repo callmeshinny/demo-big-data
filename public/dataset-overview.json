@@ -1,4 +1,52 @@
 {
+  "sampling": {
+    "scope": "UTC [2019-10-01, 2019-10-08); non-null original user_session; view/cart/purchase",
+    "seed": 42,
+    "input_bytes": 5668612855,
+    "population_sessions": 1877365,
+    "hash_rule": "UTF-8(str(seed) + colon + original user_session); SHA-256; first 8 digest bytes as unsigned big-endian integer h; select h < floor(percent * 2^64 / 100)",
+    "event_retention": "Next step: join selected original session IDs and retain all their eligible events within the week; no row sampling. No event subset exported in this run.",
+    "checks": "PASS: unique non-null IDs, hash rule, nested 10 <= 25 <= 50 <= 100, 100% equals population, input unchanged",
+    "outputs": [
+      {
+        "percent": 10,
+        "session_count": 187563,
+        "actual_session_ratio": 0.0999075832350129
+      },
+      {
+        "percent": 25,
+        "session_count": 469728,
+        "actual_session_ratio": 0.25020600682339345
+      },
+      {
+        "percent": 50,
+        "session_count": 938071,
+        "actual_session_ratio": 0.49967427751129906
+      },
+      {
+        "percent": 100,
+        "session_count": 1877365,
+        "actual_session_ratio": 1.0
+      }
+    ],
+    "source": "data/manifests/session_sampling_manifest.json"
+  },
+  "cleanup_reference": {
+    "engine": "DuckDB CPU",
+    "timestamp_parse_failures": 0,
+    "consecutive_repeat_rows_removed": 11715474,
+    "source": "data/manifests/timestamp_session_cleanup.json"
+  },
+  "raw_schema": {
+    "columns": 9,
+    "source": "docs/data_dictionary.md"
+  },
+  "evaluation_protocol": {
+    "split_ratio": "80/10/10",
+    "seed": 1,
+    "top_k": 20,
+    "source": "docs/modeling/model_protocol.md"
+  },
   "schema": "tv4-dataset-overview/v1",
   "team_commit": "43841c9",
   "generated_at": "2026-11-21",
@@ -11,6 +59,12 @@
     "missing": {
       "brand": 6113008,
       "category_code": 13515609
+    },
+    "invalid_timestamps": 0,
+    "distinct": {
+      "event_type": 3,
+      "category_code": 126,
+      "brand": 3445
     },
     "source": "data/raw_audit.csv"
   },
@@ -641,12 +695,15 @@
   ],
   "pipeline_measurements": {
     "status": "unconfirmed",
-    "show": false,
+    "show": true,
+    "e2_source": "data/manifests/e2_preprocessing_verified.json",
+    "first_seen_seconds": 1.5164737080049235,
     "e2": [
       {
         "subset": 10,
         "preprocessing_seconds": 30.449049160999493,
         "read_seconds": 0.1725569339996582,
+        "prepare_seconds": 1.3697239180000906,
         "workflow_seconds": 20.5666519360002,
         "split_seconds": 8.512673306999204,
         "input_format": "csv",
@@ -656,6 +713,7 @@
         "subset": 25,
         "preprocessing_seconds": 34.093408106001334,
         "read_seconds": 0.36686747099975037,
+        "prepare_seconds": 1.9440810410005724,
         "workflow_seconds": 22.138478314000167,
         "split_seconds": 10.010848751000594,
         "input_format": "csv",
@@ -665,6 +723,7 @@
         "subset": 50,
         "preprocessing_seconds": 37.860843321000175,
         "read_seconds": 0.7350254970006063,
+        "prepare_seconds": 2.7504110429999855,
         "workflow_seconds": 23.243143667999902,
         "split_seconds": 11.867288610000287,
         "input_format": "csv",
@@ -674,6 +733,7 @@
         "subset": 100,
         "preprocessing_seconds": 45.41139295700032,
         "read_seconds": 1.3597353340001064,
+        "prepare_seconds": 4.685052499000449,
         "workflow_seconds": 25.888498950999747,
         "split_seconds": 14.837841507000121,
         "input_format": "csv",
@@ -699,7 +759,9 @@
             "preprocessing_seconds": 31.505676757999936
           }
         ],
-        "source": "data/manifests/e4_preprocessing_smoke.json"
+        "source": "data/manifests/e4_preprocessing_smoke.json",
+        "input_rows_identical_in_order": true,
+        "split_membership_identical": true
       }
     ]
   }
