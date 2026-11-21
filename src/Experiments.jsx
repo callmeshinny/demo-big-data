@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  EXPERIMENTS, MISSING, compareConfig, displayCell, exactValue, formatValue, modelLabel, splitByKind,
+  EXPERIMENTS, MISSING, NOT_APPLICABLE, compareConfig, displayCell, exactValue, formatValue, modelLabel, splitByKind,
 } from "./data.js";
 import { DataKindBadge, Issues, Notice, StatusBadge } from "./ui.jsx";
 
@@ -9,7 +9,7 @@ const METRICS = {
   "Recall@20": { label: "Recall@20", unit: "ratio" },
   "NDCG@20": { label: "NDCG@20", unit: "ratio" },
   train_with_input_scan_seconds: { label: "Thời gian train (gồm input scan)", unit: "s" },
-  inference_seconds: { label: "Evaluation wall time", unit: "s", scope: "full_evaluation_wall_v1, gồm I/O, không phải latency thuần" },
+  inference_seconds: { label: "Thời gian đánh giá", unit: "s" },
   inference_ms_per_session: { label: "Evaluation time / session", unit: "ms/session" },
   inference_sessions_per_second: { label: "Evaluation throughput", unit: "sessions/s" },
   elapsed_seconds: { label: "Collector wall time", unit: "s" },
@@ -45,27 +45,27 @@ const MODEL_METRICS = [
 const PANELS = {
   E1: {
     title: "E1 · So sánh model",
-    question: "Model nào tốt hơn? Popularity / GRU / XLNet trên subset 10%.",
+    question: "So sánh Popularity, GRU và XLNet trên cùng tập dữ liệu.",
     metrics: MODEL_METRICS,
   },
   E2: {
     title: "E2 · Ảnh hưởng của kích thước dữ liệu",
-    question: "GRU trên 10 / 25 / 50 / 100% session (100% = tuần đầu tháng 10).",
+    question: "So sánh GRU trên các tỷ lệ lấy mẫu của tuần đầu tháng 10.",
     metrics: [...MODEL_METRICS, "n_events", "pipeline_read_seconds", "preprocessing_seconds", "first_seen_seconds"],
   },
   E3: {
     title: "E3 · Ảnh hưởng của tài nguyên",
-    question: "GRU 10%, train batch 32 vs 128, eval batch 32. Chỉ đổi train batch.",
+    question: "So sánh hai cỡ lô huấn luyện GRU. Cỡ lô đánh giá được giữ cố định theo kế hoạch.",
     metrics: [...MODEL_METRICS, "cost"],
   },
   E4: {
     title: "E4 · CSV vs Parquet",
-    question: "Cùng nội dung, subset raw 10%: kích thước, thời gian đọc, preprocessing, bộ nhớ.",
+    question: "So sánh kích thước, thời gian đọc, tiền xử lý và bộ nhớ cho cùng dữ liệu.",
     metrics: ["bytes", "read_seconds", "peak_read_process_rss_bytes", "preprocessing_elapsed_seconds", "elapsed_seconds", "peak_process_tree_rss_bytes"],
   },
   E5: {
     title: "E5 · Khả năng mở rộng",
-    question: "Suy ra từ log E2, không train thêm: thời gian / 1M events, bottleneck, giới hạn.",
+    question: "Tổng hợp log E2 để xem thời gian theo số sự kiện, điểm nghẽn và giới hạn.",
     metrics: [
       "seconds_per_million_events", "bottleneck", "raw_read",
       "preprocessing_excluding_raw_read_and_first_seen", "train_including_sequence_io",
@@ -97,23 +97,25 @@ const ENV_FIELDS = [
   ["cpu_model", "CPU"], ["cpu_cores", "CPU cores"], ["ram_bytes", "RAM (bytes)"], ["os", "OS"], ["platform", "Platform"],
 ];
 
+const hidesMetrics = (run) => ["failed", "excluded"].includes(run.status);
+
 function RunHeader({ run }) {
   return (
     <div className="run-head">
       <strong>{run.model ? modelLabel(run.model) : run.planned?.input_format ?? run.run_id}</strong>
       <code>{run.run_id}</code>
       <span className="badges"><StatusBadge status={run.status} /><DataKindBadge kind={run.data_kind} /></span>
-      {run.exclusion_note && <span className="note">{run.exclusion_note}</span>}
+      {(hidesMetrics(run) || run.exclusion_note) && <span className="note">Lý do: {run.exclusion_note || MISSING}</span>}
     </div>
   );
 }
 
 function MetricCell({ run, metricKey }) {
+  if (hidesMetrics(run)) return <td className="missing">{NOT_APPLICABLE}</td>;
   const entry = run.metrics?.[metricKey];
   const value = entry?.value ?? null;
-  const text = displayCell(run, metricKey, value);
-  const def = METRICS[metricKey];
-  const unit = entry?.unit ?? def.unit;
+  const text = value === null ? displayCell(run, metricKey, value) : exactValue(value);
+  const unit = entry?.unit;
   return (
     <td title={value === null ? undefined : exactValue(value)} className={value === null ? "missing" : "num"}>
       {text}
@@ -143,7 +145,6 @@ function MetricTable({ runs, metrics, caption }) {
               <th scope="row">
                 {METRICS[key].label}
                 {METRICS[key].unit && <span className="unit"> ({METRICS[key].unit})</span>}
-                {METRICS[key].scope && <span className="scope">{METRICS[key].scope}</span>}
               </th>
               {runs.map((run) => <MetricCell key={run.run_id} run={run} metricKey={key} />)}
             </tr>
@@ -172,7 +173,7 @@ function ConfigDetails({ run }) {
                 <tr key={key} className={cmp === "different" ? "diff" : ""}>
                   <th scope="row">{label}{unit && <span className="unit"> ({unit})</span>}</th>
                   <td className={planned === null ? "missing" : ""}>{displayCell(run, key, planned)}</td>
-                  <td className={actual === null ? "missing" : ""}>{actual === undefined ? "—" : displayCell(run, key, actual)}</td>
+                  <td className={actual === null ? "missing" : ""}>{actual === undefined ? NOT_APPLICABLE : displayCell(run, key, actual)}</td>
                   <td>{cmp === "different" ? <span className="tag tag-diff">Khác</span> : cmp === "same" ? "Khớp" : ""}</td>
                 </tr>
               );
@@ -182,14 +183,14 @@ function ConfigDetails({ run }) {
       </div>
       <h4>Môi trường</h4>
       <dl className="env">
-        {ENV_FIELDS.filter(([key]) => key !== "platform" || run.environment?.platform).map(([key, label]) => (
+        {ENV_FIELDS.map(([key, label]) => (
           <div key={key}><dt>{label}</dt><dd className={run.environment?.[key] == null ? "missing" : ""}>{formatValue(run.environment?.[key])}</dd></div>
         ))}
       </dl>
       <h4>Nguồn</h4>
-      <ul className="sources">
-        {sources.map(([key, value]) => <li key={key}><span>{key}:</span> <code>{value ?? MISSING}</code></li>)}
-      </ul>
+      {sources.length ? <ul className="sources">
+        {sources.map(([key, value]) => <li key={key}><span>{key}:</span> <code>{formatValue(value)}</code></li>)}
+      </ul> : <p className="missing">{MISSING}</p>}
     </details>
   );
 }
@@ -203,17 +204,15 @@ function RunSet({ runs, metrics, caption }) {
   );
 }
 
-function E5Panel({ allRuns }) {
-  const e2 = allRuns.filter((r) => r.experiment === "E2" && r.data_kind !== "toy");
-  const e5 = allRuns.filter((r) => r.experiment === "E5");
+function E5Panel({ runs }) {
   const panel = PANELS.E5;
   return (
     <>
-      {e5.length ? <RunSet runs={e5} metrics={panel.metrics} caption={panel.title} /> : (
+      {runs.length ? <RunSet runs={runs} metrics={panel.metrics} caption={panel.title} /> : (
         <div className="table-scroll">
           <table className="metric-table">
             <caption className="sr-only">{panel.title}</caption>
-            <thead><tr><th scope="col">Chỉ số</th><th scope="col">E5 summary</th></tr></thead>
+            <thead><tr><th scope="col">Chỉ số</th><th scope="col">Tổng hợp E5</th></tr></thead>
             <tbody>
               {panel.metrics.map((key) => (
                 <tr key={key}>
@@ -225,10 +224,7 @@ function E5Panel({ allRuns }) {
           </table>
         </div>
       )}
-      <p className="definition">
-        Run nguồn (E2): {e2.length ? e2.map((r) => <code key={r.run_id}>{r.run_id}</code>).reduce((a, b) => [a, ", ", b]) : MISSING}.
-        {" "}Cấu hình và môi trường của E5 lấy từ các run E2 này.
-      </p>
+      {!runs.length && <p className="definition">Run nguồn (E2), cấu hình và môi trường: {MISSING}</p>}
     </>
   );
 }
@@ -268,13 +264,13 @@ export default function Experiments({ state }) {
 
       <section className="panel">
         <div className="panel-heading">
-          <div><p className="eyebrow">{active}</p><h2>{panel.title}</h2></div>
+          <h2>{panel.title}</h2>
         </div>
         <p className="definition">{panel.question}</p>
 
-        {active === "E5" ? <E5Panel allRuns={runs} /> : (
+        {active === "E5" ? <E5Panel runs={official} /> : (
           <>
-            <h3>Run chính thức</h3>
+            <h3>{meta.confirmed_by_tv2 ? "Run chính thức" : "Run theo kế hoạch"}</h3>
             {official.length ? <RunSet runs={official} metrics={panel.metrics} caption={`${panel.title} — chính thức`} /> : <p className="missing">{MISSING}</p>}
           </>
         )}
@@ -283,8 +279,7 @@ export default function Experiments({ state }) {
           <div className="toy-block">
             <h3>Run toy smoke <DataKindBadge kind="toy" /></h3>
             <p className="definition">
-              Chạy trên dữ liệu tổng hợp ({toySorted[0]?.metrics?.["Recall@20"]?.scope ?? "vài session"}) để kiểm tra công cụ.
-              Không dùng để so sánh model hay kết luận.
+              Các lượt chạy trên dữ liệu tổng hợp dùng để kiểm tra công cụ.
             </p>
             <RunSet runs={toySorted} metrics={panel.metrics} caption={`${panel.title} — toy`} />
           </div>

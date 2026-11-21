@@ -15,9 +15,11 @@ export function DataKindBadge({ kind }) {
   return <span className="badge badge-unknown" title="Artifact chưa ghi data_kind">data_kind: Chưa có</span>;
 }
 
+const statusLabels = { passed: "Thành công", failed: "Thất bại", excluded: "Loại khỏi đánh giá" };
+
 export function StatusBadge({ status }) {
   if (!status) return <span className="badge badge-unknown">Trạng thái: Chưa có</span>;
-  return <span className={`badge badge-status-${status}`}>{status}</span>;
+  return <span className={`badge badge-status-${status}`}>{statusLabels[status] ?? status}</span>;
 }
 
 export function Issues({ issues }) {
