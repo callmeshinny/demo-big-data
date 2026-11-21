@@ -1,6 +1,7 @@
 import { t } from "./i18n.js";
 import React, { useMemo, useState } from "react";
 import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
+import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { presentationExamples } from "./presentation.js";
 import { ProductCard } from "./ProductCard.jsx";
 import { categoryHighlights } from "./product.js";
@@ -33,7 +34,7 @@ function runOptions(group) {
   return options;
 }
 
-export default function Recommendation({ state, productInfo, presenting }) {
+export default function Recommendation({ state, productInfo, presenting, protocol }) {
   const { groups = [], issues = [], fatal, error } = state;
   const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
@@ -125,7 +126,7 @@ export default function Recommendation({ state, productInfo, presenting }) {
           if (!run) setChoice(`run:${referenceRun.label}`);
         }}>{t("next_example")}</button>
       </section>}
-      <p className="definition"><strong>{t("how_this_is_evaluated")}</strong> {t("train_on_day_t_and_validate")}</p>
+      <EvaluationProtocol protocol={protocol} />
       <p className="definition">{t("split")} {group.split ?? t("not_available_yet")} {t("partition")} {group.evalPartition ?? t("not_available_yet")}</p>
       {sample && <p className="definition">{t("showing")} {sample.n_selected ?? t("not_available_yet")}/{sample.n_total ?? t("not_available_yet")} {t("sessions_selected_with_a_fixed_seed")} {sample.seed ?? t("not_available_yet")}{t("independently_of_outcome")}</p>}
       {selectionError ? (
@@ -199,9 +200,6 @@ export default function Recommendation({ state, productInfo, presenting }) {
                   </p>
                 )}
                 {summary && <p className="definition">{summary}</p>}
-                {!run.scoreAvailable && (
-                  <p className="definition">{t("tv2_has_not_exported_per_item")}</p>
-                )}
                 <table className="ranking">
                   <thead><tr><th scope="col">{t("rank")}</th><th scope="col">{t("products")}</th><th scope="col">{t("score")}</th></tr></thead>
                   <tbody>
@@ -223,6 +221,7 @@ export default function Recommendation({ state, productInfo, presenting }) {
                     })}
                   </tbody>
                 </table>
+                {!run.scoreAvailable && <p className="definition">{t("ranked_ids_only")}</p>}
               </>
             )}
           </section>

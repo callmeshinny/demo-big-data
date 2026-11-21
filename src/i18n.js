@@ -290,7 +290,8 @@ export const messages = {
     "identical_input_order": "Identical input rows and order",
     "identical_split_membership": "Identical split membership",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported (TV2 run_neural.py)."
   },
   "vi": {
     "weekly_events_before_cleanup": "Sự kiện tuần trước làm sạch",
@@ -583,7 +584,8 @@ export const messages = {
     "identical_input_order": "Dòng đầu vào giống nhau và cùng thứ tự",
     "identical_split_membership": "Thành viên các tập chia giống nhau",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "ranked_ids_only": "Model chỉ xuất mã sản phẩm theo thứ hạng; điểm từng mục chưa được xuất (TV2 run_neural.py)."
   }
 };
 

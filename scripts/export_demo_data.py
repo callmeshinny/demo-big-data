@@ -34,19 +34,23 @@ def sha256_bytes(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def catalog_match(catalog_path, recorded_sha):
+def catalog_match(catalog_path, recorded_sha, *, allow_toy_line_endings):
     """Return 'exact' or 'line-endings-only'; raise if the content differs.
 
     Runs executed on a Windows checkout record the SHA-256 of the CRLF file.
     The JSON content is identical, so we accept it but record the fact.
     """
-    raw = catalog_path.read_bytes()
+    catalog_request = f"Ask TV2 for catalog.json with SHA-256 {recorded_sha} from the same run"
+    try:
+        raw = catalog_path.read_bytes()
+    except FileNotFoundError as error:
+        raise ValueError(catalog_request) from error
     if sha256_bytes(raw) == recorded_sha:
         return "exact"
     variants = {raw.replace(b"\r\n", b"\n"), raw.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")}
-    if any(sha256_bytes(v) == recorded_sha for v in variants):
+    if allow_toy_line_endings and any(sha256_bytes(v) == recorded_sha for v in variants):
         return "line-endings-only"
-    raise ValueError(f"Catalog {catalog_path} does not match the run's recorded SHA-256 {recorded_sha}")
+    raise ValueError(catalog_request)
 
 
 def locate(run_dir):
@@ -72,7 +76,8 @@ def export_run(run_dir, catalog_path, allow_missing_total=False):
     if metadata.get("K") != K:
         raise ValueError(f"{run_dir}: expected K={K}, found {metadata.get('K')}")
     recorded_sha = metadata["artifacts"]["catalog"]["sha256"]
-    match = catalog_match(catalog_path, recorded_sha)
+    kind = data_kind(metadata, collector)
+    match = catalog_match(catalog_path, recorded_sha, allow_toy_line_endings=kind == "toy")
     catalog = Catalog.load(catalog_path)
 
     sessions, seen = [], set()
@@ -121,7 +126,7 @@ def export_run(run_dir, catalog_path, allow_missing_total=False):
         "subset": metadata["subset"],
         "split": metadata["eval_split"],
         "run_id": metadata["run_id"],
-        "data_kind": data_kind(metadata, collector),
+        "data_kind": kind,
         "catalog_sha256": recorded_sha,
         "catalog": list(catalog.products.values()),
         "sessions": sessions,

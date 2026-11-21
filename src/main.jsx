@@ -100,7 +100,7 @@ function App() {
       </div>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} presenting={presenting} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} presenting={presenting} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>
 
       <footer>
