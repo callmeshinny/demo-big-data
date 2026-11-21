@@ -2,8 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  MISSING, NOT_APPLICABLE, compareConfig, displayCell, formatValue, loadJson,
-  normalizeDemo, normalizeResults, sessionContext, splitByKind,
+  INVALID_PRODUCT_ID, MISSING, NOT_APPLICABLE, compareConfig, displayCell, formatValue, loadJson,
+  normalizeDemo, normalizeResults, sessionContext, splitByKind, usersBySession,
 } from "../src/data.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
@@ -71,6 +71,32 @@ test("history and target come from the group even when a model has no run", () =
   const day1 = groups.find((g) => g.sessionIds.includes("miss"));
   const { prefix, target } = sessionContext(day1, "miss");
   assert.deepEqual({ prefix, target }, { prefix: ["p3"], target: "p23" });
+});
+
+test("out-of-catalog context stays visible and technical IDs keep their position as placeholders", () => {
+  const { groups, issues } = normalizeDemo(json("./fixtures/unknown-ids.json"));
+  const [group] = groups;
+  const { prefix, target, targetCatalog } = sessionContext(group, "unknown-ids");
+  assert.deepEqual(prefix, ["p3", INVALID_PRODUCT_ID, INVALID_PRODUCT_ID, INVALID_PRODUCT_ID, "p-unknown-history", "p4"]);
+  assert.equal(target, "p5");
+  assert.equal(targetCatalog.has(target), false);
+  assert.equal(sessionContext(group, "invalid-target").target, INVALID_PRODUCT_ID);
+  const [session] = group.runs[0].sessions;
+  assert.deepEqual(session.recommendations.map(({ rank, product_id }) => [rank, product_id]), [[1, "p4"], [5, "p3"]]);
+  assert.match(issues[0], /Lịch sử: có mã sản phẩm không hợp lệ/);
+  assert.match(issues[0], /Lịch sử: mã sản phẩm không thuộc catalog/);
+  assert.match(issues[0], /Sản phẩm thực tế: mã sản phẩm không thuộc catalog/);
+  assert.match(issues[0], /ẩn 3 mã gợi ý/);
+});
+
+test("user picker has no options for shipped sessions and reads user IDs from a test fixture", () => {
+  const { groups } = normalizeDemo(json("../public/demo-data.json"));
+  for (const group of groups) assert.equal(usersBySession(group).size, 0);
+  const [fixture] = normalizeDemo(json("./fixtures/session-users.json")).groups;
+  assert.deepEqual([...usersBySession(fixture)], [
+    ["fixture-a", "fixture-user-a"],
+    ["fixture-b", "fixture-user-b"],
+  ]);
 });
 
 test("loadJson reports empty, malformed and HTTP errors", async () => {

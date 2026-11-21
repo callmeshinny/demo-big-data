@@ -213,6 +213,18 @@ export function normalizeDemo(raw) {
   return { groups: [...groups.values()], issues, fatal: null };
 }
 
+export function usersBySession(group) {
+  const users = new Map();
+  for (const run of group?.runs ?? []) {
+    for (const session of run.sessions) {
+      if (session.userId && !users.has(session.user_session)) {
+        users.set(session.user_session, session.userId);
+      }
+    }
+  }
+  return users;
+}
+
 /** History and target for a session, taken from the first run in the group that has them. */
 export function sessionContext(group, sessionId) {
   let prefix = null;

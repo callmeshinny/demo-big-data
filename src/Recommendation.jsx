@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { INVALID_PRODUCT_ID, MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
-import { ProductCard, topCategory } from "./ProductCard.jsx";
+import { INVALID_PRODUCT_ID, MISSING, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
+import { ProductCard } from "./ProductCard.jsx";
+import { categoryHighlights } from "./product.js";
 import { DataKindBadge, Issues, Notice } from "./ui.jsx";
 
 function groupLabel(group) {
@@ -41,17 +42,7 @@ export default function Recommendation({ state, productInfo }) {
   const options = useMemo(() => (group ? runOptions(group) : []), [group]);
   const option = options.find((o) => o.value === choice) ?? options[0];
 
-  const sessionUsers = useMemo(() => {
-    const users = new Map();
-    for (const run of group?.runs ?? []) {
-      for (const session of run.sessions) {
-        if (session.userId && !users.has(session.user_session)) {
-          users.set(session.user_session, session.userId);
-        }
-      }
-    }
-    return users;
-  }, [group]);
+  const sessionUsers = useMemo(() => usersBySession(group), [group]);
   const users = [...new Set(sessionUsers.values())];
   const sessionIds = group?.sessionIds.filter((id) => !userId || sessionUsers.get(id) === userId) ?? [];
   const unknownUser = userId !== "" && !users.includes(userId);
@@ -75,11 +66,9 @@ export default function Recommendation({ state, productInfo }) {
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
 
   const products = productInfo.products;
-  const categoryOf = (id) => topCategory(products?.get(id));
-  const historyCategories = new Set((context.prefix ?? []).map((id) => context.prefixCatalog?.has(id) ? categoryOf(id) : null).filter(Boolean));
-  const categorized = (session?.recommendations ?? []).filter((item) => categoryOf(item.product_id));
-  const sameCategory = (item) => historyCategories.has(categoryOf(item.product_id));
-  const matchingCount = categorized.filter(sameCategory).length;
+  const { matchingIds, summary } = categoryHighlights(
+    context.prefix, context.prefixCatalog, session?.recommendations, products,
+  );
 
   const changeGroup = (key) => {
     const next = groups.find((g) => g.key === key);
@@ -141,8 +130,8 @@ export default function Recommendation({ state, productInfo }) {
             <span>Split: <strong>{group.split ?? MISSING}</strong></span>
             <span>Catalog: <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : MISSING}</strong></span>
             {run?.catalog_sha256 && <span>SHA-256 catalog <code>{run.catalog_sha256}</code></span>}
-            {productInfo.dataKind === "toy" && (run ?? group.runs[0])?.data_kind !== "toy" && <DataKindBadge kind="toy" />}
-            {run ? <DataKindBadge kind={run.data_kind} /> : <DataKindBadge kind={group.runs[0]?.data_kind} />}
+            <span>Dự đoán <DataKindBadge kind={(run ?? group.runs[0])?.data_kind} /></span>
+            {productInfo.dataKind === "toy" && <span>Thông tin sản phẩm <DataKindBadge kind={productInfo.dataKind} /></span>}
           </div>
 
           <section className="grid">
@@ -197,11 +186,7 @@ export default function Recommendation({ state, productInfo }) {
                     {session.targetRank ? `✅ Trúng ở hạng ${session.targetRank}` : "❌ Ngoài Top-20"}
                   </p>
                 )}
-                {historyCategories.size > 0 && categorized.length > 0 && (
-                  <p className="definition">
-                    Nhóm đã xem: {[...historyCategories].join(", ")}. {matchingCount}/{categorized.length} gợi ý có danh mục cùng nhóm.
-                  </p>
-                )}
+                {summary && <p className="definition">{summary}</p>}
                 {!run.scoreAvailable && (
                   <p className="definition">TV2 chưa xuất điểm cho từng sản phẩm.</p>
                 )}
@@ -217,7 +202,7 @@ export default function Recommendation({ state, productInfo }) {
                           <td>
                             <ProductCard id={r.product_id} products={products} />
                             {isTarget && <span className="tag tag-hit">Sản phẩm thực tế</span>}
-                            {sameCategory(r) && <span className="tag tag-category">Cùng nhóm</span>}
+                            {matchingIds.has(r.product_id) && <span className="tag tag-category">Cùng nhóm</span>}
                             {inHistory && <span className="tag">Đã xem</span>}
                           </td>
                           <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? MISSING : r.score}</td>
