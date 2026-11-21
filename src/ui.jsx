@@ -10,7 +10,7 @@ export function Notice({ kind = "info", title, children }) {
 }
 
 export function DataKindBadge({ kind }) {
-  if (kind === "toy") return <span className="badge badge-toy" title="Dữ liệu toy: chỉ kiểm tra định dạng, không phải kết quả benchmark">TOY · không phải benchmark</span>;
+  if (kind === "toy") return <span className="badge badge-toy" title="Dữ liệu toy: chỉ kiểm tra định dạng, không phải kết quả benchmark">Dữ liệu toy – không phải kết quả benchmark</span>;
   if (kind === "real") return <span className="badge badge-real">Dữ liệu thật</span>;
   return <span className="badge badge-unknown" title="Artifact chưa ghi data_kind">data_kind: Chưa có</span>;
 }

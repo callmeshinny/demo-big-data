@@ -281,7 +281,7 @@ export default function Experiments({ state }) {
 
         {showToy && toySorted.length > 0 && (
           <div className="toy-block">
-            <h3>Run toy smoke <span className="badge badge-toy">TOY · không phải benchmark</span></h3>
+            <h3>Run toy smoke <DataKindBadge kind="toy" /></h3>
             <p className="definition">
               Chạy trên dữ liệu tổng hợp ({toySorted[0]?.metrics?.["Recall@20"]?.scope ?? "vài session"}) để kiểm tra công cụ.
               Không dùng để so sánh model hay kết luận.

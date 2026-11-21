@@ -6,8 +6,8 @@ import Experiments from "./Experiments.jsx";
 import "./styles.css";
 
 const TABS = [
-  { id: "recommendation", label: "Recommendation" },
-  { id: "experiments", label: "Experiments E1–E5" },
+  { id: "recommendation", label: "Gợi ý sản phẩm" },
+  { id: "experiments", label: "Thí nghiệm E1–E5" },
 ];
 
 // Optional overrides for testing broken files, e.g. ?demo=/tests/fixtures/empty.json
@@ -57,9 +57,12 @@ function App() {
     <main className="shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Big Data · Session-based recommendation · TV4 demo</p>
-          <h1>Next-item recommendation</h1>
-          <p className="lede">Input: lịch sử một session. Output: Top-20 sản phẩm có khả năng xem tiếp. Đánh giá bằng Recall@20 và NDCG@20.</p>
+          <p className="eyebrow">Big Data · Bản demo TV4</p>
+          <h1>Gợi ý sản phẩm tiếp theo</h1>
+          <p className="lede">Một phiên là một lượt truy cập, mỗi lần bấm vào sản phẩm là một sự kiện. Model nhận các sản phẩm trước mục cuối và trả về một danh sách Top-20 cho cả phiên. Mục cuối là sản phẩm khách thực sự xem tiếp.</p>
+          <p className="definition">Recall@20 đo tỷ lệ phiên có sản phẩm thực tế trong Top-20. NDCG@20 cho trọng số cao hơn khi sản phẩm đó đứng gần đầu danh sách.</p>
+          <p className="definition">Popularity là model cơ sở. Cả Popularity, GRU và XLNet chỉ dùng mã sản phẩm. Tên hiển thị được ghép từ thương hiệu và danh mục để dễ đọc. Giá dùng để hiển thị.</p>
+          <p className="definition">Demo phát lại kết quả dự đoán đã chạy sẵn trên dữ liệu kiểm tra, không chạy model trực tiếp. Xem kết quả đánh giá trong tab Thí nghiệm E1–E5.</p>
         </div>
       </header>
 
@@ -75,7 +78,7 @@ function App() {
       </div>
 
       <footer>
-        Web chỉ hiển thị artifact nhóm đã bàn giao. Không train, không tính lại metric. Giá trị chưa bàn giao hiện "Chưa có".
+        Giá trị chưa bàn giao hiển thị “Chưa có”.
       </footer>
     </main>
   );
