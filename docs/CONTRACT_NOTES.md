@@ -41,3 +41,16 @@ proposed price rule is **last observed price in the subset week**.
   }
 }
 ```
+
+## Part D — Dataset overview (NEED TV1 confirm)
+
+`public/dataset-overview.json` uses `tv4-dataset-overview/v1` with
+`team_commit`, `generated_at`, `data_kind`, `confirmed_by_tv1`, `raw_month`,
+`subsets` and `pipeline_measurements`. The raw month is from `data/raw_audit.csv`.
+The weekly rows require the verified cuDF artifact. Confirm the source keys
+and the scope of counts and histogram buckets with TV1. The raw-only export
+leaves weekly values null. Pipeline measurements have their own opt-in flag
+and require TV2 confirmation for benchmark use.
+
+The proposed Part B `environment_baseline` records a VM snapshot and source
+commit at file level. The run-level environment continues to come from run artifacts.

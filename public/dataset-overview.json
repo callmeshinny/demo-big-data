@@ -1,0 +1,77 @@
+{
+  "schema": "tv4-dataset-overview/v1",
+  "team_commit": "b0700cc",
+  "generated_at": "2026-11-21",
+  "data_kind": "unconfirmed",
+  "confirmed_by_tv1": false,
+  "raw_month": {
+    "row_count": 42448764,
+    "min_timestamp_utc": "2019-10-01 00:00:00",
+    "max_timestamp_utc": "2019-10-31 23:59:59",
+    "missing": {
+      "brand": 6113008,
+      "category_code": 13515609
+    },
+    "source": "data/raw_audit.csv"
+  },
+  "subsets": [
+    {
+      "subset": 10,
+      "scope": "first week of 2019-10, cuDF weekly cleanup",
+      "n_events": null,
+      "events_after_repeat_removal": null,
+      "distinct": null,
+      "missing": null,
+      "event_types": null,
+      "session_length_histogram": null,
+      "sequence_count": null,
+      "vocabulary_size": null,
+      "source": null
+    },
+    {
+      "subset": 25,
+      "scope": "first week of 2019-10, cuDF weekly cleanup",
+      "n_events": null,
+      "events_after_repeat_removal": null,
+      "distinct": null,
+      "missing": null,
+      "event_types": null,
+      "session_length_histogram": null,
+      "sequence_count": null,
+      "vocabulary_size": null,
+      "source": null
+    },
+    {
+      "subset": 50,
+      "scope": "first week of 2019-10, cuDF weekly cleanup",
+      "n_events": null,
+      "events_after_repeat_removal": null,
+      "distinct": null,
+      "missing": null,
+      "event_types": null,
+      "session_length_histogram": null,
+      "sequence_count": null,
+      "vocabulary_size": null,
+      "source": null
+    },
+    {
+      "subset": 100,
+      "scope": "first week of 2019-10, cuDF weekly cleanup",
+      "n_events": null,
+      "events_after_repeat_removal": null,
+      "distinct": null,
+      "missing": null,
+      "event_types": null,
+      "session_length_histogram": null,
+      "sequence_count": null,
+      "vocabulary_size": null,
+      "source": null
+    }
+  ],
+  "pipeline_measurements": {
+    "status": "unconfirmed",
+    "show": false,
+    "e2": [],
+    "e4_smoke": []
+  }
+}

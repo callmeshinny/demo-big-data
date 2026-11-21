@@ -163,3 +163,12 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 
 .badge-toy { white-space: normal; max-width: 100%; }
 .controls label { min-width: 0; }
+
+.bars { list-style: none; padding: 0; }
+.bars li { display: flex; align-items: center; gap: .75rem; margin-block: .4rem; }
+.bars li > span:first-child { min-width: 2rem; }
+.bars meter { flex: 1; min-width: 0; height: 1rem; }
+.highlight-bar::-webkit-meter-optimum-value { background: #a35800; }
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1rem; }
+.pipeline p { margin: .25rem 0; }
+footer code { overflow-wrap: anywhere; }

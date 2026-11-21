@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { loadJson, normalizeDemo, normalizeProductInfo, normalizeResults } from "./data.js";
+import { loadJson, normalizeDemo, normalizeProductInfo, normalizeResults, MISSING } from "./data.js";
 import Recommendation from "./Recommendation.jsx";
+import Dataset from "./Dataset.jsx";
+import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
 import "./styles.css";
 
 const TABS = [
   { id: "recommendation", label: "Gợi ý sản phẩm" },
+  { id: "data", label: "Dữ liệu" },
   { id: "experiments", label: "Thí nghiệm E1–E5" },
 ];
 
 // Optional overrides for testing broken files, e.g. ?demo=/tests/fixtures/empty.json
 // Only same-origin absolute paths are accepted.
 function source(param, fallback) {
+  if (!import.meta.env.DEV) return fallback;
   const value = new URLSearchParams(window.location.search).get(param);
   return value && value.startsWith("/") && !value.startsWith("//") ? value : fallback;
 }
 const base = import.meta.env.BASE_URL;
 const DEMO_URL = source("demo", `${base}demo-data.json`);
 const PRODUCTS_URL = source("products", `${base}product-info.json`);
+const DATASET_URL = source("dataset", `${base}dataset-overview.json`);
 const RESULTS_URL = source("results", `${base}run-results.json`);
 
 function useData(url, normalize) {
@@ -27,7 +32,9 @@ function useData(url, normalize) {
     let alive = true;
     loadJson(url).then(({ data, error }) => {
       if (!alive) return;
-      setState(error ? { error } : normalize(data));
+      setState(error ? { error } : { ...normalize(data), provenance: {
+        team_commit: data?.team_commit, generated_at: data?.generated_at, data_kind: data?.data_kind,
+      } });
     });
     return () => { alive = false; };
   }, [url, normalize]);
@@ -43,6 +50,7 @@ function App() {
   const [tab, setTab] = useState(currentTab);
   const demo = useData(DEMO_URL, normalizeDemo);
   const products = useData(PRODUCTS_URL, normalizeProductInfo);
+  const dataset = useData(DATASET_URL, normalizeDataset);
   const results = useData(RESULTS_URL, normalizeResults);
 
   useEffect(() => {
@@ -51,7 +59,7 @@ function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const state = tab === "recommendation" ? demo : results;
+  const state = { recommendation: demo, data: dataset, experiments: results }[tab];
 
   return (
     <main className="shell">
@@ -74,11 +82,17 @@ function App() {
 
       <div role="tabpanel">
         {state.loading ? <p className="loading">Đang tải dữ liệu…</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} /> : <Experiments state={state} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} />}
       </div>
 
       <footer>
-        Giá trị chưa bàn giao hiển thị “Chưa có”.
+        <p>Giá trị chưa bàn giao hiển thị “Chưa có”.</p>
+        <ul>{[
+          ["demo-data.json", demo], ["product-info.json", products],
+          ["dataset-overview.json", dataset], ["run-results.json", results],
+        ].map(([name, file]) => <li key={name}>
+          <code>{name}</code> · Commit {file.provenance?.team_commit ?? MISSING} · Ngày xuất {file.provenance?.generated_at ?? MISSING} · {file.provenance?.data_kind ?? MISSING}
+        </li>)}</ul>
       </footer>
     </main>
   );

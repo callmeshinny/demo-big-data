@@ -19,6 +19,7 @@ scope. Unknown or undelivered values are null. Applicability is decided by the U
 """
 
 import argparse
+from datetime import date
 import json
 import subprocess
 from pathlib import Path
@@ -164,11 +165,49 @@ def team_commit(root):
         return None
 
 
+BASELINE_FIELDS = (
+    "gpu", "vram", "cpu_model", "cpu_cores", "ram", "os", "kernel", "driver",
+    "cuda_driver", "cuda_toolkit", "python", "torch", "transformers4rec",
+)
+
+
+def environment_baseline(root):
+    readme = Path("environment/README.md")
+    inspect = Path("environment/logs/04-docker-image-inspect.json")
+    heading = "## Bản ghi runtime chính thức"
+    text = (root / readme).read_text(encoding="utf-8")
+    if heading not in text:
+        raise ValueError(f"{readme}: missing runtime table heading")
+    section = text.split(heading, 1)[1].split("\n## ", 1)[0]
+    rows = {}
+    for line in section.splitlines():
+        if not line.startswith("|"):
+            continue
+        columns = [column.strip() for column in line.strip("|").split("|")]
+        if len(columns) != 2:
+            raise ValueError(f"{readme}: expected a two-column runtime table")
+        label, value = columns
+        rows[label.strip("`").casefold().replace(" ", "_")] = value.strip("`")
+    missing = set(BASELINE_FIELDS) - rows.keys()
+    if missing:
+        raise ValueError(f"{readme}: missing runtime table fields {', '.join(sorted(missing))}")
+    digests = json.loads((root / inspect).read_text(encoding="utf-8"))[0]["RepoDigests"]
+    if len(digests) != 1:
+        raise ValueError(f"{inspect}: expected one unambiguous image digest")
+    return {
+        **{key: rows[key] for key in BASELINE_FIELDS},
+        "merlin_image_digest": digests[0],
+        "source": {"files": [str(readme), str(inspect)], "team_commit": team_commit(root)},
+        "scope": "VM runtime verified 21/11, not tied to a specific run",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--matrix", type=Path, required=True)
     parser.add_argument("--collector-dir", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--without-vm-baseline", action="store_true", help="Export when the verified TV3 inputs are unavailable")
     args = parser.parse_args()
     team_root = Path.cwd().resolve()
     try:
@@ -197,6 +236,9 @@ def main():
             "package_id": None,
             "confirmed_by_tv2": False,
             "team_commit": team_commit(team_root),
+            "generated_at": date.today().isoformat(),
+            "data_kind": "unconfirmed",
+            "environment_baseline": None if args.without_vm_baseline else environment_baseline(team_root),
             "matrix_decisions": matrix.get("decisions"),
             "runs": list(records.values()),
         }

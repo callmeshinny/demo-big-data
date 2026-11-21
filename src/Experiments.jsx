@@ -252,6 +252,17 @@ export default function Experiments({ state }) {
         </Notice>
       )}
 
+      <section className="panel">
+        <h2>Môi trường VM (TV3)</h2>
+        {meta.environment_baseline ? <>
+          <p>{meta.environment_baseline.scope}</p>
+          <dl className="env">{Object.entries(meta.environment_baseline)
+            .filter(([key]) => !["source", "scope"].includes(key))
+            .map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{formatValue(value)}</dd></div>)}</dl>
+          <p className="definition">{formatValue(meta.environment_baseline.source)}</p>
+        </> : <p>{MISSING}</p>}
+      </section>
+
       <nav className="subtabs" aria-label="Thí nghiệm">
         {EXPERIMENTS.map((id) => (
           <button key={id} type="button" className={id === active ? "active" : ""} aria-pressed={id === active} onClick={() => setActive(id)}>{id}</button>

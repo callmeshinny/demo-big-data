@@ -18,6 +18,7 @@ Rules applied (see AGENTS.md):
 """
 
 import argparse
+from datetime import date
 import hashlib
 import json
 import subprocess
@@ -146,6 +147,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--run", action="append", required=True, metavar="RUN_DIR=CATALOG")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--stamp", action="store_true", help="Include export date and file-level data kind")
     args = parser.parse_args()
     try:
         runs = []
@@ -157,6 +159,10 @@ def main():
         if len({run["run_id"] for run in runs}) != len(runs):
             raise ValueError("Duplicate run_id")
         payload = {"schema": "tv4-demo-data/v2", "team_commit": team_commit(), "runs": runs}
+        if args.stamp:
+            kinds = {run["data_kind"] for run in runs}
+            payload.update(generated_at=date.today().isoformat(),
+                           data_kind=next(iter(kinds)) if kinds in ({"toy"}, {"real"}) else "unconfirmed")
         args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         for run in runs:
             print(f"{run['run_id']}: {run['model']}, {len(run['sessions'])} sessions, "

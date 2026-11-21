@@ -275,6 +275,7 @@ export function normalizeResults(raw) {
   return {
     runs,
     meta: {
+      environment_baseline: raw.environment_baseline ?? null,
       package_id: raw.package_id ?? null,
       confirmed_by_tv2: raw.confirmed_by_tv2 === true,
       team_commit: raw.team_commit ?? null,
