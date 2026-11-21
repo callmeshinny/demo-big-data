@@ -114,6 +114,7 @@ select:focus { outline: 3px solid #dbe8ff; border-color: var(--blue); }
 .env dd.missing { font-family: Inter, sans-serif; }
 .sources { margin: 0; padding-left: 18px; font-size: 12px; color: var(--muted); }
 .sources li { margin: 3px 0; }
+.scroll-hint { display: none; margin: 0 0 6px; color: var(--blue-ink); font-size: 12px; font-weight: 700; }
 .toy-block { margin-top: 26px; border-top: 2px dashed var(--amber-line); padding-top: 4px; }
 
 footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 0; color: var(--soft); font-size: 12px; }
@@ -127,5 +128,7 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
   .ranking .tag { margin: 4px 4px 0 0; }
   .ranking td { padding: 8px; }
   .toggle { margin-left: 0; width: 100%; }
-  .metric-table thead th:first-child, .metric-table tbody th { min-width: 150px; }
+  .metric-table thead th:first-child, .metric-table tbody th { min-width: 120px; max-width: 140px; }
+  .metric-table thead th { min-width: 150px; }
+  .scroll-hint { display: block; }
 }

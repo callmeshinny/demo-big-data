@@ -126,6 +126,8 @@ function MetricCell({ run, metricKey }) {
 function MetricTable({ runs, metrics, caption }) {
   if (!runs.length) return <p className="missing">{MISSING}</p>;
   return (
+    <>
+    {runs.length > 1 && <p className="scroll-hint">Vuốt ngang để xem đủ {runs.length} run →</p>}
     <div className="table-scroll">
       <table className="metric-table">
         <caption className="sr-only">{caption}</caption>
@@ -149,6 +151,7 @@ function MetricTable({ runs, metrics, caption }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
