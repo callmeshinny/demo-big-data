@@ -172,3 +172,6 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 .pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1rem; }
 .pipeline p { margin: .25rem 0; }
 footer code { overflow-wrap: anywhere; }
+.metric-chart { margin: 1rem 0; padding-block: .75rem; border-bottom: 1px solid var(--line, #ddd); overflow-wrap: anywhere; }
+.metric-chart .bars li > span:first-child { flex: 1; }
+.metric-chart .bars small { display: block; }

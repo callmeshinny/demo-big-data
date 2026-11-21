@@ -1,3 +1,4 @@
+import ExperimentCharts from "./ExperimentCharts.jsx";
 import React, { useState } from "react";
 import {
   EXPERIMENTS, MISSING, NOT_APPLICABLE, compareConfig, displayCell, exactValue, formatValue, modelLabel, splitByKind,
@@ -279,6 +280,7 @@ export default function Experiments({ state }) {
         </div>
         <p className="definition">{panel.question}</p>
 
+        <ExperimentCharts experiment={active} runs={official} />
         {active === "E5" ? <E5Panel runs={official} /> : (
           <>
             <h3>{meta.confirmed_by_tv2 ? "Run chính thức" : "Run theo kế hoạch"}</h3>
@@ -292,6 +294,7 @@ export default function Experiments({ state }) {
             <p className="definition">
               Các lượt chạy trên dữ liệu tổng hợp dùng để kiểm tra công cụ.
             </p>
+            <ExperimentCharts experiment={active} runs={toySorted} />
             <RunSet runs={toySorted} metrics={panel.metrics} caption={`${panel.title} — toy`} />
           </div>
         )}
