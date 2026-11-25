@@ -6,6 +6,8 @@ import {
 } from "./data.js";
 import { DataKindBadge, Issues, Notice, StatusBadge } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
+import { buildScalingView, chartCoordinates } from "./scaling.js";
+import { formatCount, formatSeconds } from "./format.js";
 
 // Metric definitions: label, default unit and scope (contract B5). Values always come from JSON.
 const METRICS = () => ({
@@ -256,6 +258,73 @@ function OfficialE1Panel({ results }) {
   );
 }
 
+function OfficialE2Panel({ results }) {
+  const { e2Table } = buildScalingView(results);
+  return <section className="panel scaling-panel">
+    <div className="panel-heading"><h2>{t("e2_effect_of_dataset_size")}</h2></div>
+    <div className="table-scroll">
+      <table className="metric-table scaling-table">
+        <caption className="sr-only">{t("e2_effect_of_dataset_size")}</caption>
+        <thead><tr><th scope="col">{t("metric")}</th>{e2Table.columns.map((column) => <th scope="col" key={column.runId}>
+          <strong>{column.subset}%</strong><span className="column-subtitle" title={column.events.raw}>{column.events.text} {t("events")}</span>
+        </th>)}</tr></thead>
+        <tbody>{e2Table.rows.map((row, rowIndex) => <tr key={row.field}>
+          <th scope="row">{row.label}</th>
+          {e2Table.columns.map((column) => {
+            const cell = column.cells[rowIndex];
+            return <td key={`${row.field}/${column.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
+          })}
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <p className="scaling-shared"><strong title={String(e2Table.firstSeen)}>{t("e2_first_seen_shared", formatSeconds(e2Table.firstSeen).text)}</strong> {e2Table.firstSeenNote}</p>
+    <p className="scaling-note">{e2Table.accuracyNote}</p>
+  </section>;
+}
+
+function E5Chart({ chart }) {
+  const points = chartCoordinates(chart.series);
+  const first = points[0];
+  const last = points.at(-1);
+  const path = points.map((point, index) => `${index ? "L" : "M"}${point.cx},${point.cy}`).join(" ");
+  return <figure className="scaling-chart">
+    <figcaption>{chart.title}</figcaption>
+    <svg viewBox="0 0 600 300" role="img" aria-label={chart.title}>
+      <line x1="66" y1="246" x2="576" y2="246" className="chart-axis" />
+      <line x1="66" y1="24" x2="66" y2="246" className="chart-axis" />
+      <text x="320" y="288" textAnchor="middle" className="chart-axis-label">{t("e5_x_axis_events")}</text>
+      <text x="18" y="138" textAnchor="middle" transform="rotate(-90 18 138)" className="chart-axis-label">{chart.yLabel}</text>
+      {first && <text x="66" y="265" textAnchor="start" className="chart-tick">{formatCount(first.x).text}</text>}
+      {last && <text x="576" y="265" textAnchor="end" className="chart-tick">{formatCount(last.x).text}</text>}
+      <path d={path} className="chart-line" />
+      {points.map((point) => <g key={point.runId}>
+        <circle cx={point.cx} cy={point.cy} r="5" className="chart-point">
+          <title>{`${formatCount(point.x).text} · ${chart.formatY(point.y).text} · ${point.runId}`}</title>
+        </circle>
+        <text x={point.cx} y={point.cy - 11} textAnchor="middle" className="chart-value">{chart.formatPoint(point.y).text}</text>
+      </g>)}
+    </svg>
+  </figure>;
+}
+
+function OfficialE5Panel({ results }) {
+  const { e5Table, charts } = buildScalingView(results);
+  return <section className="panel scaling-panel">
+    <div className="panel-heading"><h2>{t("e5_scalability")}</h2></div>
+    <div className="table-scroll">
+      <table className="metric-table scaling-table e5-table">
+        <caption className="sr-only">{t("e5_scalability")}</caption>
+        <thead><tr><th scope="col">{t("metric")}</th>{e5Table.columns.map((column) => <th scope="col" key={column.runId}>{column.subset}%</th>)}</tr></thead>
+        <tbody>{e5Table.rows.map((row) => <tr key={row.field}>
+          <th scope="row">{row.label}</th>{row.cells.map((cell, index) => <td key={`${row.field}/${index}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : row.field === "bottleneck" ? "stage-value" : "num"}>{cell.text}</td>)}
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <div className="scaling-charts">{charts.map((chart) => <E5Chart key={chart.id} chart={chart} />)}</div>
+    <p className="scaling-note">{e5Table.composedNote}</p>
+  </section>;
+}
+
 export default function Experiments({ state, active, officialResults }) {
   const { runs = [], meta = {}, issues = [], fatal, error } = state;
   const [showToy, setShowToy] = useState(true);
@@ -268,16 +337,17 @@ export default function Experiments({ state, active, officialResults }) {
   const order = (r) => official.findIndex((o) => o.run_id === r.matrix_run_id);
   const toySorted = [...toy].sort((a, b) => order(a) - order(b));
   const officialE1 = active === "E1";
+  const officialScaling = ["E1", "E2", "E5"].includes(active);
 
   return (
     <>
       <Issues issues={issues} />
-      {!officialE1 && !meta.confirmed_by_tv2 && (
+      {!officialScaling && !meta.confirmed_by_tv2 && (
         <Notice kind="warn" title={t("official_e1_e5_package_pending_from")}>{t("planned_values_come_from_the_experiment")}{t("not_available_yet")}{t("until_tv2_delivers_them")} {meta.team_commit && <> {t("data_exported_from_team_commit")} <code>{meta.team_commit}</code>.</>}
         </Notice>
       )}
 
-      {!officialE1 && <section className="panel">
+      {!officialScaling && <section className="panel">
         <h2>{t("vm_environment_tv3")}</h2>
         {meta.environment_baseline ? <>
           <p>{meta.environment_baseline.scope}</p>
@@ -292,14 +362,16 @@ export default function Experiments({ state, active, officialResults }) {
         {EXPERIMENTS.map((id) => (
           <a key={id} href={`#experiments-${id.toLowerCase()}`} className={id === active ? "active" : ""} aria-current={id === active ? "page" : undefined}>{id}</a>
         ))}
-        {!officialE1 && <label className="toggle">
+        {!officialScaling && <label className="toggle">
           <input type="checkbox" checked={showToy} onChange={(e) => setShowToy(e.target.checked)} />{t("show_toy_runs_for_format_reference")} </label>
         }
       </nav>
 
-      {officialE1 ? (officialResults?.loading ? <p className="loading">{t("loading_data")}</p>
+      {officialScaling ? (officialResults?.loading ? <p className="loading">{t("loading_data")}</p>
         : officialResults?.error ? <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{officialResults.error}</Notice>
-          : <OfficialE1Panel results={officialResults?.results} />) : <section className="panel">
+          : officialE1 ? <OfficialE1Panel results={officialResults?.results} />
+            : active === "E2" ? <OfficialE2Panel results={officialResults?.results} />
+              : <OfficialE5Panel results={officialResults?.results} />) : <section className="panel">
         <div className="panel-heading">
           <h2>{panel.title}</h2>
         </div>

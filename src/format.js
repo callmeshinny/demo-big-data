@@ -31,6 +31,16 @@ export function formatSeconds(value) {
   return result(value, `${fixed(value, digits)} s`);
 }
 
+export function formatSecondsPerMillionEvents(value) {
+  if (missing(value)) return { text: MISSING(), raw: String(value) };
+  return result(value, `${fixed(value, 1)} s/million events`);
+}
+
+export function formatSecondsPerMillionEventsPoint(value) {
+  if (missing(value)) return { text: MISSING(), raw: String(value) };
+  return result(value, `${fixed(value, 1)} s`);
+}
+
 export function formatMsPerSession(value) {
   if (missing(value)) return { text: MISSING(), raw: String(value) };
   return result(value, `${fixed(value, 3)} ms/session`);
