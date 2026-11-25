@@ -75,6 +75,22 @@ try {
             ).slice(0, 8).map((el) => [el.tagName, el.className, el.textContent.slice(0, 120)])];
           });
           assert.deepEqual(overflow, [], `Overflow in ${name} at ${width}`);
+          if (width === 375) {
+            const overlaps = await page.evaluate(() => [...document.querySelectorAll("table.metric-table")].flatMap((table) =>
+              [...table.rows].flatMap((row, rowIndex) => {
+                const cells = [...row.cells].map((cell) => ({
+                  text: cell.innerText.trim(),
+                  rect: cell.getBoundingClientRect().toJSON(),
+                }));
+                return cells.flatMap((left, index) => cells.slice(index + 1).flatMap((right) => {
+                  const horizontal = Math.min(left.rect.right, right.rect.right) - Math.max(left.rect.left, right.rect.left);
+                  const vertical = Math.min(left.rect.bottom, right.rect.bottom) - Math.max(left.rect.top, right.rect.top);
+                  return horizontal > 1 && vertical > 1 ? [{ table: table.className, rowIndex, left: left.text, right: right.text }] : [];
+                }));
+              })
+            ));
+            assert.deepEqual(overlaps, [], `Metric cells overlap in ${name} at ${width}`);
+          }
           await page.screenshot({ path: path.join(folder, `${name}-${width}.png`), fullPage: true });
         };
         await page.goto(`${home}/#recommendation`);
