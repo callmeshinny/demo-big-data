@@ -7,6 +7,8 @@ test("both locales provide the same UI keys and interpolate values", () => {
   assert.equal(readLanguage(), "en");
   setLanguage("en");
   assert.equal(t("hit_at_rank_0", 20), "Hit at rank 20");
+  assert.equal(t("e5_x_axis_events"), "Events (count)");
   setLanguage("vi");
   assert.equal(t("hit_at_rank_0", 20), "✅ Trúng ở hạng 20");
+  assert.equal(t("e5_x_axis_events"), "Số sự kiện");
 });
