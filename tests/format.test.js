@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   formatBytes, formatCount, formatMsPerSession, formatPercent, formatRatio,
-  formatSeconds, formatSessionsPerSecond,
+  formatNumberOnly, formatSeconds, formatSessionsPerSecond,
 } from "../src/format.js";
 
 test("formats ratios and preserves the raw value", () => {
@@ -24,6 +24,11 @@ test("formats other official display units", () => {
   assert.equal(formatBytes(7977566208).text, "7.43 GiB");
   assert.equal(formatCount(882808).text, "882,808");
   assert.equal(formatPercent(48.58634).text, "48.59%");
+});
+
+test("number-only formatting preserves the raw value and accepts a shared byte unit", () => {
+  assert.deepEqual(formatNumberOnly(formatSeconds, 28.132), { text: "28.13", raw: "28.132" });
+  assert.deepEqual(formatNumberOnly(formatBytes, 134004153, "GiB"), { text: "0.12", raw: "134004153" });
 });
 
 test("missing values use localized MISSING text and retain raw tooltip values", () => {

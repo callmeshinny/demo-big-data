@@ -1,5 +1,5 @@
 import { t } from "./i18n.js";
-import { formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatSecondsPerMillionEventsPoint } from "./format.js";
+import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatSecondsPerMillionEventsPoint } from "./format.js";
 import { modelLabel } from "./data.js";
 
 const E2_FIELDS = [
@@ -24,7 +24,11 @@ const E5_FIELDS = [
 ];
 
 function rowCell(row, field, formatter) {
-  return formatter(row?.[field]);
+  return formatNumberOnly(formatter, row?.[field]);
+}
+
+function appendUnit(label, unit) {
+  return `${label} (${unit})`;
 }
 
 export function buildScalingView(results) {
@@ -85,8 +89,8 @@ export function buildScalingView(results) {
 }
 
 const E3_FIELDS = [
-  ["Recall@20", "e1_recall_20", formatRatio],
-  ["NDCG@20", "e1_ndcg_20", formatRatio],
+  ["Recall@20", "e3_recall_20_validation", formatRatio],
+  ["NDCG@20", "e3_ndcg_20_validation", formatRatio],
   ["train_seconds_including_sequence_io", "e1_train_time_s", formatSeconds],
   ["process_wall_seconds", "e1_process_wall_time_s", formatSeconds],
   ["final_evaluation_seconds", "e1_final_evaluation_s", formatSeconds],
@@ -121,20 +125,32 @@ export function buildE3E4View(results) {
     changeOnly: config?.planned?.resource_config?.change_only,
   } : null;
   const protocol = results?.dictionary?.inference_protocol?.split(";")[0];
+  const e3ByteUnits = Object.fromEntries(["sampled_rss_bytes_descriptive_only", "sampled_gpu_process_bytes"].map((field) => [
+    field, byteDisplayUnit(e3.map((run) => run[field])),
+  ]));
+  const e4ByteUnits = Object.fromEntries(["bytes", "sampled_rss_bytes_descriptive_only"].map((field) => [
+    field, byteDisplayUnit(e4.map((run) => run[field])),
+  ]));
   return {
     e3: {
       models: e3.map((run) => ({
         runId: run.run_id,
         batchSize: run.train_batch_size,
-        cells: E3_FIELDS.map(([field, label, formatter]) => ({
+        cells: E3_FIELDS.map(([field, label, formatter]) => {
+          const unit = e3ByteUnits[field];
+          return {
           field,
-          label: t(label),
+          label: `${t(label)}${unit ? ` (${unit})` : ""}`,
           ...(field === "sampled_gpu_process_bytes" && run.sampled_gpu_status === "unavailable"
             ? { text: t("not_measured"), raw: String(run[field]) }
-            : formatter(run[field])),
-        })),
+            : formatNumberOnly(formatter, run[field], unit)),
+          };
+        }),
       })),
-      rows: E3_FIELDS.map(([field, label]) => ({ field, label: t(label) })),
+      rows: E3_FIELDS.map(([field, label]) => ({
+        field,
+        label: `${t(label)}${e3ByteUnits[field] ? ` (${e3ByteUnits[field]})` : ""}`,
+      })),
       context,
       note: t("e3_eval_note", protocol ?? t("MISSING")),
       accuracyNote: results?.dictionary?.E3_accuracy,
@@ -143,9 +159,16 @@ export function buildE3E4View(results) {
       formats: e4.map((run) => ({
         label: run.format,
         runId: run.run_id,
-        cells: E4_FIELDS.map(([field, label, formatter]) => ({ field, label: t(label), ...formatter(run[field]) })),
+        cells: E4_FIELDS.map(([field, label, formatter]) => ({
+          field,
+          label: `${t(label)}${e4ByteUnits[field] ? ` (${e4ByteUnits[field]})` : ""}`,
+          ...formatNumberOnly(formatter, run[field], e4ByteUnits[field]),
+        })),
       })),
-      rows: E4_FIELDS.map(([field, label]) => ({ field, label: t(label) })),
+      rows: E4_FIELDS.map(([field, label]) => ({
+        field,
+        label: `${t(label)}${e4ByteUnits[field] ? ` (${e4ByteUnits[field]})` : ""}`,
+      })),
       preprocessingNote: results?.dictionary?.E4_preprocessing_wall,
       excluded: Object.entries(results?.excluded ?? {}),
     },

@@ -1,5 +1,5 @@
 import { t } from "./i18n.js";
-import { formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds } from "./format.js";
+import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds } from "./format.js";
 import { modelLabel } from "./data.js";
 
 const FIELDS = [
@@ -22,6 +22,7 @@ export function buildE1View(results) {
   const firstRun = models.find(({ run }) => run)?.run;
   const config = firstRun ? results.configs?.[firstRun.run_id] : null;
   const partition = config?.split_counts?.filter((item) => item.split === firstRun?.split).at(-1)?.day_index;
+  const byteFields = new Set(["sampled_rss_bytes_descriptive_only", "sampled_gpu_process_bytes"]);
   return {
     models,
     context: firstRun ? {
@@ -30,17 +31,21 @@ export function buildE1View(results) {
       partition,
       sessions: firstRun.n_sessions,
     } : null,
-    rows: FIELDS.map(([field, labelKey, formatter]) => ({
-      field,
-      label: t(labelKey),
-      cells: models.map(({ run }) => {
+    rows: FIELDS.map(([field, labelKey, formatter]) => {
+      const rowUnit = byteFields.has(field) ? byteDisplayUnit(models.map(({ run }) => run?.[field])) : undefined;
+      const label = `${t(labelKey)}${rowUnit ? ` (${rowUnit})` : ""}`;
+      return {
+        field,
+        label,
+        cells: models.map(({ run }) => {
         const raw = run?.[field];
         if (field === "sampled_gpu_process_bytes" && run?.sampled_gpu_status === "unavailable") {
           return { text: t("not_measured"), raw: raw === null || raw === undefined ? "null" : String(raw) };
         }
-        return formatter(raw);
-      }),
-    })),
+        return formatNumberOnly(formatter, raw, rowUnit);
+        }),
+      };
+    }),
     notes: [
       [t("e1_inference_protocol"), results?.dictionary?.inference_protocol],
       [t("e1_training_time_scope"), results?.dictionary?.train_seconds_including_sequence_io],

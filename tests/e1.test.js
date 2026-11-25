@@ -15,5 +15,7 @@ test("official E1 view formats XLNet Recall and unavailable Popularity GPU memor
   assert.equal(recall.cells[2].text, "0.1249");
   assert.equal(gpu.cells[0].text, "Not measured");
   assert.equal(gpu.cells[0].raw, "null");
+  assert.match(gpu.label, /\(GiB\)$/);
+  assert.equal(view.rows.find((row) => row.field === "train_seconds_including_sequence_io").cells[1].text, "28.13");
   assert.equal(formatE1Context(view.context), "10% subset · test partition 7 · 1,337 sessions · single run, single seed");
 });

@@ -51,12 +51,24 @@ export function formatSessionsPerSecond(value) {
   return result(value, fixed(value, 1));
 }
 
-export function formatBytes(value) {
+export function byteDisplayUnit(values) {
+  const gib = 1024 ** 3;
+  return values.some((value) => typeof value === "number" && Number.isFinite(value) && value >= gib) ? "GiB" : "MiB";
+}
+
+export function formatBytes(value, displayUnit) {
   if (missing(value)) return { text: MISSING(), raw: String(value) };
   const gib = 1024 ** 3;
-  return value < gib
+  const unit = displayUnit ?? byteDisplayUnit([value]);
+  return unit === "MiB"
     ? result(value, `${fixed(value / (1024 ** 2), 1)} MiB`)
     : result(value, `${fixed(value / gib, 2)} GiB`);
+}
+
+export function formatNumberOnly(formatter, value, displayUnit) {
+  const formatted = formatter(value, displayUnit);
+  if (missing(value)) return formatted;
+  return { ...formatted, text: formatted.text.replace(/\s*(?:s\/million events|ms\/session|s|MiB|GiB|%)$/, "") };
 }
 
 export function formatCount(value) {
