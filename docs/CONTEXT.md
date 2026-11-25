@@ -1,27 +1,28 @@
 # TV4 demo context
 
-Snapshot 21/11/2026, team commit `43841c9`. The team repo `tlmthuy/Big-Data` owns the artifacts and contract.
+Snapshot: 25/11/2026. The team repository `../Big-Data` is the source of truth for data, metrics and the contract. Official experiment results come from released package `tv2-20261124` and are copied into `public/official-results.json` by `scripts/export_official_results.py` after checksum verification.
 
-- The course requires an English report, slides and talk, with 15 minutes for the presentation and 5 for Q&A. Cover the dataset and 5Vs, subset selection and diversity, problem and method, deployment, experiment design and results. Source `docs/course_requirements.txt`.
-- TV1 selected the cuDF weekly cleanup set for official experiments. The DuckDB profiles, workflows and per-day splits are reference data. Sampling retains whole sessions by seeded SHA-256 in nested subsets over the first week of October 2019 UTC. Source `data/manifests/session_sampling_manifest.json`.
-- The merged contract is at `5f839a7`. TV2 splits sessions within day partitions, trains on day t and validates on the next day. Final test uses the last partition and the checkpoint from earlier partitions. Each session gets one Top-20 evaluated against its last item. Recall@20 records a hit. NDCG@20 discounts lower ranks. Both aggregate over sessions. Source `docs/modeling/model_protocol.md`.
-- Prediction rows carry original IDs for recommendations and encoded IDs for history and target. Use the run catalog and recorded SHA-256 to decode the latter. TV2 exports ranked IDs only. Delivered model runs are toy or smoke.
+## What is real
 
-## Demo decisions
+- The Experiments tab uses confirmed official E1–E5 metrics and configuration/runtime metadata from package `tv2-20261124`.
+- The Dataset tab uses the TV2 supplementary tables and TV1 manifests for the weekly cuDF subsets, population, cleaning and split information.
+- Six figures in `figures/` are generated from `public/official-results.json`; their sources and limitations are documented in `figures/CAPTIONS.md`.
+- The official E1–E5 package contains run-level benchmark values, but no per-session prediction scores.
 
-The static demo defaults to English and offers Vietnamese. Show preliminary timings with a label in Dataset only. Describe day splits in text. Keep the Score column. Keep raw-month missing counts and omit the weekly missing rows. The TV3 VM block stays pending.
+## What is still pending
 
-- Presentation mode and product icons removed (21/11).
+- The real E1 per-session prediction JSONL files and matching catalog have not been delivered into the local `../tv4-real-bundle/` folder. Recommendations therefore shows a waiting state and a closed toy format example.
+- A real product lookup with brand, category and price is also pending from TV1. Product cards show original IDs only.
+- No score should be shown for a recommendation: the exported prediction records contain ranked IDs only.
 
-## Still pending
+## Interpretation rules
 
-| Owner | Delivery |
-| --- | --- |
-| TV1 | Product metadata CSV with brand, category code and price. Per-day cuDF split counts are optional. |
-| TV2 | Real predictions with matching catalog, and the official E1–E5 package with TV3. |
+- E1 is the model comparison on the test partition. The package reports one run and seed, so results are descriptive and do not measure run-to-run variation.
+- E3 is a validation comparison and is not directly comparable with E1/E2 test results.
+- E4 preprocessing wall time includes its own read; do not add the standalone read time. The package also records a warm-cache condition.
+- E5 composed time excludes shared first-seen and is not observed end-to-end wall time.
+- Preserve package fields, units, nulls, limitations and source run IDs. Never invent or recompute metrics.
 
-## History
+## Regeneration
 
-- The 20/11 snapshot tracked contract approval and initial toy exports. The contract has since merged, and toy runs still support the UI.
-- Earlier work used the DuckDB workflow as reference. TV1 selected the cuDF weekly artifacts for official runs.
-- The first demo snapshots tracked the planned export dates, smoke runs, and VM handoff. Official measurements and run-linked environment remain dependent on the team package.
+Use the commands in the repository [README](../README.md) for official result and dataset adapters and figure generation. See [DEMO_DAY.md](DEMO_DAY.md) for the live sequence and static offline fallback. See [TEAM_PROGRESS_CONTEXT.md](TEAM_PROGRESS_CONTEXT.md) for the fuller team status and upstream artifact locations.
