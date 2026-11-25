@@ -1,5 +1,8 @@
 export const messages = {
   "en": {
+    "recommendation_tab_intro": "Explore saved next-item predictions for browsing sessions.",
+    "data_tab_intro": "This tab summarizes the source data, sampling, cleanup, and session splits.",
+    "experiments_tab_intro": "This tab presents official experiment results and their measurement limits.",
     "MISSING": "Not available",
     "weekly_events_before_cleanup": "Weekly events before cleanup",
     "events_after_consecutive_repeat_removal": "Events after consecutive-repeat removal",
@@ -288,6 +291,9 @@ export const messages = {
     "ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported (TV2 run_neural.py)."
   },
   "vi": {
+    "recommendation_tab_intro": "Xem kết quả dự đoán sản phẩm tiếp theo đã lưu cho các phiên duyệt.",
+    "data_tab_intro": "Tab này tóm tắt dữ liệu nguồn, lấy mẫu, làm sạch và chia phiên.",
+    "experiments_tab_intro": "Tab này trình bày kết quả thí nghiệm chính thức và giới hạn đo lường.",
     "MISSING": "Chưa có",
     "weekly_events_before_cleanup": "Sự kiện tuần trước làm sạch",
     "events_after_consecutive_repeat_removal": "Sự kiện sau bỏ lặp liên tiếp",

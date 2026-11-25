@@ -82,12 +82,6 @@ function App() {
   return (
     <main className="shell">
       <header className="topbar">
-        <div className="header-utility">
-          <div className="language-switch" role="group" aria-label={t("language")}>
-            {["en", "vi"].map((code) => <button type="button" key={code}
-              aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
-          </div>
-        </div>
         <div className="brand">
           {logo && <img className="brand-logo" src={logo} alt="" />}
           <h1>{siteName}</h1>
@@ -97,14 +91,15 @@ function App() {
             <a key={id} href={`#${id}`} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""}>{label}</a>
           ))}
         </nav>
+        <div className="header-utility">
+          <div className="language-switch" role="group" aria-label={t("language")}>
+            {["en", "vi"].map((code) => <button type="button" key={code}
+              aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
+          </div>
+        </div>
       </header>
       {cover && <img className="brand-cover" src={cover} alt="" />}
-      <section className="site-intro" aria-label={t("demo_intro")}>
-        <p className="lede">{t("a_session_is_one_visit_an")}</p>
-        <p className="definition">{t("recall_20_measures_how_often_the")}</p>
-        <p className="definition">{t("popularity_is_the_baseline_all_three")}</p>
-        <p className="definition">{t("the_demo_replays_saved_predictions_see")}</p>
-      </section>
+      <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
           : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
