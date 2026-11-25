@@ -1,5 +1,6 @@
 import { t } from "./i18n.js";
-import { formatCount, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatSecondsPerMillionEventsPoint } from "./format.js";
+import { formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatSecondsPerMillionEventsPoint } from "./format.js";
+import { modelLabel } from "./data.js";
 
 const E2_FIELDS = [
   ["Recall@20", "e1_recall_20", formatRatio],
@@ -81,6 +82,81 @@ export function buildScalingView(results) {
     },
   ];
   return { e2Table, e5Table, charts };
+}
+
+const E3_FIELDS = [
+  ["Recall@20", "e1_recall_20", formatRatio],
+  ["NDCG@20", "e1_ndcg_20", formatRatio],
+  ["train_seconds_including_sequence_io", "e1_train_time_s", formatSeconds],
+  ["process_wall_seconds", "e1_process_wall_time_s", formatSeconds],
+  ["final_evaluation_seconds", "e1_final_evaluation_s", formatSeconds],
+  ["eval_ms_per_session", "e1_evaluation_time_ms_session", formatMsPerSession],
+  ["sampled_rss_bytes_descriptive_only", "e1_sampled_rss_descriptive", formatBytes],
+  ["sampled_gpu_process_bytes", "e1_sampled_gpu_process_memory", formatBytes],
+];
+
+const E4_FIELDS = [
+  ["bytes", "e4_file_size_bytes", formatBytes],
+  ["read_seconds", "e4_read_time_s", formatSeconds],
+  ["preprocessing_wall_seconds_including_read", "e4_preprocessing_wall_including_read_s", formatSeconds],
+  ["sampled_rss_bytes_descriptive_only", "e1_sampled_rss_descriptive", formatBytes],
+];
+
+function evalPartition(run, config) {
+  return config?.split_counts?.filter((item) => item.split === run?.split).at(-1)?.day_index;
+}
+
+export function buildE3E4View(results) {
+  const e3 = [...(results?.tables?.E3 ?? [])].sort((a, b) => a.train_batch_size - b.train_batch_size);
+  const e4 = results?.tables?.E4 ?? [];
+  const firstRun = e3[0];
+  const config = firstRun ? results.configs?.[firstRun.run_id] : null;
+  const context = firstRun ? {
+    model: firstRun.model,
+    subset: firstRun.subset,
+    split: firstRun.split,
+    partition: evalPartition(firstRun, config),
+    sessions: firstRun.n_sessions,
+    evalBatchSize: config?.actual?.eval_batch_size,
+    changeOnly: config?.planned?.resource_config?.change_only,
+  } : null;
+  const protocol = results?.dictionary?.inference_protocol?.split(";")[0];
+  return {
+    e3: {
+      models: e3.map((run) => ({
+        runId: run.run_id,
+        batchSize: run.train_batch_size,
+        cells: E3_FIELDS.map(([field, label, formatter]) => ({
+          field,
+          label: t(label),
+          ...(field === "sampled_gpu_process_bytes" && run.sampled_gpu_status === "unavailable"
+            ? { text: t("not_measured"), raw: String(run[field]) }
+            : formatter(run[field])),
+        })),
+      })),
+      rows: E3_FIELDS.map(([field, label]) => ({ field, label: t(label) })),
+      context,
+      note: t("e3_eval_note", protocol ?? t("MISSING")),
+      accuracyNote: results?.dictionary?.E3_accuracy,
+    },
+    e4: {
+      formats: e4.map((run) => ({
+        label: run.format,
+        runId: run.run_id,
+        cells: E4_FIELDS.map(([field, label, formatter]) => ({ field, label: t(label), ...formatter(run[field]) })),
+      })),
+      rows: E4_FIELDS.map(([field, label]) => ({ field, label: t(label) })),
+      preprocessingNote: results?.dictionary?.E4_preprocessing_wall,
+      excluded: Object.entries(results?.excluded ?? {}),
+    },
+  };
+}
+
+export function formatE3Context(context) {
+  if (!context) return t("MISSING");
+  const number = (value) => value == null ? t("MISSING") : formatCount(value).text;
+  const changedField = context.changeOnly === "train_batch_size" ? t("experiment_train_batch").toLocaleLowerCase() : t("MISSING");
+  return t("e3_context", modelLabel(context.model), number(context.subset), context.split, number(context.partition), number(context.sessions), number(context.evalBatchSize), changedField);
 }
 
 export function chartCoordinates(series, width = 600, height = 300) {

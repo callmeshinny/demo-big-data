@@ -6,7 +6,7 @@ import {
 } from "./data.js";
 import { DataKindBadge, Issues, Notice, StatusBadge } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
-import { buildScalingView, chartCoordinates } from "./scaling.js";
+import { buildE3E4View, buildScalingView, chartCoordinates, formatE3Context } from "./scaling.js";
 import { formatCount, formatSeconds } from "./format.js";
 
 // Metric definitions: label, default unit and scope (contract B5). Values always come from JSON.
@@ -325,6 +325,52 @@ function OfficialE5Panel({ results }) {
   </section>;
 }
 
+function OfficialE3Panel({ results }) {
+  const { e3 } = buildE3E4View(results);
+  return <section className="panel scaling-panel">
+    <div className="panel-heading"><h2>{t("e3_effect_of_resources")}</h2></div>
+    <p className="e1-context">{formatE3Context(e3.context)}</p>
+    <div className="table-scroll">
+      <table className="metric-table e3-table">
+        <caption className="sr-only">{t("e3_effect_of_resources")}</caption>
+        <thead><tr><th scope="col">{t("metric")}</th>{e3.models.map((run) => <th scope="col" key={run.runId}>{t("e3_train_batch_header", run.batchSize)}</th>)}</tr></thead>
+        <tbody>{e3.rows.map((row, rowIndex) => <tr key={row.field}>
+          <th scope="row">{row.label}</th>{e3.models.map((run) => {
+            const cell = run.cells[rowIndex];
+            return <td key={`${row.field}/${run.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
+          })}
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <p className="scaling-note">{e3.note}</p>
+    <p className="scaling-note">{e3.accuracyNote}</p>
+  </section>;
+}
+
+function OfficialE4Panel({ results }) {
+  const { e4 } = buildE3E4View(results);
+  return <section className="panel scaling-panel">
+    <div className="panel-heading"><h2>{t("experiment_e4_csv_vs_parquet")}</h2></div>
+    <div className="table-scroll">
+      <table className="metric-table e4-table">
+        <caption className="sr-only">{t("experiment_e4_csv_vs_parquet")}</caption>
+        <thead><tr><th scope="col">{t("metric")}</th>{e4.formats.map((format) => <th scope="col" key={format.runId}>{format.label.toUpperCase()}</th>)}</tr></thead>
+        <tbody>{e4.rows.map((row, rowIndex) => <tr key={row.field}>
+          <th scope="row">{row.label}</th>{e4.formats.map((format) => {
+            const cell = format.cells[rowIndex];
+            return <td key={`${row.field}/${format.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
+          })}
+        </tr>)}</tbody>
+      </table>
+    </div>
+    <p className="scaling-note">{e4.preprocessingNote}</p>
+    <section className="excluded-runs">
+      <h3>{t("e4_excluded_runs")}</h3>
+      <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
+    </section>
+  </section>;
+}
+
 export default function Experiments({ state, active, officialResults }) {
   const { runs = [], meta = {}, issues = [], fatal, error } = state;
   const [showToy, setShowToy] = useState(true);
@@ -337,7 +383,7 @@ export default function Experiments({ state, active, officialResults }) {
   const order = (r) => official.findIndex((o) => o.run_id === r.matrix_run_id);
   const toySorted = [...toy].sort((a, b) => order(a) - order(b));
   const officialE1 = active === "E1";
-  const officialScaling = ["E1", "E2", "E5"].includes(active);
+  const officialScaling = ["E1", "E2", "E3", "E4", "E5"].includes(active);
 
   return (
     <>
@@ -371,7 +417,9 @@ export default function Experiments({ state, active, officialResults }) {
         : officialResults?.error ? <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{officialResults.error}</Notice>
           : officialE1 ? <OfficialE1Panel results={officialResults?.results} />
             : active === "E2" ? <OfficialE2Panel results={officialResults?.results} />
-              : <OfficialE5Panel results={officialResults?.results} />) : <section className="panel">
+              : active === "E3" ? <OfficialE3Panel results={officialResults?.results} />
+                : active === "E4" ? <OfficialE4Panel results={officialResults?.results} />
+                  : <OfficialE5Panel results={officialResults?.results} />) : <section className="panel">
         <div className="panel-heading">
           <h2>{panel.title}</h2>
         </div>
