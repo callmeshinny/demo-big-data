@@ -28,7 +28,8 @@ test("E3 and E4 panels preserve official configs, measurements, notes, and exclu
   const scaling = buildScalingView(official);
   assert.deepEqual(e3.models.map((run) => run.batchSize), [32, 128]);
   assert.equal(formatE3Context(e3.context), "GRU · 10% subset · validation partition 7 · 1,324 sessions · eval batch 32 · only train batch changes");
-  assert.ok(e3.note.includes(official.dictionary.inference_protocol.split(";")[0]));
+  assert.equal(Object.hasOwn(e3, "note"), false);
+  assert.equal(Object.hasOwn(e3, "accuracyNote"), false);
   assert.equal(e3.rows.length, 8);
   assert.deepEqual(e4.formats.map((format) => format.label), ["csv", "parquet"]);
   assert.equal(e4.formats[0].cells[0].text, "127.8");
@@ -45,4 +46,5 @@ test("E3 and E4 panels preserve official configs, measurements, notes, and exclu
   assert.ok(tableCells.every((cell) => !/(?:\s+s|ms\/session|MiB|GiB|%)$/.test(cell.text)), "table values should not repeat units");
   assert.equal(e4.formats[0].cells[2].raw, String(official.tables.E4[0].preprocessing_wall_seconds_including_read));
   assert.equal(e4.excluded.length, 2);
+  assert.equal(Object.hasOwn(e4, "preprocessingNote"), false);
 });

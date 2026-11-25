@@ -140,6 +140,8 @@ select { width: 100%; height: 44px; border: 1px solid var(--line-strong); border
 .column-subtitle { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; }
 .scaling-shared, .scaling-note { margin: 14px 0 0; color: var(--muted); }
 .scaling-shared strong { color: var(--ink); }
+.interpretation-note { margin: 12px 0 0; color: var(--muted); }
+.interpretation-note small { display: block; margin-top: 3px; color: var(--soft); font-size: 12px; }
 .scaling-table { min-width: 820px; }
 .e5-table { min-width: 100%; table-layout: fixed; }
 .e5-table thead th:first-child, .e5-table tbody th { width: 25%; }

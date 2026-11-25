@@ -47,10 +47,10 @@ export function buildE1View(results) {
       };
     }),
     notes: [
-      [t("e1_inference_protocol"), results?.dictionary?.inference_protocol],
-      [t("e1_training_time_scope"), results?.dictionary?.train_seconds_including_sequence_io],
-      [t("e1_sampled_rss_scope"), results?.dictionary?.sampled_rss_bytes_descriptive_only],
-      [t("e1_sampled_gpu_scope"), results?.dictionary?.sampled_gpu_process_bytes],
+      { label: t("e1_inference_protocol"), dictionaryKey: "inference_protocol" },
+      { label: t("e1_training_time_scope"), dictionaryKey: "train_seconds_including_sequence_io" },
+      { label: t("e1_sampled_rss_scope"), dictionaryKey: "sampled_rss_bytes_descriptive_only" },
+      { label: t("e1_sampled_gpu_scope"), dictionaryKey: "sampled_gpu_process_bytes" },
     ],
   };
 }

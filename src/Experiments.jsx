@@ -1,7 +1,7 @@
 import React from "react";
 import { t } from "./i18n.js";
 import { EXPERIMENTS } from "./data.js";
-import { Notice } from "./ui.jsx";
+import { InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, chartCoordinates, formatE3Context } from "./scaling.js";
 import { formatCount, formatSeconds } from "./format.js";
@@ -21,7 +21,7 @@ function OfficialE1Panel({ results }) {
     </table></div>
     <aside className="e1-footnotes">
       <p>{t("e1_fair_statement")}</p>
-      <ul>{view.notes.map(([label, value]) => <li key={label}><strong>{label}:</strong> {value ?? t("MISSING")}</li>)}</ul>
+      <ul>{view.notes.map(({ label, dictionaryKey }) => <li key={dictionaryKey}><strong>{label}:</strong> <InterpretationNote dictionaryKey={dictionaryKey} /></li>)}</ul>
     </aside>
     <PanelConfigDetails results={results} runIds={view.models.map(({ run }) => run?.run_id).filter(Boolean)} />
   </section>;
@@ -43,8 +43,9 @@ function OfficialE2Panel({ results }) {
         })}
       </tr>)}</tbody>
     </table></div>
-    <p className="scaling-shared"><strong title={String(e2Table.firstSeen)}>{t("e2_first_seen_shared", formatSeconds(e2Table.firstSeen).text)}</strong> {e2Table.firstSeenNote}</p>
-    <p className="scaling-note">{e2Table.accuracyNote}</p>
+    <p className="scaling-shared"><strong title={String(e2Table.firstSeen)}>{t("e2_first_seen_shared", formatSeconds(e2Table.firstSeen).text)}</strong></p>
+    <InterpretationNote dictionaryKey="first_seen_shared" />
+    <InterpretationNote dictionaryKey="E2_accuracy" />
     <PanelConfigDetails results={results} runIds={e2Table.columns.map(({ runId }) => runId)} />
   </section>;
 }
@@ -84,7 +85,7 @@ function OfficialE5Panel({ results }) {
       </tr>)}</tbody>
     </table></div>
     <div className="scaling-charts">{charts.map((chart) => <E5Chart key={chart.id} chart={chart} />)}</div>
-    <p className="scaling-note">{e5Table.composedNote}</p>
+    <InterpretationNote dictionaryKey="E5_composed" />
     <PanelConfigDetails results={results} runIds={e5Table.columns.map(({ runId }) => runId)} />
   </section>;
 }
@@ -104,8 +105,8 @@ function OfficialE3Panel({ results }) {
         })}
       </tr>)}</tbody>
     </table></div>
-    <p className="scaling-note">{e3.note}</p>
-    <p className="scaling-note">{e3.accuracyNote}</p>
+    <InterpretationNote dictionaryKey="inference_protocol" />
+    <InterpretationNote dictionaryKey="E3_accuracy" />
     <PanelConfigDetails results={results} runIds={e3.models.map(({ runId }) => runId)} />
   </section>;
 }
@@ -124,7 +125,7 @@ function OfficialE4Panel({ results }) {
         })}
       </tr>)}</tbody>
     </table></div>
-    <p className="scaling-note">{e4.preprocessingNote}</p>
+    <InterpretationNote dictionaryKey="E4_preprocessing_wall" />
     <section className="excluded-runs"><h3>{t("e4_excluded_runs")}</h3>
       <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
     </section>

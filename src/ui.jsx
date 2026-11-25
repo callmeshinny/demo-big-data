@@ -1,5 +1,6 @@
 import { t } from "./i18n.js";
 import React from "react";
+import { interpretationNoteText } from "./interpretation-notes.js";
 
 export function Notice({ kind = "info", title, children }) {
   return (
@@ -8,6 +9,13 @@ export function Notice({ kind = "info", title, children }) {
       {children && <div>{children}</div>}
     </section>
   );
+}
+
+export function InterpretationNote({ dictionaryKey }) {
+  return <p className="interpretation-note">
+    <span>{interpretationNoteText(dictionaryKey)}</span>
+    <small>{t("source_dictionary", dictionaryKey)}</small>
+  </p>;
 }
 
 export function DataKindBadge({ kind }) {

@@ -45,8 +45,6 @@ export function buildScalingView(results) {
     })),
     rows: E2_FIELDS.map(([field, label]) => ({ field, label: t(label) })),
     firstSeen: e2[0]?.first_seen_shared_seconds,
-    firstSeenNote: results?.dictionary?.first_seen_shared,
-    accuracyNote: results?.dictionary?.E2_accuracy,
   };
   const e5Table = {
     columns: e5.map((run) => ({ subset: run.subset, runId: run.run_id })),
@@ -55,7 +53,6 @@ export function buildScalingView(results) {
       label: t(label),
       cells: e5.map((run) => rowCell(run, field, formatter)),
     })),
-    composedNote: results?.dictionary?.E5_composed,
   };
   const charts = [
     {
@@ -124,7 +121,6 @@ export function buildE3E4View(results) {
     evalBatchSize: config?.actual?.eval_batch_size,
     changeOnly: config?.planned?.resource_config?.change_only,
   } : null;
-  const protocol = results?.dictionary?.inference_protocol?.split(";")[0];
   const e3ByteUnits = Object.fromEntries(["sampled_rss_bytes_descriptive_only", "sampled_gpu_process_bytes"].map((field) => [
     field, byteDisplayUnit(e3.map((run) => run[field])),
   ]));
@@ -152,8 +148,6 @@ export function buildE3E4View(results) {
         label: `${t(label)}${e3ByteUnits[field] ? ` (${e3ByteUnits[field]})` : ""}`,
       })),
       context,
-      note: t("e3_eval_note", protocol ?? t("MISSING")),
-      accuracyNote: results?.dictionary?.E3_accuracy,
     },
     e4: {
       formats: e4.map((run) => ({
@@ -169,7 +163,6 @@ export function buildE3E4View(results) {
         field,
         label: `${t(label)}${e4ByteUnits[field] ? ` (${e4ByteUnits[field]})` : ""}`,
       })),
-      preprocessingNote: results?.dictionary?.E4_preprocessing_wall,
       excluded: Object.entries(results?.excluded ?? {}),
     },
   };
