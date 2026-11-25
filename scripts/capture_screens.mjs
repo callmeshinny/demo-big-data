@@ -151,11 +151,13 @@ try {
 
         await page.getByRole("tab", { name: t("dataset") }).click();
         await page.getByRole("heading", { name: t("session_length") }).waitFor();
-        await page.getByText(t("smoke_awaiting_tv2_confirmation"), { exact: true }).waitFor();
         const weekly = page.locator("section").filter({ has: page.getByRole("heading", { name: t("weekly_cudf_subsets"), exact: true }) });
         for (const key of ["missing_brand", "missing_category"]) {
           assert.equal(await weekly.getByRole("rowheader", { name: t(key), exact: true }).count(), 0);
         }
+        assert.equal(await weekly.getByRole("rowheader", { name: "categories (category_id)", exact: true }).count(), 1);
+        assert.equal(await weekly.getByRole("rowheader", { name: t("actual_raw_event_pct"), exact: true }).count(), 1);
+        await page.getByRole("heading", { name: t("data_caveats") }).waitFor();
         assert.equal(await page.locator("[role=tabpanel] meter").count(), 21);
         await page.getByLabel(t("subset"), { exact: true }).selectOption("100");
         await capture("dataset");

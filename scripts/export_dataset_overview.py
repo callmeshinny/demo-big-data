@@ -10,18 +10,18 @@ from export_run_results import team_commit
 
 AUDIT = Path("data/raw_audit.csv")
 VERIFIED = Path("data/manifests/e2_preprocessing_verified.json")
-SMOKE = VERIFIED.with_name("e4_preprocessing_smoke.json")
 SAMPLING = VERIFIED.with_name("session_sampling_manifest.json")
 CLEANUP = VERIFIED.with_name("timestamp_session_cleanup.json")
 DICTIONARY = Path("docs/data_dictionary.md")
 PROTOCOL = Path("docs/modeling/model_protocol.md")
 SUBSETS = (10, 25, 50, 100)
+TABLES = Path("reports/tables/tv2-20261124")
+SUPPLEMENTARY_FILES = (
+    "sampling_population.csv", "subset_distribution.csv", "event_mix_before_after.csv",
+    "preprocessing_retention.csv", "split_population.csv",
+)
 FIELDS = ("n_events", "events_after_repeat_removal", "sequence_count", "vocabulary_size")
 PROFILE_FIELDS = ("distinct", "missing", "event_types", "session_length_histogram")
-TIMINGS = (
-    "preprocessing_seconds", "read_seconds", "prepare_seconds", "workflow_seconds", "split_seconds",
-    "input_format", "input_bytes",
-)
 
 
 def raw_audit():
@@ -64,58 +64,64 @@ def data_context():
     }
 
 
-def export(raw_only, show_measurements):
+def read_table(name):
+    path = TABLES / name
+    with path.open(newline="", encoding="utf-8-sig") as file:
+        rows = []
+        for row in csv.DictReader(file):
+            converted = {}
+            for key, value in row.items():
+                if value == "":
+                    converted[key] = None
+                else:
+                    try:
+                        converted[key] = int(value)
+                    except ValueError:
+                        try:
+                            converted[key] = float(value)
+                        except ValueError:
+                            converted[key] = value
+            rows.append(converted)
+    return rows
+
+
+def export(raw_only=False):
+    supplementary = {} if raw_only else {Path(name).stem: read_table(name) for name in SUPPLEMENTARY_FILES}
+    population_by_subset = {int(row["subset_session_threshold_pct"]): row for row in supplementary.get("sampling_population", [])}
+    distribution_by_subset = {int(row["subset"]): row for row in supplementary.get("subset_distribution", [])}
+    retention_by_subset = {int(row["subset"]): row for row in supplementary.get("preprocessing_retention", [])}
+    split_by_subset = {int(row["subset"]): row for row in supplementary.get("split_population", [])}
     index = {}
-    smoke = None
     if not raw_only:
         records = json.loads(VERIFIED.read_text(encoding="utf-8"))["runs"]
         index = {int(row["subset"]): row for row in records}
         if len(records) != len(index) or set(index) != set(SUBSETS):
             raise ValueError(f"{VERIFIED}: expected one record per cuDF subset")
-        smoke = json.loads(SMOKE.read_text(encoding="utf-8"))
-        if not isinstance(smoke["smoke_scope"], str):
-            raise ValueError(f"{SMOKE}: expected smoke_scope text")
-        formats = {row["input_format"]: row for row in smoke["runs"]}
-        if len(smoke["runs"]) != 2 or formats.keys() != {"csv", "parquet"}:
-            raise ValueError(f"{SMOKE}: expected one CSV and one Parquet smoke run")
-        smoke = {
-            "smoke_scope": smoke["smoke_scope"],
-            "formats": [
-                {"format": name, "input_bytes": row["input_bytes"], "bytes": row["input_bytes"],
-                 "read_seconds": row.get("read_seconds"), "preprocessing_seconds": row.get("preprocessing_seconds")}
-                for name, row in formats.items()
-            ],
-            "source": str(SMOKE),
-            **{key: smoke.get(key) for key in ("input_rows_identical_in_order", "split_membership_identical")},
-        }
     commit = team_commit(Path.cwd())
     if not commit:
         raise ValueError("Cannot identify the team commit")
-    shared_first_seen = {row.get("first_seen_seconds") for row in index.values()}
-    if len(shared_first_seen) > 1:
-        raise ValueError(f"{VERIFIED}: expected one shared monthly first-seen cost")
     return {
         **data_context(),
         "schema": "tv4-dataset-overview/v1",
         "team_commit": commit,
         "generated_at": date.today().isoformat(),
-        "data_kind": "unconfirmed",
-        "confirmed_by_tv1": False,
+        "data_kind": "real" if supplementary else "unconfirmed",
+        "confirmed_by_tv1": bool(supplementary),
+        "source_package": "tv2-20261124" if supplementary else None,
         "raw_month": raw_audit(),
         "subsets": [
             {"subset": subset, "scope": "first week of 2019-10, cuDF weekly cleanup",
              **{key: index[subset][key] if subset in index else None for key in FIELDS},
              **{key: index[subset]["profile"].get(key) if subset in index else None for key in PROFILE_FIELDS},
+             **population_by_subset.get(subset, {}),
+             **distribution_by_subset.get(subset, {}),
+             **retention_by_subset.get(subset, {}),
+             **split_by_subset.get(subset, {}),
              "source": str(VERIFIED) if subset in index else None}
             for subset in SUBSETS
         ],
-        "pipeline_measurements": {
-            "status": "unconfirmed", "show": show_measurements,
-            "e2_source": str(VERIFIED) if index else None,
-            "first_seen_seconds": next(iter(shared_first_seen), None),
-            "e2": [{"subset": subset, **{key: row.get(key) for key in TIMINGS}} for subset, row in index.items()],
-            "e4_smoke": [] if smoke is None else [smoke],
-        },
+        "supplementary_sources": {name: f"{TABLES / (name + '.csv')}" for name in supplementary},
+        "event_mix_before_after": supplementary.get("event_mix_before_after", []),
     }
 
 
@@ -123,10 +129,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--raw-only", action="store_true", help="Export the raw audit when verified manifests are unavailable")
-    parser.add_argument("--show-pipeline-measurements", action="store_true")
     args = parser.parse_args()
     try:
-        content = json.dumps(export(args.raw_only, args.show_pipeline_measurements), ensure_ascii=False, indent=2) + "\n"
+        content = json.dumps(export(args.raw_only), ensure_ascii=False, indent=2) + "\n"
         if len(content.encode("utf-8")) >= 200_000:
             raise ValueError("Dataset overview must be under 200 KB")
         args.output.write_text(content, encoding="utf-8")

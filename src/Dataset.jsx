@@ -4,22 +4,15 @@ import { formatValue } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
 import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
-import PipelineMeasurements from "./PipelineMeasurements.jsx";
 import { Notice } from "./ui.jsx";
 
-const ROWS = () => [
-  [t("weekly_events_before_cleanup"), "n_events"],
-  [t("events_after_consecutive_repeat_removal"), "events_after_repeat_removal"],
-  [t("sessions"), "distinct", "user_session"],
-  [t("users"), "distinct", "user_id"],
-  [t("products"), "distinct", "product_id"],
-  [t("categories"), "distinct", "category_code"],
-  [t("brands"), "distinct", "brand"],
-  [t("views"), "event_types", "view"],
-  [t("add_to_cart"), "event_types", "cart"],
-  [t("purchases"), "event_types", "purchase"],
-  [t("eligible_sequences"), "sequence_count"],
-  [t("vocabulary_size"), "vocabulary_size"],
+const SUBSET_FIELDS = () => [
+  [t("raw_sessions"), "raw_sessions"], [t("actual_raw_session_pct"), "actual_raw_session_pct"],
+  [t("raw_events"), "raw_events"], [t("actual_raw_event_pct"), "actual_raw_event_pct"],
+  [t("cleaned_events"), "cleaned_events"], [t("cleaned_users"), "cleaned_users"],
+  [t("model_sequences"), "model_sequences"], [t("catalog_items"), "catalog_items"],
+  ["categories (category_id)", "cleaned_categories"], [t("cleaned_brands"), "cleaned_brands"],
+  [t("catalog_coverage_of_100_pct"), "catalog_coverage_of_100_pct"],
 ];
 
 const PIPELINE = () => [
@@ -39,12 +32,11 @@ export default function Dataset({ state }) {
   const { overview } = state;
   const raw = overview.raw_month;
   const subset = overview.subsets.find((row) => String(row.subset) === selected) ?? overview.subsets[0];
-  const weeklySource = overview.subsets.find((row) => row.source)?.source;
+  const subsetFields = SUBSET_FIELDS();
   const buckets = histogramBuckets(subset?.session_length_histogram);
   const max = Math.max(0, ...buckets.map((bucket) => bucket.count ?? 0));
   return (
     <>
-      {!overview.confirmed_by_tv1 && <Notice kind="warn" title={t("dataset_figures_come_from_the_tv1")} />}
       <section className="panel">
         <h2>{t("e_commerce_dataset")}</h2>
         <p>{t("the_kaggle_ecommerce_dataset_records_activity")} {raw.min_timestamp_utc?.slice(0, 7) ?? t("not_available_yet")}{t("each_event_is_a_view_add")}</p>
@@ -57,19 +49,31 @@ export default function Dataset({ state }) {
         </dl>
         <p className="definition">{t("source")} <code>{formatValue(raw.source)}</code></p>
       </section>
-      <SubsetSelection sampling={overview.sampling} />
+      <SubsetSelection sampling={overview.sampling} subsets={overview.subsets} source={overview.supplementary_sources?.sampling_population} distributionSource={overview.supplementary_sources?.subset_distribution} />
       <FiveVs overview={overview} />
       <section className="panel">
         <h2>{t("weekly_cudf_subsets")}</h2>
         <div className="table-scroll">
           <table className="config-table">
             <thead><tr><th scope="col">{t("metric")}</th>{overview.subsets.map((row) => <th scope="col" key={row.subset}>{row.subset}%</th>)}</tr></thead>
-            <tbody>{ROWS().map(([label, field, key]) => <tr key={label}><th scope="row">{label}</th>{overview.subsets.map((row) => <td key={row.subset}>{formatValue(key ? row[field]?.[key] : row[field])}</td>)}</tr>)}</tbody>
+            <tbody>{subsetFields.map(([label, field]) => <tr key={field}><th scope="row">{label}</th>{overview.subsets.map((row) => <td key={row.subset} title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
           </table>
         </div>
-        <p className="definition">{overview.subsets.at(-1)?.subset ?? t("not_available_yet")}{t("covers_the_first_week_of_october")}</p>
-        <p className="definition">{t("subset_diversity")}</p>
-        <p className="definition">{t("source")} <code>{formatValue(weeklySource)}</code></p>
+        <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.sampling_population)}</code></p>
+      </section>
+      <section className="panel">
+        <h2>{t("data_caveats")}</h2>
+        <p>{t("single_interaction_caveat", formatValue(subset?.single_interaction_session_pct))}</p>
+        <p>{t("browsing_heavy_caveat", formatValue(subset?.view_pct_clean_events))}</p>
+        <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.preprocessing_retention)}</code> · <code>{formatValue(overview.supplementary_sources?.subset_distribution)}</code></p>
+      </section>
+      <section className="panel">
+        <h2>{t("split_population")}</h2>
+        <div className="table-scroll"><table className="config-table">
+          <thead><tr><th scope="col">{t("subset")}</th>{[["final_test_D", t("final_test_partition")], ["train_used_1_to_Dminus1", t("train_used_partitions")], ["validation_used_2_to_D", t("validation_used_partitions")]].map(([field, label]) => <th scope="col" key={field}>{label}</th>)}</tr></thead>
+          <tbody>{overview.subsets.map((row) => <tr key={row.subset}><th scope="row">{row.subset}%</th>{["final_test_D", "train_used_1_to_Dminus1", "validation_used_2_to_D"].map((field) => <td key={field} title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
+        </table></div>
+        <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.split_population)}</code></p>
       </section>
       <section className="panel">
         <h2>{t("session_length")}</h2>
@@ -91,7 +95,6 @@ export default function Dataset({ state }) {
         <ol className="pipeline">{PIPELINE().map(([label, description, owner]) => <li key={label}><strong>{label}</strong> · {owner}<p>{description}</p></li>)}</ol>
       </section>
       <section className="panel"><EvaluationProtocol protocol={overview.evaluation_protocol} diagram /></section>
-      <PipelineMeasurements measurements={overview.pipeline_measurements} />
     </>
   );
 }

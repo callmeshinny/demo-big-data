@@ -1,26 +1,29 @@
 import React from "react";
-import { exactValue, formatValue } from "./data.js";
+import { formatValue } from "./data.js";
 import { t } from "./i18n.js";
 
 function Evidence({ source }) {
   return source ? <p className="definition">{t("source")} <code>{source}</code></p> : null;
 }
 
-export function SubsetSelection({ sampling }) {
+export function SubsetSelection({ sampling, subsets, source, distributionSource }) {
   if (!sampling) return null;
   return <section className="panel">
     <h2>{t("why_subset")}</h2>
     <p>{t("whole_session_sampling", formatValue(sampling.seed))}</p>
     <p>{t("sampling_scope", formatValue(sampling.population_sessions))}</p>
+    <p>{t("subset_diversity")}</p>
     <div className="table-scroll"><table className="config-table">
-      <thead><tr>{["target_percent", "actual_session_ratio", "sessions"].map((key) => <th scope="col" key={key}>{t(key)}</th>)}</tr></thead>
-      <tbody>{sampling.outputs.map((row) => <tr key={row.percent}>
-        <th scope="row">{formatValue(row.percent)}%</th>
-        <td>{exactValue(row.actual_session_ratio)}</td>
-        <td>{formatValue(row.session_count)}</td>
+      <thead><tr>{[t("target_percent"), t("actual_raw_session_pct"), t("raw_sessions")].map((label) => <th scope="col" key={label}>{label}</th>)}</tr></thead>
+      <tbody>{subsets.map((row) => <tr key={row.subset_session_threshold_pct}>
+        <th scope="row">{formatValue(row.subset_session_threshold_pct)}%</th>
+        <td title={String(row.actual_raw_session_pct)}>{formatValue(row.actual_raw_session_pct)}</td>
+        <td title={String(row.raw_sessions)}>{formatValue(row.raw_sessions)}</td>
       </tr>)}</tbody>
     </table></div>
     <Evidence source={sampling.source} />
+    <Evidence source={source} />
+    <Evidence source={distributionSource} />
   </section>;
 }
 
@@ -35,7 +38,6 @@ export function FiveVs({ overview }) {
   ];
   return <section className="panel">
     <h2>{t("five_vs")}</h2>
-    <p className="definition">{t("draft_wording")}</p>
     <div className="dataset-cards">{cards.map(([key, text, sources]) => <article key={key}>
       <h3>{t(key)}</h3><p>{text}</p>
       {sources.filter(Boolean).map((source) => <Evidence key={source} source={source} />)}
