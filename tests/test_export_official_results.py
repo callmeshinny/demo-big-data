@@ -7,6 +7,8 @@ import subprocess
 import tempfile
 import unittest
 
+from export_official_results import VM_ENVIRONMENT_VALUES, read_vm_environment
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT.parent / "Big-Data/metrics/releases/tv2-20261124"
@@ -63,6 +65,23 @@ class OfficialResultsExportTest(unittest.TestCase):
         result = self.run_export(package_copy, output)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Checksum mismatch in package group", result.stderr)
+
+    def test_vm_environment_values_are_verbatim_readme_substrings(self):
+        environment = read_vm_environment(TEAM_ROOT)
+        readme = (TEAM_ROOT / "environment/README.md").read_text(encoding="utf-8")
+        for field, value in VM_ENVIRONMENT_VALUES.items():
+            self.assertEqual(environment[field], value)
+            self.assertIn(environment[field], readme)
+        self.assertEqual(environment["source"], "environment/README.md (team 88f7e02)")
+        self.assertEqual(environment["checksum_note"], "file edited by TV3 after packaging; links only, values unchanged")
+
+    def test_vm_environment_export_fails_if_required_substring_is_missing(self):
+        root = self.workspace / "team"
+        readme = root / "environment/README.md"
+        readme.parent.mkdir(parents=True)
+        readme.write_text("VM AWS Ubuntu 22.04\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Required vm_environment.gpu substring not found"):
+            read_vm_environment(root)
 
 
 if __name__ == "__main__":

@@ -2166,5 +2166,21 @@
       "source_run": null,
       "source_metrics": "metrics/tv2-analysis-20261124/evidence/Big-Data-e4/metrics/raw/e4-full-010-parquet/metrics.json"
     }
+  },
+  "vm_environment": {
+    "cloud": "VM AWS Ubuntu 22.04",
+    "gpu": "Tesla T4 (compute capability 7.5)",
+    "vram": "15360 MiB",
+    "cpu": "Intel Xeon Platinum 8259CL @ 2.50GHz",
+    "vcpu": "8 vCPU",
+    "ram": "30,98 GiB",
+    "os": "Ubuntu 22.04.5 LTS",
+    "kernel": "6.8.0-1036-aws",
+    "driver": "570.172.08",
+    "cuda_toolkit": "12.1.105",
+    "docker": "28.4.0",
+    "image": "merlin-pytorch:23.12",
+    "source": "environment/README.md (team 88f7e02)",
+    "checksum_note": "file edited by TV3 after packaging; links only, values unchanged"
   }
 }

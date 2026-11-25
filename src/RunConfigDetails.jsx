@@ -41,13 +41,21 @@ export function EnvironmentCard({ results }) {
   const e1Runs = results?.tables?.E1 ?? [];
   const candidates = e1Runs.map((run) => results?.configs?.[run.run_id]?.runtime).filter(Boolean);
   const valueFor = (key, packageKey) => candidates.map((runtime) => packageKey ? runtime.packages?.[packageKey] : runtime[key]).find((value) => value !== null && value !== undefined);
+  const vm = results?.vm_environment ?? {};
   const rows = [
-    [t("runtime_gpu"), valueFor("gpu")], [t("runtime_cuda"), valueFor("cuda")], [t("runtime_python"), valueFor("python")],
-    [t("runtime_torch"), valueFor(null, "torch")], [t("runtime_transformers4rec"), valueFor(null, "transformers4rec")],
+    [t("environment_cloud"), vm.cloud],
+    [t("environment_gpu_vram"), vm.gpu && vm.vram ? t("environment_gpu_vram_value", vm.gpu, vm.vram) : null],
+    [t("environment_cpu_vcpu"), vm.cpu && vm.vcpu ? t("environment_cpu_vcpu_value", vm.cpu, vm.vcpu) : null],
+    [t("environment_ram"), vm.ram], [t("environment_os"), vm.os],
+    [t("environment_driver"), vm.driver], [t("environment_cuda_toolkit"), vm.cuda_toolkit],
+    [t("environment_docker"), vm.docker], [t("environment_image"), vm.image],
+    [t("runtime_python"), valueFor("python")], [t("pytorch"), valueFor(null, "torch")],
+    [t("runtime_transformers4rec"), valueFor(null, "transformers4rec")],
     [t("cost"), t("not_measured")],
   ];
   return <section className="panel environment-card">
     <h2>{t("environment")}</h2>
     <dl className="env">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value ?? t("MISSING")}</dd></div>)}</dl>
+    <p className="environment-source">{t("environment_source_note", vm.source ?? t("MISSING"), vm.checksum_note ?? t("MISSING"))}</p>
   </section>;
 }

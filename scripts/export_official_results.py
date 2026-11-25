@@ -9,6 +9,20 @@ from pathlib import Path
 KNOWN_CHECKSUM_EXCEPTIONS = {
     "environment/README.md": "TV3 doc edit after packaging (team commit 88f7e02), log links only",
 }
+VM_ENVIRONMENT_VALUES = {
+    "cloud": "VM AWS Ubuntu 22.04",
+    "gpu": "Tesla T4 (compute capability 7.5)",
+    "vram": "15360 MiB",
+    "cpu": "Intel Xeon Platinum 8259CL @ 2.50GHz",
+    "vcpu": "8 vCPU",
+    "ram": "30,98 GiB",
+    "os": "Ubuntu 22.04.5 LTS",
+    "kernel": "6.8.0-1036-aws",
+    "driver": "570.172.08",
+    "cuda_toolkit": "12.1.105",
+    "docker": "28.4.0",
+    "image": "merlin-pytorch:23.12",
+}
 
 
 def read_json(path):
@@ -34,12 +48,26 @@ def verify_checksums(package_root):
     return manifest, exceptions
 
 
+def read_vm_environment(team_root):
+    readme = team_root / "environment/README.md"
+    content = readme.read_text(encoding="utf-8")
+    environment = {}
+    for field, value in VM_ENVIRONMENT_VALUES.items():
+        if value not in content:
+            raise ValueError(f"Required vm_environment.{field} substring not found in {readme}: {value!r}")
+        environment[field] = value
+    environment["source"] = "environment/README.md (team 88f7e02)"
+    environment["checksum_note"] = "file edited by TV3 after packaging; links only, values unchanged"
+    return environment
+
+
 def export(package_root):
     manifest, exceptions = verify_checksums(package_root)
     metrics = read_json(package_root / "metrics.json")
     configs_source = read_json(package_root / "configs.json")
     registry = read_json(package_root / "run_registry.json")
     dictionary = read_json(package_root / "data_dictionary.json")
+    vm_environment = read_vm_environment(package_root.parents[2])
 
     configs = {}
     for run_id, config in configs_source.items():
@@ -75,6 +103,7 @@ def export(package_root):
         "excluded": registry["excluded"],
         "tables": metrics["tables"],
         "configs": configs,
+        "vm_environment": vm_environment,
     }
 
 
