@@ -1,25 +1,17 @@
 import { t } from "./i18n.js";
 import React, { useState } from "react";
-import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
+import { formatValue, INVALID_PRODUCT_ID, modelLabel, sessionContext } from "./data.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 import { Issues, Notice } from "./ui.jsx";
 
-/** Options for the model/run selector: every delivered run, plus project models with no output. */
+/** The official E1 runs are all present in the delivered sample. */
 function runOptions(group) {
-  const options = group.runs.map((run) => ({
+  return group.runs.map((run) => ({
     value: `run:${run.label}`,
-    label: group.runs.filter((r) => r.modelKey === run.modelKey).length > 1
-      ? `${modelLabel(run.model)} — ${run.label}`
-      : modelLabel(run.model),
+    label: modelLabel(run.model),
     run,
   }));
-  for (const model of PROJECT_MODELS) {
-    if (!group.runs.some((r) => r.modelKey === modelKey(model))) {
-      options.push({ value: `missing:${model}`, label: t("0_predictions_pending", model), run: null, model });
-    }
-  }
-  return options;
 }
 
 export default function Recommendation({ state, productInfo, protocol, official }) {
@@ -51,38 +43,26 @@ export default function Recommendation({ state, productInfo, protocol, official 
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
   const officialE1 = official?.tables?.E1 ?? [];
+  const sample = run?.sample;
+  const count = sample?.n_selected ?? sessionIds.length;
+  const total = sample?.n_total ?? sessionIds.length;
 
   const products = productInfo?.dataKind === "real" ? productInfo.products : undefined;
 
   return (
     <>
       <div className="recommendation-status">
-        <span className="badge badge-pending">{t("waiting_for_real_prediction_bundle")}</span>
+        <span className="badge badge-real">{t("real_e1_predictions_partition", group.evalPartition ?? "—")}</span>
+        <span>{t("showing_fixed_hash_sample", formatValue(count), formatValue(total), sample?.seed ?? "—")}</span>
       </div>
-      <Notice kind="warn" title={t("real_predictions_on_the_way")}>
-        <p>{t("real_predictions_export_sentence")}</p>
-      </Notice>
       <details className="method-details">
         <summary>{t("method_details_and_sources")}</summary>
         <p>{t("recall_20_measures_how_often_the")}</p>
         <EvaluationProtocol protocol={protocol} />
-        <p>{t("missing_real_bundle_files")}</p>
-        <ul>{officialE1.map((row) => <li key={row.run_id}><code>{`../tv4-real-bundle/${row.run_id}.predictions.jsonl`}</code></li>)}
-          <li><code>../tv4-real-bundle/catalog.json</code></li>
-        </ul>
         <p>{t("optional_product_lookup_missing")}</p>
-        <ul>{officialE1.map((row) => {
-          const config = official?.configs?.[row.run_id] ?? {};
-          return <li key={row.run_id}>
-            {t("run_id")} <code>{row.run_id}</code>; {t("catalog_sha_256")} <code>{config.catalog_sha256 ?? t("not_available_yet")}</code>; {t("source_metrics")} <code>{config.source_metrics ?? t("not_available_yet")}</code>
-          </li>;
-        })}</ul>
-        <p>{t("prediction_sources")}</p>
+        <p>{t("sample_hash_explanation", sample?.seed ?? "—", formatValue(count))}</p>
       </details>
-
-      <details className="toy-format-example">
-        <summary>{t("format_example_toy_data_not_results")}</summary>
-        <Issues issues={issues} />
+      <Issues issues={issues} />
       <section className="controls" aria-label={t("choose_data")}>
         <label>{t("model")} <select aria-label={t("model")} value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -93,6 +73,13 @@ export default function Recommendation({ state, productInfo, protocol, official 
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
           </select>
         </label>
+      </section>
+      <section className="e1-accuracy" aria-label={t("official_e1_metrics")}>
+        <strong className="e1-accuracy-title">{t("official_e1_metrics")}</strong>
+        {officialE1.map((row) => <div key={row.run_id}><strong>{modelLabel(row.model)}</strong>
+          <span>{t("e1_recall_20")}: {Number(row["Recall@20"]).toFixed(4)}</span>
+          <span>{t("e1_ndcg_20")}: {Number(row["NDCG@20"]).toFixed(4)}</span>
+        </div>)}
       </section>
 
       {selectionError ? (
@@ -176,7 +163,6 @@ export default function Recommendation({ state, productInfo, protocol, official 
           </section>
         </>
       )}
-      </details>
     </>
   );
 }

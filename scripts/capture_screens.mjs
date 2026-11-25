@@ -99,29 +99,23 @@ try {
           await page.getByRole("button", { name: "VI", exact: true }).click();
           await page.locator("html[lang=vi]").waitFor();
         }
-        await page.getByText(t("waiting_for_real_prediction_bundle"), { exact: true }).waitFor();
-        await page.getByText(t("real_predictions_on_the_way"), { exact: true }).waitFor();
-        await page.getByText(t("real_predictions_export_sentence"), { exact: true }).waitFor();
+        await page.getByText(t("real_e1_predictions_partition", 7), { exact: true }).waitFor();
+        await page.getByText(t("showing_fixed_hash_sample", "30", "1,337", 1), { exact: true }).waitFor();
         const methodDetails = page.locator("details.method-details");
         assert.equal(await methodDetails.evaluate((details) => details.open), false, "method details should be closed by default");
-        assert.equal((await page.locator("body").innerText()).includes("../tv4-real-bundle/"), false, "bundle paths should stay inside closed method details");
+        assert.equal(/toy|format example/i.test(await page.locator("body").innerText()), false, "real Recommendation view should not show toy examples");
         await methodDetails.locator("summary").click();
-        assert.ok((await methodDetails.innerText()).includes("../tv4-real-bundle/"), "method details should contain required bundle paths");
-        assert.ok((await methodDetails.innerText()).includes("product-lookup.csv"), "method details should contain the product lookup note");
+        assert.ok((await methodDetails.innerText()).includes("SHA-256"), "method details should explain the hash sample");
         await methodDetails.locator("summary").click();
-        const toyDetails = page.locator("details.toy-format-example");
-        assert.equal(await toyDetails.evaluate((details) => details.open), false, "toy format example should be closed by default");
-        await capture("recommendation-waiting");
-        await toyDetails.locator("summary").click();
-        await page.getByLabel(messages[locale].session, { exact: true }).selectOption("rank20");
+        await capture("recommendation");
         const alternate = locale === "en" ? "vi" : "en";
         await page.getByRole("button", { name: alternate.toUpperCase(), exact: true }).click();
         await page.locator(`html[lang=${alternate}]`).waitFor();
-        assert.equal(await page.getByLabel(messages[alternate].session, { exact: true }).inputValue(), "rank20");
+        assert.equal(await page.getByLabel(messages[alternate].session, { exact: true }).inputValue(), "46465");
         assert.equal(new URL(page.url()).hash, "#recommendation");
         await page.getByRole("button", { name: locale.toUpperCase(), exact: true }).click();
         await page.locator(`html[lang=${locale}]`).waitFor();
-        assert.equal(await page.getByLabel(messages[locale].session, { exact: true }).inputValue(), "rank20");
+        assert.equal(await page.getByLabel(messages[locale].session, { exact: true }).inputValue(), "46465");
         const heading = page.getByRole("heading", { name: t("site_name"), exact: true });
         await heading.waitFor();
         assert.equal(await page.title(), t("site_name"));
@@ -149,9 +143,8 @@ try {
           }
         }
         for (const [id, result] of [
-          ["rank1", t("hit_at_rank_0", 1)],
-          ["rank20", t("hit_at_rank_0", 20)],
-          ["miss", t("not_in_top_20")],
+          ["21546", t("hit_at_rank_0", 7)],
+          ["46465", t("not_in_top_20")],
         ]) {
           await session.selectOption(id);
           await page.locator(".actual-panel").getByText(result, { exact: true }).waitFor();
@@ -169,21 +162,19 @@ try {
               assert.ok(await contrast(tag) >= 4.5, `${className} text contrast`);
             }
           }
-          await toyDetails.getByText(t("format_example_toy_data_not_results"), { exact: true }).waitFor();
-          await capture(id);
+          await capture(id === "21546" ? "recommendation-hit" : "recommendation-miss");
         }
         assert.equal(await page.getByText(t("price_unavailable"), { exact: true }).count(), 0);
         const context = page.locator(".history, .actual-panel .product-card");
+        await session.selectOption("21546");
         const beforeSwitch = await context.allInnerTexts();
         assert.equal(beforeSwitch.length, 2);
-        await model.selectOption("missing:GRU");
-        await page.getByText(t("no_predictions_available_for_this_model")).waitFor();
-        await page.getByRole("heading", { name: t("actual_next_item") }).waitFor();
-        await page.getByRole("heading", { name: t("history") }).waitFor();
+        await model.selectOption({ label: "GRU" });
+        await page.locator(".actual-panel").getByText(t("hit_at_rank_0", 13), { exact: true }).waitFor();
         assert.deepEqual(await context.allInnerTexts(), beforeSwitch);
-        await capture("gru-no-output");
+        await capture("recommendation-gru");
         await model.selectOption({ label: "Popularity" });
-        assert.equal(await session.inputValue(), "miss");
+        assert.equal(await session.inputValue(), "21546");
         await page.locator(".recommendations table").waitFor();
 
         await page.getByRole("tab", { name: t("dataset") }).click();

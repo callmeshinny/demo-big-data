@@ -119,7 +119,10 @@ select { width: 100%; height: 44px; border: 1px solid var(--line-strong); border
 
 .config { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--bg); }
 .config summary { cursor: pointer; font-weight: 700; font-size: 16px; }
-.recommendation-status { margin: 0 0 12px; }
+.recommendation-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin: 0 0 12px; }
+.e1-accuracy { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 10px 0 16px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.e1-accuracy > div { display: flex; gap: 10px; flex-wrap: wrap; }
+.e1-accuracy-title { flex-basis: 100%; }
 .method-details, .toy-format-example { margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--surface); }
 .method-details summary, .toy-format-example summary { cursor: pointer; font-weight: 700; }
 .environment-card { margin-top: 0; }
@@ -212,6 +215,7 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 .ranking .score { font-size: 11px; white-space: nowrap; padding-inline: 6px; }
 .ranking th:first-child, .ranking td:first-child { width: 52px; }
 .ranking th:first-child { padding-inline: 4px; text-align: center; }
+.ranking th:first-child { white-space: nowrap; overflow-wrap: normal; }
 .ranking th:last-child, .ranking td:last-child { width: 106px; padding-inline: 6px; }
 .ranking th { overflow-wrap: anywhere; }
 .tag-history { background: var(--rose-bg); color: var(--burgundy); }

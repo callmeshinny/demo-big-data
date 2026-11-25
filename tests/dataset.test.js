@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { histogramBuckets, normalizeDataset } from "../src/dataset.js";
 import overview from "../public/dataset-overview.json" with { type: "json" };
+import demo from "../public/demo-data.json" with { type: "json" };
 
 setLanguage(process.env.TV4_TEST_LANGUAGE);
 
@@ -30,4 +31,25 @@ test("official supplementary tables are shipped with source columns and confirma
   );
   assert.ok(overview.subsets.every((row) => row.final_test_D != null && row.train_used_1_to_Dminus1 != null && row.validation_used_2_to_D != null));
   assert.equal(overview.event_mix_before_after.length, 3);
+});
+
+test("real E1 sample contains three runs, identical fixed sample and catalog provenance", () => {
+  assert.equal(demo.data_kind, "real");
+  assert.deepEqual(demo.runs.map((run) => run.run_id), ["e1-popularity-010", "e1-gru-010", "e1-xlnet-010"]);
+  const sessions = demo.runs.map((run) => run.sessions.map((session) => session.user_session));
+  assert.equal(sessions.every((ids) => ids.length === 30 && ids.join("|") === sessions[0].join("|")), true);
+  for (const run of demo.runs) {
+    assert.equal(run.subset, 10);
+    assert.equal(run.split, "test");
+    assert.equal(run.data_kind, "real");
+    assert.equal(run.catalog_size, 63398);
+    assert.equal(run.provenance.sample.n_total, 1337);
+    assert.equal(run.provenance.sample.seed, 1);
+    assert.match(run.provenance.sample.rule, /SHA-256/);
+    const catalog = new Set(run.catalog);
+    for (const row of run.sessions) {
+      assert.ok([...row.prefix, row.target, ...row.top20].every((id) => catalog.has(id)));
+      assert.equal(row.target_rank, row.top20.includes(row.target) ? row.top20.indexOf(row.target) + 1 : null);
+    }
+  }
 });

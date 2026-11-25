@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from export_demo_data import export_run
+from export_demo_data import export_run, sample_runs, subset_catalogs
 
 
 class PredictionAdapterTest(unittest.TestCase):
@@ -60,3 +60,31 @@ class PredictionAdapterTest(unittest.TestCase):
         self.catalog.unlink()
         with self.assertRaisesRegex(ValueError, message):
             export_run(self.run, self.catalog)
+
+    def test_three_row_slice_samples_same_sessions_and_keeps_only_used_catalog_ids(self):
+        runs = []
+        for run_id, model in (("e1-popularity-010", "Popularity"), ("e1-gru-010", "GRU"), ("e1-xlnet-010", "XLNet")):
+            run_dir = self.workspace / run_id
+            artifacts = run_dir / "artifacts"
+            artifacts.mkdir(parents=True)
+            self.write(run_dir / "run.json", {"metadata": {"data_kind": "real"}})
+            self.write(artifacts / "metrics.json", {
+                "K": 20, "model": model, "subset": 10, "eval_split": "test", "run_id": run_id,
+                "n_sessions": 3, "eval_day": 7, "artifacts": {"catalog": {"sha256": self.sha}},
+            })
+            lines = [
+                {"user_session": str(i), "prefix": [3], "target": 7, "top20": [7], "product_ids": ["p-target"]}
+                for i in range(3)
+            ]
+            (artifacts / "predictions.jsonl").write_text("".join(json.dumps(row) + "\n" for row in lines), encoding="utf-8")
+            runs.append(export_run(run_dir, self.catalog))
+        sample_runs(runs, 2, 1)
+        subset_catalogs(runs)
+        session_sets = [{row["user_session"] for row in run["sessions"]} for run in runs]
+        self.assertEqual(session_sets[0], session_sets[1])
+        self.assertEqual(session_sets[1], session_sets[2])
+        for run in runs:
+            allowed = set(run["catalog"])
+            self.assertTrue(all(item in allowed for row in run["sessions"] for item in [*row["prefix"], row["target"], *row["top20"]]))
+            self.assertTrue(all(row["target_rank"] == row["top20"].index(row["target"]) + 1 for row in run["sessions"]))
+            self.assertEqual(run["catalog_size"], 2)

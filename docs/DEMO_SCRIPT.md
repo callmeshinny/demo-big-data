@@ -10,9 +10,9 @@
 
 ### Recommendations
 
-**English.** The real prediction bundle is still pending, so this tab keeps a clearly labelled toy format example. The official metric package does not contain per-session scores, so the demo does not show a score.
+**English.** The Recommendation tab replays the official E1 test predictions for three models. It shows 30 of 1,337 sessions, selected by a fixed SHA-256 hash rule with seed 1, independently of hit or miss. Each view shows the session interactions, the actual next item, and the model’s ordered Top-20. The reported Recall@20 and NDCG@20 beside the selector come from the official E1 package, not this 30-session sample. Scores and product names are unavailable; the cards show original product IDs. The demo replays saved predictions and does not run inference or retrain a model.
 
-*Tiếng Việt. Bộ dự đoán thật vẫn đang chờ, vì vậy tab này giữ ví dụ định dạng toy có nhãn rõ ràng. Gói metric chính thức không có điểm số theo từng phiên nên demo không hiển thị điểm.*
+*Tiếng Việt. Tab Gợi ý phát lại dự đoán test E1 chính thức của ba mô hình. Tab hiển thị 30 trong 1.337 phiên, chọn bằng quy tắc hash SHA-256 cố định với seed 1, không phụ thuộc trúng hay trượt. Mỗi lượt xem hiển thị các tương tác trong phiên, sản phẩm tiếp theo thực tế và Top-20 theo đúng thứ tự mô hình xuất ra. Recall@20 và NDCG@20 cạnh bộ chọn lấy từ package E1 chính thức, không tính lại trên mẫu 30 phiên. Không có điểm số hay tên sản phẩm; thẻ chỉ hiển thị mã sản phẩm gốc. Demo phát lại dự đoán đã lưu, không chạy suy luận trực tiếp hoặc huấn luyện lại model.*
 
 ### Experiments
 

@@ -10,6 +10,8 @@
 | `provenance` per run | `run_dir`, `eval_day`, `experiment`, `catalog_path`, `catalog_match`, `score_available` | Grouping runs that share the same session set, and traceability. |
 | `catalog_match: "line-endings-only"` | The collector smoke runs recorded the SHA-256 of the CRLF (Windows) checkout of `evaluation/tests/fixtures/catalog.json`. Content is identical; the adapter checks this explicitly and records it. | Ask TV2 whether future runs should hash with normalized line endings. |
 | `data_kind` for runs without `run.json` | `"toy"` only when `subset == "toy"`, otherwise `null` (UI: "data_kind: Chưa có"). | `metrics/tv2-toy-day1` has no collector record. |
+| Real E1 catalog subset | The public real-E1 sample stores only original product IDs used by the sampled prefix, target and Top-20; `catalog_size` and `provenance.catalog_size` retain the full catalog count, and `catalog_sha256` retains the full catalog hash. | Keeps the 30-session public JSON small while preserving catalog identity and membership checks. |
+| Real E1 provenance | Adds `provenance.predictions_path`, `predictions_sha256`, `catalog_path`, `catalog_sha256`, `catalog_size`, `n_total` and `sample`. | Makes the TV3 bundle inputs and fixed hash sample traceable. |
 
 ## Part B — `public/run-results.json`
 

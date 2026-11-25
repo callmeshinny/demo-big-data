@@ -165,7 +165,7 @@ function normalizeRun(raw, index, issues) {
     split: raw.split ?? null,
     data_kind: raw.data_kind ?? null,
     catalog_sha256: raw.catalog_sha256 ?? null,
-    catalogSize: catalog ? catalog.length : null,
+    catalogSize: Number.isSafeInteger(raw.catalog_size) ? raw.catalog_size : catalog ? catalog.length : null,
     catalogSet,
     evalPartition: provenance.eval_day ?? null,
     sample: isObject(provenance.sample) ? provenance.sample : null,

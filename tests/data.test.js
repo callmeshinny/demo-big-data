@@ -13,26 +13,25 @@ const fakeFetch = (body, status = 200) => async () => ({ ok: status < 400, statu
 
 setLanguage(process.env.TV4_TEST_LANGUAGE);
 
-test("shipped demo-data.json is valid and keeps artifact order", () => {
+test("shipped real demo-data.json is valid and keeps artifact order", () => {
   const { groups, issues, fatal } = normalizeDemo(json("../public/demo-data.json"));
   assert.equal(fatal, null);
   assert.deepEqual(issues, []);
-  const day1 = groups.find((g) => g.sessionIds.includes("rank1"));
-  const run = day1.runs[0];
+  const run = groups[0].runs[0];
   const byId = Object.fromEntries(run.sessions.map((s) => [s.user_session, s]));
-  assert.equal(byId.rank1.targetRank, 1);
-  assert.equal(byId.rank20.targetRank, 20);
-  assert.equal(byId.miss.targetRank, null);
-  assert.equal(byId.rank1.recommendations[0].product_id, "p3");
-  assert.ok(byId.rank1.recommendations.every((r) => r.score === null), "no score is invented");
-  assert.ok(run.sessions.every((s) => /^p\d+$/.test(s.target)), "original IDs only");
+  assert.equal(run.data_kind, "real");
+  assert.equal(run.catalogSize, 63398);
+  assert.ok(Object.values(byId).every((s) => s.recommendations.every((r) => r.score === null)), "no score is invented");
+  assert.ok(run.sessions.every((s) => /^\d+$/.test(s.target)), "original product IDs only");
 });
 
-test("E1 toy group holds Popularity, GRU and XLNet on the same session", () => {
+test("E1 real group holds Popularity, GRU and XLNet on the same session", () => {
   const { groups } = normalizeDemo(json("../public/demo-data.json"));
-  const e1 = groups.find((g) => g.runs.some((r) => r.run_id === "smoke-e1-gru-010"));
+  const e1 = groups.find((g) => g.runs.some((r) => r.run_id === "e1-gru-010"));
   assert.deepEqual(e1.runs.map((r) => r.modelKey).sort(), ["gru", "popularity", "xlnet"]);
-  assert.ok(e1.runs.every((r) => r.data_kind === "toy"));
+  assert.ok(e1.runs.every((r) => r.data_kind === "real"));
+  assert.equal(e1.runs[0].sample.n_total, 1337);
+  assert.equal(e1.runs[0].sample.n_selected, 30);
 });
 
 test("legacy single-run shape is still accepted", () => {
@@ -71,9 +70,11 @@ test("missing prefix/target/top20 keep the other parts and report issues", () =>
 
 test("history and target come from the group even when a model has no run", () => {
   const { groups } = normalizeDemo(json("../public/demo-data.json"));
-  const day1 = groups.find((g) => g.sessionIds.includes("miss"));
-  const { prefix, target } = sessionContext(day1, "miss");
-  assert.deepEqual({ prefix, target }, { prefix: ["p3"], target: "p23" });
+  const group = groups[0];
+  const sessionId = group.sessionIds[0];
+  const expected = group.runs[0].sessions.find((s) => s.user_session === sessionId);
+  const { prefix, target } = sessionContext(group, sessionId);
+  assert.deepEqual({ prefix, target }, { prefix: expected.prefix, target: expected.target });
 });
 
 test("out-of-catalog context stays visible and technical IDs keep their position as placeholders", () => {

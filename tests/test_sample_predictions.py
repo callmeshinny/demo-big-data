@@ -28,9 +28,7 @@ class SamplePredictionsTest(unittest.TestCase):
                 target_rank = top.index(target) + 1 if target in top else None
                 self.assertEqual(session["target_rank"], target_rank)
                 misses += target_rank is None
-                self.assertEqual(len(session["recommendations"]), len(top))
                 for rank, product in enumerate(top, start=1):
-                    self.assertEqual(session["recommendations"][rank - 1], {"rank": rank, "product_id": product, "score": None})
                     values = (run["run_id"], run["model"], str(run["subset"]), run["split"], run["data_kind"], run["catalog_sha256"],
                               session["user_session"], " > ".join(session["prefix"]), target, str(target_rank or ""), str(rank), product, "")
                     self.assertEqual(rows[index], dict(zip(fields, values)))

@@ -1,8 +1,8 @@
 # TV4 demo web — Session-based recommendation
 
-Standalone demo for the Big Data group project (`tlmthuy/Big-Data`). It shows a waiting state for real Top-20 per-session predictions and official E1–E5 experiment results from package `tv2-20261124`.
+Standalone demo for the Big Data group project (`tlmthuy/Big-Data`). It replays a fixed sample of real E1 per-session Top-20 predictions and shows official E1–E5 experiment results from package `tv2-20261124`.
 
-The static demo has Recommendations, Dataset, and Experiments tabs. English is the default, with a Vietnamese toggle in the header. Toy prediction examples are kept separate from official metrics.
+The static demo has Recommendations, Dataset, and Experiments tabs. English is the default, with a Vietnamese toggle in the header. No toy prediction data is shipped or shown; toy fixtures live only under `tests/fixtures/`.
 
 ## Branding
 
@@ -46,7 +46,19 @@ Regenerate the official figures from the resulting JSON:
 python3 scripts/make_figures.py
 ```
 
-The recommendation adapter (`scripts/export_demo_data.py`) is separate and should only be run when the real prediction bundle is delivered. See [docs/DEMO_DAY.md](docs/DEMO_DAY.md) for presentation and offline fallback steps.
+Regenerate the fixed real E1 sample from the local bundle (the bundle is an input and must never be committed):
+
+```bash
+PYTHONPATH=../Big-Data:scripts python3 scripts/export_demo_data.py \
+  --real-e1-bundle ../tv4-real-bundle \
+  --metrics ../Big-Data/metrics/releases/tv2-20261124/metrics.json \
+  --configs ../Big-Data/metrics/releases/tv2-20261124/configs.json \
+  --prediction-checks ../Big-Data/metrics/tv2-analysis-20261124/prediction_checks.json \
+  --split-population ../Big-Data/reports/tables/tv2-20261124/split_population.csv \
+  --output public/demo-data.json --sample 30 --sample-seed 1
+```
+
+See [docs/DEMO_DAY.md](docs/DEMO_DAY.md) for presentation and offline fallback steps.
 
 - Agent instructions: [AGENTS.md](AGENTS.md)
 - Project context: [docs/CONTEXT.md](docs/CONTEXT.md)
