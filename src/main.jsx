@@ -33,6 +33,7 @@ const DEMO_URL = source("demo", `${base}demo-data.json`);
 const PRODUCTS_URL = source("products", `${base}product-info.json`);
 const DATASET_URL = source("dataset", `${base}dataset-overview.json`);
 const RESULTS_URL = source("results", `${base}run-results.json`);
+const OFFICIAL_RESULTS_URL = `${base}official-results.json`;
 
 function useData(url, normalize, language) {
   const [state, setState] = useState({ loading: true });
@@ -70,6 +71,7 @@ function App() {
   const products = useData(PRODUCTS_URL, normalizeProductInfo, language);
   const dataset = useData(DATASET_URL, normalizeDataset, language);
   const results = useData(RESULTS_URL, normalizeResults, language);
+  const officialResults = useData(OFFICIAL_RESULTS_URL, (data) => ({ results: data }), language);
 
   useEffect(() => {
     const onHash = () => setRoute(currentRoute());
@@ -102,7 +104,7 @@ function App() {
       <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} officialResults={officialResults} />}
       </div>
 
       <footer>

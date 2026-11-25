@@ -378,6 +378,134 @@
         "output": "metrics/raw/e1-popularity-010/artifacts"
       },
       "training_config": null,
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -446,6 +574,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -520,6 +776,134 @@
         "seed": 1,
         "learning_rate": 0.000666
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -594,6 +978,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -668,6 +1180,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 27913,
+          "n_items": 32319
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 3517,
+          "n_items": 9056
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 3421,
+          "n_items": 8770
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 26550,
+          "n_items": 31184
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 3357,
+          "n_items": 8463
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 3256,
+          "n_items": 8024
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 24462,
+          "n_items": 30207
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 3114,
+          "n_items": 8247
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 3006,
+          "n_items": 7848
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 31016,
+          "n_items": 31702
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 3915,
+          "n_items": 9049
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 3787,
+          "n_items": 8192
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 28768,
+          "n_items": 31595
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 3625,
+          "n_items": 8617
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 3529,
+          "n_items": 8416
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 28201,
+          "n_items": 31939
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 3556,
+          "n_items": 8780
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 3457,
+          "n_items": 8387
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 26633,
+          "n_items": 31129
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 3366,
+          "n_items": 8509
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 3266,
+          "n_items": 8231
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:3678fda9d35d1401f67614560bb613714ea147bac87f5bddbf0fad66ad10630f",
         "mapping_version": "c82c30a87431128e15d515abc79763a6352e3d9ad8d397c7938b8f657f2af905",
@@ -742,6 +1382,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 55964,
+          "n_items": 45603
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 7044,
+          "n_items": 14377
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 6809,
+          "n_items": 13870
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 53047,
+          "n_items": 44068
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 6662,
+          "n_items": 13585
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 6459,
+          "n_items": 13489
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 49002,
+          "n_items": 42581
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 6158,
+          "n_items": 13211
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 5938,
+          "n_items": 13154
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 61974,
+          "n_items": 44230
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 7794,
+          "n_items": 14482
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 7574,
+          "n_items": 13710
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 57335,
+          "n_items": 44689
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 7224,
+          "n_items": 13930
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 6984,
+          "n_items": 13402
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 56436,
+          "n_items": 44633
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 7101,
+          "n_items": 14093
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 6870,
+          "n_items": 13803
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 52806,
+          "n_items": 44033
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 6631,
+          "n_items": 13566
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 6427,
+          "n_items": 13362
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:fe7c99e90684ae23e75343f70479ee75ba4c015569a63dc0484a180bc30075af",
         "mapping_version": "fcce041879b8ba68cd12697aa0f3cf65588ccadbd810a066e565b6baff53f4de",
@@ -816,6 +1584,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 112048,
+          "n_items": 59985
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 13988,
+          "n_items": 21912
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 13824,
+          "n_items": 21885
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 106024,
+          "n_items": 58802
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 13261,
+          "n_items": 20839
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 13100,
+          "n_items": 20909
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 97736,
+          "n_items": 57664
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 12262,
+          "n_items": 19877
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 11971,
+          "n_items": 19645
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 124395,
+          "n_items": 58883
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 15524,
+          "n_items": 21231
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 15382,
+          "n_items": 21790
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 114585,
+          "n_items": 59643
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 14296,
+          "n_items": 21274
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 14125,
+          "n_items": 21348
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 112845,
+          "n_items": 59694
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 14106,
+          "n_items": 21647
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 13912,
+          "n_items": 21066
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 105647,
+          "n_items": 59374
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 13221,
+          "n_items": 20925
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 13052,
+          "n_items": 21098
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:538d29ae8da316bd852fd97bd372ecdbd3acf50067fec93fff7f401bfda29344",
         "mapping_version": "1ec17d673f456924a518b321738c1a43d2942fb7ea74ac666bd14af6dbda052c",
@@ -890,6 +1786,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -964,6 +1988,134 @@
         "seed": 1,
         "learning_rate": 0.00071
       },
+      "split_counts": [
+        {
+          "day_index": 1,
+          "split": "train",
+          "n_sessions": 11128,
+          "n_items": 19157
+        },
+        {
+          "day_index": 1,
+          "split": "validation",
+          "n_sessions": 1404,
+          "n_items": 4416
+        },
+        {
+          "day_index": 1,
+          "split": "test",
+          "n_sessions": 1403,
+          "n_items": 4589
+        },
+        {
+          "day_index": 2,
+          "split": "train",
+          "n_sessions": 10549,
+          "n_items": 18304
+        },
+        {
+          "day_index": 2,
+          "split": "validation",
+          "n_sessions": 1315,
+          "n_items": 4187
+        },
+        {
+          "day_index": 2,
+          "split": "test",
+          "n_sessions": 1328,
+          "n_items": 4142
+        },
+        {
+          "day_index": 3,
+          "split": "train",
+          "n_sessions": 9768,
+          "n_items": 17542
+        },
+        {
+          "day_index": 3,
+          "split": "validation",
+          "n_sessions": 1214,
+          "n_items": 3878
+        },
+        {
+          "day_index": 3,
+          "split": "test",
+          "n_sessions": 1221,
+          "n_items": 4027
+        },
+        {
+          "day_index": 4,
+          "split": "train",
+          "n_sessions": 12344,
+          "n_items": 18808
+        },
+        {
+          "day_index": 4,
+          "split": "validation",
+          "n_sessions": 1554,
+          "n_items": 4363
+        },
+        {
+          "day_index": 4,
+          "split": "test",
+          "n_sessions": 1573,
+          "n_items": 4533
+        },
+        {
+          "day_index": 5,
+          "split": "train",
+          "n_sessions": 11432,
+          "n_items": 18551
+        },
+        {
+          "day_index": 5,
+          "split": "validation",
+          "n_sessions": 1442,
+          "n_items": 4378
+        },
+        {
+          "day_index": 5,
+          "split": "test",
+          "n_sessions": 1444,
+          "n_items": 4235
+        },
+        {
+          "day_index": 6,
+          "split": "train",
+          "n_sessions": 11223,
+          "n_items": 18646
+        },
+        {
+          "day_index": 6,
+          "split": "validation",
+          "n_sessions": 1418,
+          "n_items": 4161
+        },
+        {
+          "day_index": 6,
+          "split": "test",
+          "n_sessions": 1415,
+          "n_items": 4383
+        },
+        {
+          "day_index": 7,
+          "split": "train",
+          "n_sessions": 10597,
+          "n_items": 18367
+        },
+        {
+          "day_index": 7,
+          "split": "validation",
+          "n_sessions": 1324,
+          "n_items": 3879
+        },
+        {
+          "day_index": 7,
+          "split": "test",
+          "n_sessions": 1337,
+          "n_items": 4378
+        }
+      ],
       "versions": {
         "workflow_version": "tv1-cuDF-workflow:sha256:330ec447530a307cd43e15157ca259063071d2cf4c25d1c85435732189168edc",
         "mapping_version": "961f9c06619d334eee73ddbc3b7609d7bd91da5214a491625f81192654d8b8ec",
@@ -992,6 +2144,7 @@
       "planned": null,
       "actual": null,
       "training_config": null,
+      "split_counts": null,
       "versions": null,
       "catalog_sha256": null,
       "runtime": null,
@@ -1004,6 +2157,7 @@
       "planned": null,
       "actual": null,
       "training_config": null,
+      "split_counts": null,
       "versions": null,
       "catalog_sha256": null,
       "runtime": null,

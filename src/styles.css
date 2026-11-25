@@ -121,6 +121,13 @@ select { width: 100%; height: 44px; border: 1px solid var(--line-strong); border
 .config-table th { font-weight: 600; width: 32%; }
 .config-table thead th { background: var(--beige); }
 .config-table tr.diff td { background: var(--rose-bg); }
+.e1-context { color: var(--muted); font-weight: 700; margin: 8px 0 16px; }
+.e1-table { table-layout: fixed; }
+.e1-table thead th:not(:first-child), .e1-table tbody td { width: 22%; }
+.e1-table td.num { white-space: nowrap; }
+.e1-footnotes { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--soft); }
+.e1-footnotes p { color: var(--ink); font-weight: 700; }
+.e1-footnotes ul { margin: 8px 0 0; padding-left: 22px; }
 .env { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 16px; margin: 0; }
 .env dt { color: var(--soft); font-size: 12px; }
 .env dd { margin: 2px 0 0; font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }

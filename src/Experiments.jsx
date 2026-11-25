@@ -5,6 +5,7 @@ import {
   EXPERIMENTS, compareConfig, displayCell, exactValue, formatValue, modelLabel, splitByKind,
 } from "./data.js";
 import { DataKindBadge, Issues, Notice, StatusBadge } from "./ui.jsx";
+import { buildE1View, formatE1Context } from "./e1.js";
 
 // Metric definitions: label, default unit and scope (contract B5). Values always come from JSON.
 const METRICS = () => ({
@@ -231,7 +232,31 @@ function E5Panel({ runs }) {
   );
 }
 
-export default function Experiments({ state, active }) {
+function OfficialE1Panel({ results }) {
+  const view = buildE1View(results);
+  return (
+    <section className="panel e1-panel">
+      <div className="panel-heading"><h2>{t("e1_model_comparison")}</h2></div>
+      <p className="e1-context">{formatE1Context(view.context)}</p>
+      <div className="table-scroll">
+        <table className="metric-table e1-table">
+          <caption className="sr-only">{t("e1_model_comparison")}</caption>
+          <thead><tr><th scope="col">{t("metric")}</th>{view.models.map(({ label }) => <th scope="col" key={label}>{label}</th>)}</tr></thead>
+          <tbody>{view.rows.map((row) => <tr key={row.field}>
+            <th scope="row">{row.label}</th>
+            {row.cells.map((cell, index) => <td key={`${row.field}/${index}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>)}
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <aside className="e1-footnotes">
+        <p>{t("e1_fair_statement")}</p>
+        <ul>{view.notes.map(([label, value]) => <li key={label}><strong>{label}:</strong> {value ?? t("MISSING")}</li>)}</ul>
+      </aside>
+    </section>
+  );
+}
+
+export default function Experiments({ state, active, officialResults }) {
   const { runs = [], meta = {}, issues = [], fatal, error } = state;
   const [showToy, setShowToy] = useState(true);
 
@@ -242,16 +267,17 @@ export default function Experiments({ state, active }) {
   const { official, toy } = splitByKind(runs, active);
   const order = (r) => official.findIndex((o) => o.run_id === r.matrix_run_id);
   const toySorted = [...toy].sort((a, b) => order(a) - order(b));
+  const officialE1 = active === "E1";
 
   return (
     <>
       <Issues issues={issues} />
-      {!meta.confirmed_by_tv2 && (
+      {!officialE1 && !meta.confirmed_by_tv2 && (
         <Notice kind="warn" title={t("official_e1_e5_package_pending_from")}>{t("planned_values_come_from_the_experiment")}{t("not_available_yet")}{t("until_tv2_delivers_them")} {meta.team_commit && <> {t("data_exported_from_team_commit")} <code>{meta.team_commit}</code>.</>}
         </Notice>
       )}
 
-      <section className="panel">
+      {!officialE1 && <section className="panel">
         <h2>{t("vm_environment_tv3")}</h2>
         {meta.environment_baseline ? <>
           <p>{meta.environment_baseline.scope}</p>
@@ -260,17 +286,20 @@ export default function Experiments({ state, active }) {
             .map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{formatValue(value)}</dd></div>)}</dl>
           <p className="definition">{formatValue(meta.environment_baseline.source)}</p>
         </> : <p>{t("not_available_yet")}</p>}
-      </section>
+      </section>}
 
       <nav className="subtabs" aria-label={t("experiments")}>
         {EXPERIMENTS.map((id) => (
           <a key={id} href={`#experiments-${id.toLowerCase()}`} className={id === active ? "active" : ""} aria-current={id === active ? "page" : undefined}>{id}</a>
         ))}
-        <label className="toggle">
+        {!officialE1 && <label className="toggle">
           <input type="checkbox" checked={showToy} onChange={(e) => setShowToy(e.target.checked)} />{t("show_toy_runs_for_format_reference")} </label>
+        }
       </nav>
 
-      <section className="panel">
+      {officialE1 ? (officialResults?.loading ? <p className="loading">{t("loading_data")}</p>
+        : officialResults?.error ? <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{officialResults.error}</Notice>
+          : <OfficialE1Panel results={officialResults?.results} />) : <section className="panel">
         <div className="panel-heading">
           <h2>{panel.title}</h2>
         </div>
@@ -292,7 +321,7 @@ export default function Experiments({ state, active }) {
             <RunSet runs={toySorted} metrics={panel.metrics} caption={t("toy_chart_caption", panel.title)} />
           </div>
         )}
-      </section>
+      </section>}
     </>
   );
 }

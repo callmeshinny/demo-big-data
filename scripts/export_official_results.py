@@ -50,6 +50,7 @@ def export(package_root):
             "planned": metadata.get("run"),
             "actual": config.get("effective_config"),
             "training_config": config.get("training_config"),
+            "split_counts": config.get("split_counts"),
             "versions": metadata.get("versions"),
             "catalog_sha256": catalog.get("sha256"),
             "runtime": config.get("runtime"),
