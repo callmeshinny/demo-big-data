@@ -4,59 +4,91 @@
 
 ### Dataset
 
-**English.** The task is to predict the next product from a session’s interaction history. The official experiment data uses the weekly cuDF workflow and nested first-week subsets. The Dataset tab shows the population, cleaning and split counts from the TV2 supplementary tables.
+**English.** Our task is next-item prediction from a shopping session's views, carts and purchases. We use the public 2019-Oct e-commerce dataset and the team's weekly cuDF workflow. Experiments use nested session-level subsets from the first seven days, not randomly sampled individual events. This keeps each session's interaction sequence together for evaluation.
 
-*Tiếng Việt. Bài toán là dự đoán sản phẩm tiếp theo từ lịch sử tương tác trong phiên. Dữ liệu thí nghiệm chính thức dùng workflow cuDF theo tuần và các tập con lồng nhau trong tuần đầu. Tab Dữ liệu hiển thị quy mô, số liệu làm sạch và phân chia từ các bảng bổ sung của TV2.*
+*Tiếng Việt. Bài toán là dự đoán sản phẩm tiếp theo trong phiên mua sắm dựa trên sản phẩm đã xem, thêm vào giỏ hoặc mua. Nhóm dùng bộ dữ liệu sự kiện thương mại điện tử công khai tháng 10/2019 và workflow cuDF theo tuần. Đầu vào thí nghiệm dùng các tập con lồng nhau ở mức phiên trong bảy ngày đầu, không lấy mẫu ngẫu nhiên từng sự kiện.*
+
+**English.** The Dataset tab traces raw population, cleaning, eligible sequences, vocabulary and train, validation and test counts to the TV2 package. It reports subset sizes, event and sequence distribution differences, and known limits. These are checks on this sample, not proof it represents all shoppers or seasons.
+
+*Tiếng Việt. Tab Dataset truy xuất quy mô dữ liệu thô, bước làm sạch, chuỗi hợp lệ, vocabulary và số lượng train, validation, test theo package TV2. Tab cũng cho biết mỗi tập con chiếm bao nhiêu và phân phối sự kiện, chuỗi khác tập đầy đủ ra sao. Đây là mô tả mẫu dữ liệu, không chứng minh mẫu đại diện cho mọi người mua hay mọi mùa.*
 
 ### Recommendations
 
-**English.** The Recommendation tab replays the official E1 test predictions for three models. It shows 30 of 1,337 sessions, selected by a fixed SHA-256 hash rule with seed 1, independently of hit or miss. Each view shows the session interactions, the actual next item, and the model’s ordered Top-20. The reported Recall@20 and NDCG@20 beside the selector come from the official E1 package, not this 30-session sample. Scores and product names are unavailable; the cards show original product IDs. The demo replays saved predictions and does not run inference or retrain a model.
+**English.** The Recommendation tab replays official E1 test predictions for Popularity, GRU and XLNet. It shows 30 of 1,337 sessions, selected across all models by the seed-1 SHA-256 rule on session ID. Selection is independent of hit or miss. Choose a session to see its history, actual next product and model-ordered Top-20.
 
-*Tiếng Việt. Tab Gợi ý phát lại dự đoán test E1 chính thức của ba mô hình. Tab hiển thị 30 trong 1.337 phiên, chọn bằng quy tắc hash SHA-256 cố định với seed 1, không phụ thuộc trúng hay trượt. Mỗi lượt xem hiển thị các tương tác trong phiên, sản phẩm tiếp theo thực tế và Top-20 theo đúng thứ tự mô hình xuất ra. Recall@20 và NDCG@20 cạnh bộ chọn lấy từ package E1 chính thức, không tính lại trên mẫu 30 phiên. Không có điểm số hay tên sản phẩm; thẻ chỉ hiển thị mã sản phẩm gốc. Demo phát lại dự đoán đã lưu, không chạy suy luận trực tiếp hoặc huấn luyện lại model.*
+*Tiếng Việt. Tab Recommendation phát lại dự đoán test E1 chính thức của Popularity, GRU và XLNet. Tab hiển thị 30 trong 1.337 phiên, chọn theo cùng quy tắc SHA-256 với seed 1 cho cả ba mô hình. Quy tắc băm mã phiên nên việc chọn không phụ thuộc mô hình có dự đoán trúng hay không. Chọn phiên để xem lịch sử tương tác, sản phẩm tiếp theo thực tế và Top-20 theo thứ tự mô hình.*
+
+**English.** A hit means the actual product ID appears in Top-20; otherwise it is a miss. Recall@20 and NDCG@20 beside the selector are official full-test E1 metrics, not recomputed from these 30 sessions. Individual scores and product names are unavailable, so cards show original IDs. This is saved-output replay, not live inference or retraining.
+
+*Tiếng Việt. Target được tô sáng là dự đoán trúng nếu mã sản phẩm gốc xuất hiện trong danh sách; nếu không, đó là phiên trượt. Recall@20 và NDCG@20 cạnh bộ chọn mô hình là metric chính thức trên toàn bộ test E1, không phải điểm tính lại trên 30 phiên đang hiển thị. Không có điểm dự đoán riêng hay tên sản phẩm, nên thẻ hiển thị mã sản phẩm gốc. Đây là phát lại output đã lưu, không phải suy luận trực tiếp hay chạy huấn luyện mới.*
 
 ### Experiments
 
-**English.** In E1, XLNet has the highest Recall@20 among the three models. The package reports 0.12490650710545999 for `e1-xlnet-010` in `E1.csv`, but this is a single run and seed, so it is not a repeated-run estimate.
+**English.** E1 compares the three models under the delivered test protocol. XLNet leads Recall@20 at 0.1249 in this single run. Treat this as a descriptive result from one seed, not evidence of repeat-run stability. Metrics come from the official package; the recommendation sample is for inspecting examples.
 
-*Tiếng Việt. Trong E1, XLNet có Recall@20 cao nhất trong ba mô hình. Gói dữ liệu ghi nhận 0.12490650710545999 cho `e1-xlnet-010` trong `E1.csv`, nhưng đây là một lần chạy và một seed, không phải ước lượng từ nhiều lần chạy.*
+*Tiếng Việt. E1 so sánh ba mô hình theo protocol test đã bàn giao. Trong lần chạy đơn lẻ này, XLNet có Recall@20 cao nhất: 0.1249. Đây là kết quả của một lần chạy và một seed, không phải bằng chứng về độ ổn định qua nhiều lần chạy. Metric lấy từ package chính thức; mẫu recommendation dùng để xem từng ví dụ.*
 
-**English.** E3 shows a tradeoff on validation: train batch 32 has Recall@20 of 0.19637462235649547 and process wall time of 65.94311637600003 seconds; batch 128 has 0.1299093655589124 and 44.7698482299993 seconds. These validation values should not be compared directly with E1 or E2 test results (`E3.csv`; `dictionary.E3_accuracy`).
+**English.** E3 compares train batches 32 and 128 on validation, holding other conditions fixed. Batch 32 gives Recall@20 0.1964 and process wall 65.94 seconds; batch 128 gives 0.1299 and 44.77 seconds. This validation tradeoff is not directly comparable with E1 or E2 test accuracy.
 
-*Tiếng Việt. E3 cho thấy sự đánh đổi trên tập validation: batch train 32 có Recall@20 là 0.19637462235649547 và thời gian process wall là 65.94311637600003 giây; batch 128 lần lượt là 0.1299093655589124 và 44.7698482299993 giây. Không nên so sánh trực tiếp các giá trị validation này với kết quả test của E1 hoặc E2 (`E3.csv`; `dictionary.E3_accuracy`).*
+*Tiếng Việt. E3 so sánh batch huấn luyện 32 và 128 trên validation, giữ các điều kiện khác cố định. Batch 32 có Recall@20 là 0.1964 và thời gian tiến trình 65.94 giây; batch 128 lần lượt là 0.1299 và 44.77 giây. Đây là sự đánh đổi trên validation, không nên so sánh trực tiếp độ chính xác với test E1 hoặc E2.*
 
-**English.** In E4, the Parquet file is 25,382,745 bytes versus 134,004,153 bytes for CSV. Its read took 0.1085011539998959 seconds versus 0.45413743600011003 seconds. Preprocessing including read took 33.57124894300023 seconds for Parquet and 34.987556843999755 seconds for CSV, which is similar. The package notes that the cache was warm and preprocessing already includes reading (`E4.csv`; `limits`; `dictionary.E4_preprocessing_wall`).
+**English.** E4 reports CSV at 127.8 MiB and Parquet at 24.2 MiB. Reads take 0.454 and 0.109 seconds; preprocessing including read takes 34.99 and 33.57 seconds. The package measured a warm cache, so these results describe that run, not every storage setup.
 
-*Tiếng Việt. Trong E4, tệp Parquet có kích thước 25,382,745 byte so với CSV là 134,004,153 byte. Thời gian đọc lần lượt là 0.1085011539998959 giây và 0.45413743600011003 giây. Tiền xử lý bao gồm đọc mất 33.57124894300023 giây với Parquet và 34.987556843999755 giây với CSV, gần tương đương. Gói dữ liệu lưu ý cache đã ấm và thời gian tiền xử lý đã bao gồm đọc (`E4.csv`; `limits`; `dictionary.E4_preprocessing_wall`).*
+*Tiếng Việt. E4 ghi nhận CSV có dung lượng 127.8 MiB và Parquet 24.2 MiB. Thời gian đọc lần lượt là 0.454 giây với CSV và 0.109 giây với Parquet. Thời gian preprocessing wall, vốn đã bao gồm đọc dữ liệu, lần lượt là 34.99 và 33.57 giây. Package đo trong điều kiện cache ấm, nên đây là số liệu của lần chạy đó, không đại diện cho mọi hệ thống lưu trữ.*
 
-**English.** E5 reports composed time excluding shared first-seen and seconds per million events. Across the 10%, 25%, 50% and 100% subsets, the package reports 66.73532777002474, 56.90217720991631, 55.83125010467014 and 55.637233748284764 seconds per million events. This composed time is not observed end-to-end wall time (`E5.csv`; `dictionary.E5_composed`).
+**English.** E5 reuses verified E2 runs across four subset sizes. Normalized time is 66.7, 56.9, 55.8 and 55.6 seconds per million events. Composed time excludes shared first-seen and is not observed end-to-end wall time. These measured curves do not guarantee throughput.
 
-*Tiếng Việt. E5 báo cáo thời gian tổng hợp không gồm chi phí first-seen dùng chung và số giây trên một triệu sự kiện. Với các tập con 10%, 25%, 50% và 100%, gói dữ liệu lần lượt ghi nhận 66.73532777002474, 56.90217720991631, 55.83125010467014 và 55.637233748284764 giây trên một triệu sự kiện. Thời gian tổng hợp này không phải thời gian thực đo từ đầu đến cuối (`E5.csv`; `dictionary.E5_composed`).*
+*Tiếng Việt. E5 dùng lại các lượt E2 đã xác minh để trình bày thời gian tổng hợp và số giây trên một triệu sự kiện ở bốn kích thước tập con. Các giá trị chuẩn hóa là 66.7, 56.9, 55.8 và 55.6 giây trên một triệu sự kiện. Thời gian tổng hợp không gồm first-seen dùng chung và không phải thời gian đầu-cuối quan sát trực tiếp. Đường biểu diễn mô tả pipeline đã đo, không phải cam kết throughput.*
 
 ## Likely questions
 
-1. **Why only one run and seed?** The official package contains one run per reported configuration. It supports a descriptive comparison, but it cannot show run-to-run variation (`limits`).
+1. **Why only one run and seed?** The official package contains one run for each reported configuration. It supports a descriptive comparison, but cannot estimate run-to-run variation (`limits`).
 
-   *Vì sao chỉ có một lần chạy và một seed? Gói chính thức có một lần chạy cho mỗi cấu hình. Kết quả hỗ trợ so sánh mô tả nhưng không cho biết biến động giữa các lần chạy (`limits`).*
+   *Vì sao chỉ có một lần chạy và một seed? Package chính thức có một lần chạy cho mỗi cấu hình. Kết quả hỗ trợ so sánh mô tả nhưng không ước lượng được biến động giữa các lần chạy (`limits`).*
 
 2. **Why is E3 on validation?** E3 measures the batch-size comparison on validation; its protocol says these values are not directly comparable with E1/E2 test (`dictionary.E3_accuracy`).
 
-   *Vì sao E3 dùng validation? E3 đo so sánh batch size trên validation; quy ước của gói cho biết không so sánh trực tiếp các giá trị này với test của E1/E2 (`dictionary.E3_accuracy`).*
+   *Vì sao E3 dùng validation? E3 đo so sánh batch size trên validation; protocol nói không so sánh trực tiếp các giá trị này với test E1/E2 (`dictionary.E3_accuracy`).*
 
-3. **Why are scores not shown?** The exported prediction rows contain ranked product IDs, not per-item scores. No score is inferred from rank.
+3. **Why are prediction scores and product names missing?** The delivered rows contain ranked product IDs, not per-item scores or TV1 metadata. The UI does not infer a score from rank or invent names.
 
-   *Vì sao không hiển thị điểm? Các dòng dự đoán xuất ra chứa mã sản phẩm theo thứ hạng, không có điểm theo từng sản phẩm. Demo không suy ra điểm từ thứ hạng.*
+   *Vì sao thiếu điểm dự đoán và tên sản phẩm? Các dòng được bàn giao có mã sản phẩm theo thứ hạng, không có điểm từng sản phẩm hay metadata từ TV1. UI không suy ra điểm từ thứ hạng hoặc tự đặt tên.*
 
-4. **What does Recall@20 mean?** It records whether the single actual next item appears in the model’s Top-20 list, averaged over evaluated sessions (`dictionary.inference_protocol`).
+4. **What does Recall@20 mean?** For each evaluated session, it is one if the actual next item appears in the Top-20 and zero otherwise, averaged over sessions. See [docs/modeling/model_protocol.md](../../Big-Data/docs/modeling/model_protocol.md), “Evaluation chung cho ba model.”
 
-   *Recall@20 nghĩa là gì? Chỉ số ghi nhận sản phẩm tiếp theo thực tế có nằm trong Top-20 của mô hình hay không, lấy trung bình trên các phiên được đánh giá (`dictionary.inference_protocol`).*
+   *Recall@20 nghĩa là gì? Với mỗi phiên được đánh giá, giá trị là một nếu sản phẩm tiếp theo thực tế nằm trong Top-20, ngược lại là không; sau đó lấy trung bình trên các phiên. Xem [docs/modeling/model_protocol.md](../../Big-Data/docs/modeling/model_protocol.md), mục “Evaluation chung cho ba model.”*
 
 5. **Why does E4 preprocessing time not add read time?** The preprocessing wall field already includes its own read, so adding the separate read measurement would count it twice (`dictionary.E4_preprocessing_wall`).
 
-   *Vì sao thời gian tiền xử lý E4 không cộng thêm thời gian đọc? Trường preprocessing wall đã bao gồm thời gian đọc của chính nó; cộng số đo đọc riêng sẽ tính trùng (`dictionary.E4_preprocessing_wall`).*
+   *Vì sao thời gian preprocessing E4 không cộng thêm thời gian đọc? Trường preprocessing wall đã gồm thời gian đọc của nó; cộng số đo đọc riêng sẽ tính trùng (`dictionary.E4_preprocessing_wall`).*
 
-6. **Is E5 an end-to-end wall time?** No. It is a composed metric that excludes shared first-seen and is explicitly not observed end-to-end wall time (`dictionary.E5_composed`).
+6. **Is E5 an end-to-end wall time?** No. It is composed from measured stages, excludes shared first-seen and is explicitly not observed end-to-end wall time (`dictionary.E5_composed`).
 
-   *E5 có phải thời gian thực đo từ đầu đến cuối không? Không. Đây là metric tổng hợp không gồm first-seen dùng chung và được ghi rõ là không phải thời gian thực đo từ đầu đến cuối (`dictionary.E5_composed`).*
+   *E5 có phải thời gian đầu-cuối thực đo không? Không. Nó tổng hợp từ các giai đoạn đã đo, không gồm first-seen dùng chung và được ghi rõ là không phải thời gian đầu-cuối quan sát trực tiếp (`dictionary.E5_composed`).*
+
+7. **How is a session’s prediction evaluated?** The stored row gives the prefix, its actual next-item target and the model’s ordered Top-20. A hit means that target ID occurs in those recommendations; no score is required.
+
+   *Đánh giá dự đoán của một phiên như thế nào? Dòng đã lưu có prefix, target sản phẩm tiếp theo thực tế và Top-20 theo thứ tự của mô hình. Dự đoán trúng nghĩa là ID target có trong danh sách; không cần điểm số.*
+
+8. **Does the demo run live inference, and how can it be rebuilt?** No. It replays the checksum-verified E1 predictions; it does not load a model or retrain. Use the real-E1 export and build commands in [README.md](../README.md).
+
+   *Demo có chạy suy luận trực tiếp và làm lại thế nào? Không. Demo phát lại dự đoán E1 đã xác minh checksum, không nạp model hay huấn luyện lại. Dùng lệnh xuất real-E1 và build trong [README.md](../README.md).*
+
+9. **How is the 30-session sample selected?** Sort sessions by SHA-256 of `1:<user_session>` and take the first 30. The same deterministic membership is used for all three models, independent of hit or miss.
+
+   *Mẫu 30 phiên được chọn thế nào? Sắp xếp phiên theo SHA-256 của `1:<user_session>` rồi lấy 30 phiên đầu. Cả ba mô hình dùng cùng membership xác định, không phụ thuộc trúng hay trượt.*
+
+10. **Are these toy or real recommendations?** They are the `data_kind: real` E1 runs `e1-popularity-010`, `e1-gru-010` and `e1-xlnet-010`, checked against the delivered prediction bundle and catalog. Toy fixtures are separate test inputs.
+
+    *Đây là gợi ý toy hay thật? Đây là các lượt E1 `data_kind: real` `e1-popularity-010`, `e1-gru-010` và `e1-xlnet-010`, đã đối chiếu với prediction bundle và catalog được bàn giao. Fixture toy là đầu vào test riêng.*
+
+11. **Why might the sample be browsing-heavy?** The source is a short time window and the subset retains whole sessions. The Dataset tab reports event and sequence distribution differences and the known limits; results should not be generalized to all customers.
+
+    *Vì sao mẫu có thể thiên về hành vi xem? Nguồn là một khoảng thời gian ngắn và tập con giữ nguyên toàn bộ phiên. Tab Dataset báo cáo khác biệt phân phối sự kiện, chuỗi và các giới hạn đã biết; không nên khái quát kết quả cho mọi khách hàng.*
+
+12. **What does the Recommendation tab show?** Real E1 predictions for 30 of 1,337 sessions, selected by the seed-1 hash rule, with history, actual next product and Top-20. It shows no per-item scores or product names.
+
+    *Tab Recommendation hiển thị gì? Dự đoán E1 thật cho 30 trong 1.337 phiên, chọn theo quy tắc hash seed 1, cùng lịch sử, sản phẩm tiếp theo thực tế và Top-20. Tab không hiển thị điểm từng sản phẩm hay tên sản phẩm.*
 
 ## Sources
 
