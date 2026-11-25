@@ -1,5 +1,6 @@
 export const messages = {
   "en": {
+    "MISSING": "Not available",
     "weekly_events_before_cleanup": "Weekly events before cleanup",
     "events_after_consecutive_repeat_removal": "Events after consecutive-repeat removal",
     "sessions": "Sessions",
@@ -287,6 +288,7 @@ export const messages = {
     "ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported (TV2 run_neural.py)."
   },
   "vi": {
+    "MISSING": "Chưa có",
     "weekly_events_before_cleanup": "Sự kiện tuần trước làm sạch",
     "events_after_consecutive_repeat_removal": "Sự kiện sau bỏ lặp liên tiếp",
     "sessions": "Phiên",

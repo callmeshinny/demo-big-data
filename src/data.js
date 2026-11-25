@@ -295,14 +295,13 @@ export function splitByKind(runs, experiment) {
 }
 
 // ---------------------------------------------------------------- formatting
+import { formatGeneralNumber } from "./format.js";
 
 /** Format a delivered value or a localized placeholder. */
 export function formatValue(value) {
   if (value === null || value === undefined || value === "") return t("not_available_yet");
   if (typeof value === "number") {
-    if (!Number.isFinite(value)) return String(value);
-    if (Number.isInteger(value)) return value.toLocaleString("en-US");
-    return Number(value.toPrecision(4)).toLocaleString("en-US", { maximumFractionDigits: 10 });
+    return formatGeneralNumber(value);
   }
   if (typeof value === "boolean") return value ? "true" : "false";
   if (Array.isArray(value)) return value.length ? value.map(formatValue).join(", ") : t("not_available_yet");
