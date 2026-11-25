@@ -106,7 +106,7 @@ function App() {
       <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>
 
       <footer>
@@ -114,7 +114,7 @@ function App() {
         <ul>{[
           ["demo-data.json", demo], ["product-info.json", products],
           ["dataset-overview.json", dataset], ["official-results.json", officialResults],
-        ].map(([name, file]) => <li key={name}>
+        ].filter(([name, file]) => name !== "product-info.json" || file.provenance?.data_kind === "real").map(([name, file]) => <li key={name}>
           <code>{name}</code> {t("commit")} {file.provenance?.team_commit ?? t("not_available_yet")} {t("exported")} {file.provenance?.generated_at ?? t("not_available_yet")} · {file.provenance?.data_kind ?? t("not_available_yet")}
         </li>)}</ul>
       </footer>

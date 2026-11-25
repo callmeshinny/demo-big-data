@@ -4,10 +4,6 @@ import { INVALID_PRODUCT_ID } from "./data.js";
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const titleCase = (value) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-function topCategory(product) {
-  return product?.category_code?.split(".")[0] || null;
-}
-
 export function productDisplay(id, products) {
   if (id === INVALID_PRODUCT_ID) return { name: t("invalid_id") };
 
@@ -26,28 +22,15 @@ export function productDisplay(id, products) {
   };
 }
 
-export function categoryHighlights(prefix, prefixCatalog, recommendations, products) {
-  const categoryOf = (id) => topCategory(products?.get(id));
-  const historyCategories = new Set();
-  for (const id of prefix ?? []) {
-    const category = prefixCatalog?.has(id) && categoryOf(id);
-    if (category) historyCategories.add(category);
-  }
-
-  const matchingIds = new Set();
-  let categorizedCount = 0;
-  let matchingCount = 0;
-  for (const { product_id: id } of recommendations ?? []) {
-    const category = categoryOf(id);
-    if (!category) continue;
-    categorizedCount++;
-    if (historyCategories.has(category)) {
-      matchingIds.add(id);
-      matchingCount++;
-    }
-  }
-  const summary = historyCategories.size && categorizedCount
-    ? t("history_categories_0_1_2_categorized", [...historyCategories].join(", "), matchingCount, categorizedCount)
-    : null;
-  return { matchingIds, summary };
+export function productCardDisplay(id, products) {
+  if (id === INVALID_PRODUCT_ID) return { id: null, name: t("invalid_id"), breadcrumb: null, price: null };
+  const product = products?.get(id);
+  if (!product) return { id, name: null, breadcrumb: null, price: null };
+  const display = productDisplay(id, products);
+  return {
+    id,
+    name: product.brand || product.category_code ? display.name : null,
+    breadcrumb: display.breadcrumb || null,
+    price: product.price == null ? null : display.price,
+  };
 }

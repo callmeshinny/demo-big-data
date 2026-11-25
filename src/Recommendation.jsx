@@ -1,20 +1,9 @@
 import { t } from "./i18n.js";
-import React, { useMemo, useState } from "react";
-import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext, usersBySession } from "./data.js";
+import React, { useState } from "react";
+import { INVALID_PRODUCT_ID, PROJECT_MODELS, modelKey, modelLabel, sessionContext } from "./data.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
-import { categoryHighlights } from "./product.js";
-import { DataKindBadge, Issues, Notice } from "./ui.jsx";
-
-function groupLabel(group) {
-  const parts = [
-    group.subset ?? "subset ?",
-    group.split ?? "split ?",
-    group.evalPartition !== null ? `partition ${group.evalPartition}` : null,
-    `${group.sessionIds.length} session`,
-  ].filter(Boolean);
-  return parts.join(" · ");
-}
+import { Issues, Notice } from "./ui.jsx";
 
 /** Options for the model/run selector: every delivered run, plus project models with no output. */
 function runOptions(group) {
@@ -33,21 +22,16 @@ function runOptions(group) {
   return options;
 }
 
-export default function Recommendation({ state, productInfo, protocol }) {
+export default function Recommendation({ state, productInfo, protocol, official }) {
   const { groups = [], issues = [], fatal, error } = state;
-  const [groupKey, setGroupKey] = useState("");
   const [choice, setChoice] = useState("");
-  const [userId, setUserId] = useState(() => new URLSearchParams(window.location.search).get("user") ?? "");
   const [sessionChoice, setSessionChoice] = useState(() => new URLSearchParams(window.location.search).get("session"));
 
-  const group = groups.find((g) => g.key === groupKey) ?? groups[0];
+  const group = groups[0];
   const options = group ? runOptions(group) : [];
   const option = options.find((o) => o.value === choice) ?? options[0];
 
-  const sessionUsers = useMemo(() => usersBySession(group), [group]);
-  const users = [...new Set(sessionUsers.values())];
-  const sessionIds = group?.sessionIds.filter((id) => !userId || sessionUsers.get(id) === userId) ?? [];
-  const unknownUser = userId !== "" && !users.includes(userId);
+  const sessionIds = group?.sessionIds ?? [];
   const unknownSession = sessionChoice !== null && !sessionIds.includes(sessionChoice);
   const sessionId = sessionChoice ?? sessionIds[0] ?? "";
 
@@ -62,50 +46,51 @@ export default function Recommendation({ state, productInfo, protocol }) {
   }
   if (!group) return <Notice kind="error" title={t("no_data")}>{t("demo_data_json_contains_no_runs")}</Notice>;
 
-  const selectionError = unknownUser || unknownSession;
+  const selectionError = unknownSession;
   const run = option?.run ?? null;
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
+  const officialE1 = official?.tables?.E1 ?? [];
 
-  const sample = (run ?? group.runs[0]).sample;
-  const products = productInfo.products;
-  const { matchingIds, summary } = categoryHighlights(
-    context.prefix, context.prefixCatalog, session?.recommendations, products,
-  );
-
-  const changeGroup = (key) => {
-    const next = groups.find((g) => g.key === key);
-    setGroupKey(key);
-    setUserId("");
-    setSessionChoice(null);
-    // Keep the same model if the new group has it.
-    const keep = next && runOptions(next).find((o) => (o.run?.modelKey ?? modelKey(o.model)) === (option?.run?.modelKey ?? modelKey(option?.model)));
-    setChoice(keep?.value ?? "");
-  };
+  const products = productInfo?.dataKind === "real" ? productInfo.products : undefined;
 
   return (
     <>
-      <Issues issues={issues} />
+      <div className="recommendation-status">
+        <span className="badge badge-pending">{t("waiting_for_real_prediction_bundle")}</span>
+      </div>
+      <Notice kind="warn" title={t("real_prediction_bundle_missing")}>
+        <p>{t("missing_real_bundle_files")}</p>
+        <ul>{officialE1.length ? officialE1.map((row) => <li key={row.run_id}><code>{`../tv4-real-bundle/${row.run_id}.predictions.jsonl`}</code></li>) : <li>{t("e1_prediction_files")}</li>}
+          <li><code>../tv4-real-bundle/catalog.json</code></li>
+        </ul>
+        <p>{t("optional_product_lookup_missing")}</p>
+      </Notice>
+      <details className="method-details">
+        <summary>{t("method_details_and_sources")}</summary>
+        <p>{t("recall_20_measures_how_often_the")}</p>
+        <EvaluationProtocol protocol={protocol} />
+        <p>{t("prediction_files")}</p>
+        <ul>{officialE1.map((row) => <li key={row.run_id}><code>{`../tv4-real-bundle/${row.run_id}.predictions.jsonl`}</code></li>)}
+          <li><code>../tv4-real-bundle/catalog.json</code></li>
+        </ul>
+        <ul>{officialE1.map((row) => {
+          const config = official?.configs?.[row.run_id] ?? {};
+          return <li key={row.run_id}>
+            {t("run_id")} <code>{row.run_id}</code>; {t("catalog_sha_256")} <code>{config.catalog_sha256 ?? t("not_available_yet")}</code>; {t("source_metrics")} <code>{config.source_metrics ?? t("not_available_yet")}</code>
+          </li>;
+        })}</ul>
+        <p>{t("prediction_sources")}</p>
+      </details>
 
+      <details className="toy-format-example">
+        <summary>{t("format_example_toy_data_not_results")}</summary>
+        <Issues issues={issues} />
       <section className="controls" aria-label={t("choose_data")}>
-        <label>{t("session_group")} <select value={group.key} onChange={(e) => changeGroup(e.target.value)}>
-            {groups.map((g) => <option key={g.key} value={g.key}>{groupLabel(g)}</option>)}
-          </select>
-        </label>
         <label>{t("model")} <select aria-label={t("model")} value={option?.value ?? ""} onChange={(e) => setChoice(e.target.value)}>
             {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         </label>
-        {users.length > 0 && (
-          <label>{t("users")} <select value={unknownUser ? "" : userId} onChange={(event) => {
-              setUserId(event.target.value);
-              setSessionChoice(null);
-            }}>
-              <option value="">{t("all")}</option>
-              {users.map((id) => <option value={id} key={id}>{id}</option>)}
-            </select>
-          </label>
-        )}
         <label>{t("session")} <select aria-label={t("session")} value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
             {selectionError && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
@@ -113,34 +98,20 @@ export default function Recommendation({ state, productInfo, protocol }) {
         </label>
       </section>
 
-      <EvaluationProtocol protocol={protocol} />
-      <p className="definition">{t("split")} {group.split ?? t("not_available_yet")} {t("partition")} {group.evalPartition ?? t("not_available_yet")}</p>
-      {sample && <p className="definition">{t("showing")} {sample.n_selected ?? t("not_available_yet")}/{sample.n_total ?? t("not_available_yet")} {t("sessions_selected_with_a_fixed_seed")} {sample.seed ?? t("not_available_yet")}{t("independently_of_outcome")}</p>}
       {selectionError ? (
-        <Notice kind="warn" title={unknownUser ? t("user_not_found") : t("session_not_found")}>
-          <p>{unknownUser ? t("user_id_0", userId) : t("session_id_0", sessionChoice)}</p>
-          <button type="button" onClick={() => { setUserId(""); setSessionChoice(null); }}>{t("choose_another_session")} </button>
+        <Notice kind="warn" title={t("session_not_found")}>
+          <p>{t("session_id_0", sessionChoice)}</p>
+          <button type="button" onClick={() => setSessionChoice(null)}>{t("choose_another_session")} </button>
         </Notice>
       ) : (
         <>
-          <div className="meta-row">
-            <span>{t("model_2")} <strong>{modelLabel(run?.model ?? option?.model)}</strong></span>
-            <span>{t("run_id")} <strong>{run?.run_id ?? t("not_available_yet")}</strong></span>
-            <span>{t("subset_2")} <strong>{group.subset ?? t("not_available_yet")}</strong></span>
-            <span>{t("split_2")} <strong>{group.split ?? t("not_available_yet")}</strong></span>
-            <span>{t("catalog")} <strong>{group.catalogSize !== null ? `${group.catalogSize} items` : t("not_available_yet")}</strong></span>
-            {run?.catalog_sha256 && <span>{t("catalog_sha_256")} <code>{run.catalog_sha256}</code></span>}
-            <span>{t("predictions")} <DataKindBadge kind={(run ?? group.runs[0])?.data_kind} /></span>
-            {productInfo.dataKind === "toy" && <span>{t("product_information")} <DataKindBadge kind={productInfo.dataKind} /></span>}
-          </div>
-
           <section className="grid">
             <article className="panel">
               <div className="panel-heading">
                 <h2>{t("history")}</h2>
-                <span>{context.prefix ? t("0_views", context.prefix.length) : ""}</span>
+                <span>{context.prefix ? t("0_interactions", context.prefix.length) : ""}</span>
               </div>
-              <p className="definition">{t("products_viewed_before_the_final_item")}</p>
+              <p className="definition">{t("interaction_history_before_the_final_item")}</p>
               {context.prefix ? (
                 <ol className="history" aria-label={t("history")}>
                   {context.prefix.map((id, index) => (
@@ -156,6 +127,7 @@ export default function Recommendation({ state, productInfo, protocol }) {
             <article className="panel actual-panel">
               <h2>{t("actual_next_item")}</h2>
               {context.target ? <ProductCard id={context.target} products={context.targetCatalog?.has(context.target) ? products : undefined} /> : <p className="missing">{t("not_available_yet")}</p>}
+              {session?.target && session.target !== INVALID_PRODUCT_ID && <p className={session.targetRank ? "match" : "miss"}>{session.targetRank ? t("hit_at_rank_0", session.targetRank) : t("not_in_top_20")}</p>}
             </article>
           </section>
 
@@ -181,12 +153,6 @@ export default function Recommendation({ state, productInfo, protocol }) {
               </div>
             ) : (
               <>
-                {session.target && session.target !== INVALID_PRODUCT_ID && (
-                  <p className={session.targetRank ? "match" : "miss"}>
-                    {session.targetRank ? t("hit_at_rank_0", session.targetRank) : t("not_in_top_20")}
-                  </p>
-                )}
-                {summary && <p className="definition">{summary}</p>}
                 <table className="ranking">
                   <thead><tr><th scope="col">{t("rank")}</th><th scope="col">{t("products")}</th><th scope="col">{t("score")}</th></tr></thead>
                   <tbody>
@@ -199,10 +165,9 @@ export default function Recommendation({ state, productInfo, protocol }) {
                           <td>
                             <ProductCard id={r.product_id} products={products} />
                             {isTarget && <span className="tag tag-hit">{t("actual_item")}</span>}
-                            {matchingIds.has(r.product_id) && <span className="tag tag-category">{t("same_category")}</span>}
                             {inHistory && <span className="tag tag-history">{t("in_history")}</span>}
                           </td>
-                          <td className={r.score === null ? "missing score" : "score"}>{r.score === null ? t("not_available_yet") : r.score}</td>
+                          <td className="missing score"><small>{t("not_available_yet")}</small></td>
                         </tr>
                       );
                     })}
@@ -214,6 +179,7 @@ export default function Recommendation({ state, productInfo, protocol }) {
           </section>
         </>
       )}
+      </details>
     </>
   );
 }

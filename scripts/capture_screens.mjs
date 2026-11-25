@@ -79,16 +79,24 @@ try {
         };
         await page.goto(`${home}/#recommendation`);
         await page.locator("html[lang=en]").waitFor();
-        await page.getByLabel(messages.en.session, { exact: true }).selectOption("rank20");
-        await page.getByRole("button", { name: "VI", exact: true }).click();
-        await page.locator("html[lang=vi]").waitFor();
-        assert.equal(await page.getByLabel(messages.vi.session, { exact: true }).inputValue(), "rank20");
-        assert.equal(new URL(page.url()).hash, "#recommendation");
-        if (locale === "en") {
-          await page.getByRole("button", { name: "EN", exact: true }).click();
-          await page.locator("html[lang=en]").waitFor();
-          assert.equal(await page.getByLabel(messages.en.session, { exact: true }).inputValue(), "rank20");
+        if (locale === "vi") {
+          await page.getByRole("button", { name: "VI", exact: true }).click();
+          await page.locator("html[lang=vi]").waitFor();
         }
+        await page.getByText(t("waiting_for_real_prediction_bundle"), { exact: true }).waitFor();
+        const toyDetails = page.locator("details.toy-format-example");
+        assert.equal(await toyDetails.evaluate((details) => details.open), false, "toy format example should be closed by default");
+        await capture("recommendation-waiting");
+        await toyDetails.locator("summary").click();
+        await page.getByLabel(messages[locale].session, { exact: true }).selectOption("rank20");
+        const alternate = locale === "en" ? "vi" : "en";
+        await page.getByRole("button", { name: alternate.toUpperCase(), exact: true }).click();
+        await page.locator(`html[lang=${alternate}]`).waitFor();
+        assert.equal(await page.getByLabel(messages[alternate].session, { exact: true }).inputValue(), "rank20");
+        assert.equal(new URL(page.url()).hash, "#recommendation");
+        await page.getByRole("button", { name: locale.toUpperCase(), exact: true }).click();
+        await page.locator(`html[lang=${locale}]`).waitFor();
+        assert.equal(await page.getByLabel(messages[locale].session, { exact: true }).inputValue(), "rank20");
         const heading = page.getByRole("heading", { name: t("site_name"), exact: true });
         await heading.waitFor();
         assert.equal(await page.title(), t("site_name"));
@@ -108,14 +116,20 @@ try {
         await checkKeyboardFocus(page, page.getByRole("tab").first());
 
         const session = page.getByLabel(t("session"), { exact: true });
-        const model = page.getByLabel("Model", { exact: true });
+        const model = page.getByLabel(t("model"), { exact: true });
+        if (width === 1280) {
+          for (const selector of [".history", ".actual-panel"]) {
+            const box = await page.locator(selector).boundingBox();
+            assert.ok(box && box.y + box.height <= 900, `${selector} should fit without scrolling at 1280px`);
+          }
+        }
         for (const [id, result] of [
           ["rank1", t("hit_at_rank_0", 1)],
           ["rank20", t("hit_at_rank_0", 20)],
           ["miss", t("not_in_top_20")],
         ]) {
           await session.selectOption(id);
-          await page.locator(".recommendations").getByText(result, { exact: true }).waitFor();
+          await page.locator(".actual-panel").getByText(result, { exact: true }).waitFor();
           const score = page.locator(".ranking td.score").first();
           assert.equal(await score.innerText(), t("not_available_yet"));
           assert.ok(await score.evaluate((cell) => {
@@ -125,17 +139,15 @@ try {
           }));
           assert.equal(await page.locator(".product-icon").count(), 0);
           assert.ok(await contrast(score) >= 4.5);
-          for (const className of ["tag-category", "tag-history", "tag-hit"]) {
+          for (const className of ["tag-history", "tag-hit"]) {
             for (const tag of await page.locator(`.${className}`).all()) {
               assert.ok(await contrast(tag) >= 4.5, `${className} text contrast`);
             }
           }
-          const badge = page.getByText(t("toy_data_not_a_benchmark_result"), { exact: true }).first();
-          await badge.waitFor();
-          assert.ok(await contrast(badge) >= 4.5);
+          await toyDetails.getByText(t("format_example_toy_data_not_results"), { exact: true }).waitFor();
           await capture(id);
         }
-        await page.getByText(t("price_unavailable"), { exact: true }).first().waitFor();
+        assert.equal(await page.getByText(t("price_unavailable"), { exact: true }).count(), 0);
         const context = page.locator(".history, .actual-panel .product-card");
         const beforeSwitch = await context.allInnerTexts();
         assert.equal(beforeSwitch.length, 2);

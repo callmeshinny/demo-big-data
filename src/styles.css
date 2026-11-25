@@ -45,6 +45,7 @@ code { font-family: var(--mono); font-size: 0.92em; background: var(--beige); bo
 .badge-toy { border-color: var(--gold-line); background: var(--butter); color: var(--brown); }
 .badge-real { border-color: var(--sage-line); background: var(--sage-bg); color: var(--sage); }
 .badge-unknown { border-style: dashed; color: var(--soft); }
+.badge-pending { border-color: var(--gold-line); background: var(--butter); color: var(--brown); }
 .badge-status-passed { border-color: var(--sage-line); color: var(--sage); }
 .badge-status-failed, .badge-status-excluded { border-color: var(--rose-line); color: var(--burgundy); }
 
@@ -118,6 +119,9 @@ select { width: 100%; height: 44px; border: 1px solid var(--line-strong); border
 
 .config { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--bg); }
 .config summary { cursor: pointer; font-weight: 700; font-size: 16px; }
+.recommendation-status { margin: 0 0 12px; }
+.method-details, .toy-format-example { margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--surface); }
+.method-details summary, .toy-format-example summary { cursor: pointer; font-weight: 700; }
 .environment-card { margin-top: 0; }
 .config-bundle { margin-top: 20px; }
 .config-run { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
@@ -199,7 +203,6 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 .ranking th:first-child { padding-inline: 4px; text-align: center; }
 .ranking th:last-child, .ranking td:last-child { width: 106px; padding-inline: 6px; }
 .ranking th { overflow-wrap: anywhere; }
-.tag-category { background: var(--butter); color: var(--brown); }
 .tag-history { background: var(--rose-bg); color: var(--burgundy); }
 .meta-row { min-width: 0; overflow-wrap: anywhere; }
 .meta-row > span { min-width: 0; }
