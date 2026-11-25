@@ -1,16 +1,11 @@
 import React from "react";
 import { t } from "./i18n.js";
 import { formatValue } from "./data.js";
-import { configurationRows } from "./run-config.js";
+import { configurationRows, runtimeRows } from "./run-config.js";
 
 function ConfigRun({ runId, config }) {
   const rows = configurationRows(config);
-  const runtime = config?.runtime ?? {};
-  const packages = runtime.packages ?? {};
-  const runtimeFields = [
-    [t("runtime_gpu"), runtime.gpu], [t("runtime_cuda"), runtime.cuda], [t("runtime_python"), runtime.python],
-    [t("runtime_torch"), packages.torch], [t("runtime_transformers4rec"), packages.transformers4rec],
-  ];
+  const runtimeFields = runtimeRows(config);
   const catalogSha = config?.catalog_sha256 ?? null;
   const sourceMetrics = config?.source_metrics ?? null;
   return <section className="config-run">
@@ -25,8 +20,8 @@ function ConfigRun({ runId, config }) {
       </tr>)}</tbody>
     </table></div>
     <h4>{t("environment")}</h4>
-    <dl className="env config-runtime">{runtimeFields.map(([label, value]) => <div key={label}>
-      <dt>{label}</dt><dd title={value == null ? undefined : String(value)}>{value == null ? t("MISSING") : formatValue(value)}</dd>
+    <dl className="env config-runtime">{runtimeFields.map(({ key, label, value }) => <div key={key}>
+      <dt>{label}</dt><dd title={value == null ? undefined : String(value)}>{formatValue(value)}</dd>
     </div>)}</dl>
     <ul className="sources">
       <li><span>{t("catalog_sha_short")}:</span> <code title={catalogSha ?? undefined}>{catalogSha ? catalogSha.slice(0, 12) : t("MISSING")}</code></li>

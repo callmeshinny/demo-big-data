@@ -16,6 +16,12 @@ const CONFIG_FIELDS = [
 
 const NEURAL_FIELDS = new Set(["batch_size", "eval_batch_size", "epochs", "sequence_length", "seed", "learning_rate", "device"]);
 
+function isPlainComparable(value) {
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value !== "string" || /D|\.\./.test(value)) return false;
+  return /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value) || /^[A-Za-z][A-Za-z -]*$/.test(value);
+}
+
 function readPath(object, path) {
   return path.split(".").reduce((value, key) => value?.[key], object);
 }
@@ -39,7 +45,23 @@ export function configurationRows(config) {
       actual: na ? t("not_applicable") : key === "sequence_length" ? t("MISSING") : actualExists ? formatValue(actualValue) : t("MISSING"),
       plannedRaw: plannedExists ? String(plannedValue) : undefined,
       actualRaw: actualExists ? String(actualValue) : undefined,
-      differs: !na && plannedExists && actualExists && String(plannedValue) !== String(actualValue),
+      differs: !na && plannedExists && actualExists
+        && isPlainComparable(plannedValue) && isPlainComparable(actualValue)
+        && String(plannedValue) !== String(actualValue),
     };
   });
+}
+
+export function runtimeRows(config) {
+  const runtime = config?.runtime ?? {};
+  const packages = runtime.packages ?? {};
+  const popularity = String(config?.planned?.model ?? config?.actual?.model ?? "").toLowerCase() === "popularity";
+  const applicable = (value) => popularity ? t("not_applicable") : value ?? t("MISSING");
+  return [
+    { key: "gpu", label: t("runtime_gpu"), value: applicable(runtime.gpu) },
+    { key: "cuda", label: t("runtime_cuda"), value: applicable(runtime.cuda) },
+    { key: "python", label: t("runtime_python"), value: runtime.python ?? t("MISSING") },
+    { key: "torch", label: t("runtime_torch"), value: applicable(packages.torch) },
+    { key: "transformers4rec", label: t("runtime_transformers4rec"), value: applicable(packages.transformers4rec) },
+  ];
 }
