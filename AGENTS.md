@@ -49,11 +49,12 @@ The team repo `tlmthuy/Big-Data` stays the **source of truth** for data, models,
 │   └── upstream_TODO.md   # UI review findings carried over from the team repo
 │   ├── CONTRACT_NOTES.md  # where this repo extends the contract; report these to TV2
 ├── public/
-│   ├── demo-data.json     # Part A: session predictions, { runs: [...] } (toy for now)
-│   └── run-results.json   # Part B: E1–E5 records, planned + toy smoke (no official package yet)
+│   ├── demo-data.json     # Real E1 predictions, fixed 30-session hash sample
+│   └── official-results.json # Confirmed E1–E5 package and run-registry summary
 ├── scripts/
-│   ├── export_demo_data.py    # Part A adapter (needs a Big-Data clone, see SYNC.md)
-│   └── export_run_results.py  # Part B adapter
+│   ├── export_demo_data.py        # Prediction adapter (needs a Big-Data clone, see SYNC.md)
+│   ├── export_official_results.py # Confirmed TV2 package adapter
+│   └── team_repo.py               # Shared team-commit lookup
 ├── src/
 │   ├── main.jsx           # app shell, tabs, data loading
 │   ├── data.js            # validation + formatting (pure JS, tested)
@@ -78,7 +79,7 @@ npm run preview   # serve dist/ locally
 npm test          # validator tests (node --test)
 ```
 
-Regenerate both JSON files (requires a local clone of `tlmthuy/Big-Data`, see `docs/SYNC.md`):
+Regenerate the prediction sample and official metrics JSON (requires a local clone of `tlmthuy/Big-Data`, see `docs/SYNC.md`):
 
 ```bash
 cd ../Big-Data
@@ -89,9 +90,9 @@ PYTHONPATH=. python3 ../tv4-demo-web/scripts/export_demo_data.py \
   --run $S/smoke-e1-popularity-010=$C --run $S/smoke-e1-gru-010=$C --run $S/smoke-e1-xlnet-010=$C \
   --run $S/smoke-e3-gru-010-b32=$C --run $S/smoke-e3-gru-010-b128=$C \
   --output ../tv4-demo-web/public/demo-data.json
-python3 ../tv4-demo-web/scripts/export_run_results.py \
-  --matrix configs/experiments.json --collector-dir $S \
-  --output ../tv4-demo-web/public/run-results.json
+python3 ../tv4-demo-web/scripts/export_official_results.py \
+  --package metrics/releases/tv2-20261124 \
+  --output ../tv4-demo-web/public/official-results.json
 ```
 
 Test broken data in the browser (dev server only): `/?demo=/tests/fixtures/malformed.json`, `/?results=/tests/fixtures/bad-results.json#experiments`.

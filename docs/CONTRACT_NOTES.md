@@ -13,17 +13,12 @@
 | Real E1 catalog subset | The public real-E1 sample stores only original product IDs used by the sampled prefix, target and Top-20; `catalog_size` and `provenance.catalog_size` retain the full catalog count, and `catalog_sha256` retains the full catalog hash. | Keeps the 30-session public JSON small while preserving catalog identity and membership checks. |
 | Real E1 provenance | Adds `provenance.predictions_path`, `predictions_sha256`, `catalog_path`, `catalog_sha256`, `catalog_size`, `n_total` and `sample`. | Makes the TV3 bundle inputs and fixed hash sample traceable. |
 
-## Part B — `public/run-results.json`
+## Experiment results
 
-| Item | What this repo does |
-| --- | --- |
-| Extra top-level keys | `schema`, `team_commit`, `matrix_decisions` (besides `package_id`, `confirmed_by_tv2`, `runs`). |
-| `matrix_run_id`, `kind` per record | Toy smoke runs (`smoke-e3-gru-010-b32`) point to the matrix run they rehearse (`e3-gru-010-b32`), matched by the collector's `metadata.run.output_path`. |
-| `planned.eval_batch_size` | `32` for GRU/XLNet (runner passes `--eval-batch-size 32`), `null` for Popularity — as described in contract B3. |
-| `environment.platform` | Copied from Popularity `metrics.json` `platform`. `os` stays `null` (needs TV3). |
-| `environment.driver` | `null` for toy runs: their environment snapshot (`9dabb07…`) is not committed, and `metrics/tv2-model-smoke/environment.json` has a different hash. |
-| Metric keys not yet in any artifact | E2 pipeline: `n_events`, `pipeline_read_seconds`, `preprocessing_seconds`, `first_seen_seconds`. E4: `preprocessing_elapsed_seconds` (= contract `preprocessing.elapsed_seconds`). Shown as "Chưa có" until delivered; names to be confirmed. |
-| `input_format` (actual) | `null` for model runs: `metrics.json` does not record it. |
+The confirmed E1–E5 package is exported to `public/official-results.json` by
+`scripts/export_official_results.py`. It copies the package tables, configs,
+environment, exclusions and run-registry summary; no separate run-results
+payload is shipped.
 
 ## Part C — `public/product-info.json` (proposal, NEED TV1)
 

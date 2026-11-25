@@ -6,7 +6,7 @@ import json
 import re
 from pathlib import Path
 
-from export_run_results import team_commit
+from team_repo import team_commit
 
 TEAM_ROOT = Path(__file__).resolve().parents[2] / "Big-Data"
 AUDIT = TEAM_ROOT / "data/raw_audit.csv"

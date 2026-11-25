@@ -14,7 +14,7 @@ Rules applied (see AGENTS.md):
 - IDs are mapped to original product IDs with the run's own catalog, verified by SHA-256.
 - Recommendation order is the artifact order; `rank` is the 1-based position.
 - `score` is always null: TV2 has not exported per-item scores yet.
-- Nothing is recomputed. Metrics are not copied here; they belong to run-results.json.
+- Nothing is recomputed. Experiment metrics belong to public/official-results.json.
 """
 
 import argparse
@@ -23,11 +23,11 @@ import csv
 from datetime import date
 import hashlib
 import json
-import subprocess
 import tempfile
 from pathlib import Path
 
 from evaluation.data import Catalog, encoded_id
+from team_repo import team_commit
 
 K = 20
 CSV_RUN_FIELDS = ("run_id", "model", "subset", "split", "data_kind", "catalog_sha256")
@@ -291,14 +291,6 @@ def write_sample_csv(path, runs):
                 session_values = (session["user_session"], " > ".join(session["prefix"]), session["target"], session["target_rank"])
                 for recommendation in session["recommendations"]:
                     writer.writerow((*run_values, *session_values, recommendation["rank"], recommendation["product_id"], recommendation["score"]))
-
-
-def team_commit():
-    try:
-        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
-                              text=True, check=True).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        return None
 
 
 def main():
