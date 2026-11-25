@@ -100,6 +100,15 @@ try {
           await page.locator("html[lang=vi]").waitFor();
         }
         await page.getByText(t("waiting_for_real_prediction_bundle"), { exact: true }).waitFor();
+        await page.getByText(t("real_predictions_on_the_way"), { exact: true }).waitFor();
+        await page.getByText(t("real_predictions_export_sentence"), { exact: true }).waitFor();
+        const methodDetails = page.locator("details.method-details");
+        assert.equal(await methodDetails.evaluate((details) => details.open), false, "method details should be closed by default");
+        assert.equal((await page.locator("body").innerText()).includes("../tv4-real-bundle/"), false, "bundle paths should stay inside closed method details");
+        await methodDetails.locator("summary").click();
+        assert.ok((await methodDetails.innerText()).includes("../tv4-real-bundle/"), "method details should contain required bundle paths");
+        assert.ok((await methodDetails.innerText()).includes("product-lookup.csv"), "method details should contain the product lookup note");
+        await methodDetails.locator("summary").click();
         const toyDetails = page.locator("details.toy-format-example");
         assert.equal(await toyDetails.evaluate((details) => details.open), false, "toy format example should be closed by default");
         await capture("recommendation-waiting");

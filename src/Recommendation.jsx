@@ -59,21 +59,18 @@ export default function Recommendation({ state, productInfo, protocol, official 
       <div className="recommendation-status">
         <span className="badge badge-pending">{t("waiting_for_real_prediction_bundle")}</span>
       </div>
-      <Notice kind="warn" title={t("real_prediction_bundle_missing")}>
-        <p>{t("missing_real_bundle_files")}</p>
-        <ul>{officialE1.length ? officialE1.map((row) => <li key={row.run_id}><code>{`../tv4-real-bundle/${row.run_id}.predictions.jsonl`}</code></li>) : <li>{t("e1_prediction_files")}</li>}
-          <li><code>../tv4-real-bundle/catalog.json</code></li>
-        </ul>
-        <p>{t("optional_product_lookup_missing")}</p>
+      <Notice kind="warn" title={t("real_predictions_on_the_way")}>
+        <p>{t("real_predictions_export_sentence")}</p>
       </Notice>
       <details className="method-details">
         <summary>{t("method_details_and_sources")}</summary>
         <p>{t("recall_20_measures_how_often_the")}</p>
         <EvaluationProtocol protocol={protocol} />
-        <p>{t("prediction_files")}</p>
+        <p>{t("missing_real_bundle_files")}</p>
         <ul>{officialE1.map((row) => <li key={row.run_id}><code>{`../tv4-real-bundle/${row.run_id}.predictions.jsonl`}</code></li>)}
           <li><code>../tv4-real-bundle/catalog.json</code></li>
         </ul>
+        <p>{t("optional_product_lookup_missing")}</p>
         <ul>{officialE1.map((row) => {
           const config = official?.configs?.[row.run_id] ?? {};
           return <li key={row.run_id}>
