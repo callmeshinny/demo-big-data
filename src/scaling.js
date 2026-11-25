@@ -82,7 +82,7 @@ export function buildScalingView(results) {
       formatPoint: formatSecondsPerMillionEventsPoint,
     },
   ];
-  return { e2Table, e5Table, charts };
+  return { e2Table, e5Table, charts, registrySummary: results?.run_registry_summary ?? null };
 }
 
 const E3_FIELDS = [
@@ -177,13 +177,18 @@ export function formatE3Context(context) {
 
 export function chartCoordinates(series, width = 600, height = 300) {
   const points = series.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
-  if (!points.length) return [];
+  if (!points.length) return { points: [], yTicks: [] };
   const left = 66, right = width - 24, top = 24, bottom = height - 54;
   const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-  return points.map((point) => ({
+  const minX = Math.min(...xs), maxX = Math.max(...xs), maxY = Math.max(0, ...ys), yScale = maxY || 1;
+  const coordinates = points.map((point) => ({
     ...point,
     cx: left + (maxX === minX ? 0.5 : (point.x - minX) / (maxX - minX)) * (right - left),
-    cy: bottom - (maxY === minY ? 0.5 : (point.y - minY) / (maxY - minY)) * (bottom - top),
+    cy: bottom - (point.y / yScale) * (bottom - top),
   }));
+  const yTicks = Array.from({ length: 4 }, (_, index) => {
+    const value = yScale * index / 3;
+    return { value, cy: bottom - (value / yScale) * (bottom - top) };
+  });
+  return { points: coordinates, yTicks };
 }

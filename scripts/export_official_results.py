@@ -1,5 +1,6 @@
 """Export the checksum-verified TV2 official results package."""
 import argparse
+from collections import Counter
 import hashlib
 import json
 import subprocess
@@ -66,6 +67,7 @@ def export(package_root):
     metrics = read_json(package_root / "metrics.json")
     configs_source = read_json(package_root / "configs.json")
     registry = read_json(package_root / "run_registry.json")
+    registry_status_counts = Counter(row["status"] for row in registry["runs"])
     dictionary = read_json(package_root / "data_dictionary.json")
     vm_environment = read_vm_environment(package_root.parents[2])
 
@@ -98,6 +100,11 @@ def export(package_root):
         ).stdout.strip(),
         "generated_at": date.today().isoformat(),
         "known_checksum_exceptions": exceptions,
+        "run_registry_summary": {
+            "passed": registry_status_counts.get("passed", 0),
+            "derived_from_verified_E2": registry_status_counts.get("derived_from_verified_E2", 0),
+            "excluded": len(registry["excluded"]),
+        },
         "limits": manifest["limits"],
         "dictionary": dictionary,
         "excluded": registry["excluded"],

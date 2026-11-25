@@ -4,13 +4,18 @@
   "confirmed_by_tv2": true,
   "data_kind": "real",
   "team_commit": "88f7e02",
-  "generated_at": "2026-11-25",
+  "generated_at": "2026-11-26",
   "known_checksum_exceptions": [
     {
       "file": "environment/README.md",
       "reason": "TV3 doc edit after packaging (team commit 88f7e02), log links only"
     }
   ],
+  "run_registry_summary": {
+    "passed": 11,
+    "derived_from_verified_E2": 4,
+    "excluded": 2
+  },
   "limits": [
     "single run/seed",
     "sampled RSS descriptive",

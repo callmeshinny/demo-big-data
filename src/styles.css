@@ -156,7 +156,9 @@ select { width: 100%; height: 44px; border: 1px solid var(--line-strong); border
 .scaling-chart { min-width: 0; margin: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
 .scaling-chart figcaption { margin-bottom: 8px; color: var(--denim); font-weight: 800; }
 .scaling-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.registry-summary { margin: 8px 0 0; color: var(--muted); font-size: 0.9rem; }
 .chart-axis { stroke: var(--line-strong); stroke-width: 1.5; }
+.chart-gridline { stroke: var(--line); stroke-width: 1; }
 .chart-axis-label { fill: var(--muted); font: 14px Inter, sans-serif; }
 .chart-tick { fill: var(--soft); font: 12px var(--mono); }
 .chart-line { fill: none; stroke: var(--denim); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }

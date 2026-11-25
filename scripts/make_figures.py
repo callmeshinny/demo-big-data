@@ -79,6 +79,7 @@ def bars(axis, labels, values, ylabel, formatter, color=COLORS[0]):
 
 def line_values(axis, x_values, y_values, ylabel, formatter, color=COLORS[0]):
     axis.plot(x_values, y_values, color=color, marker="o", linewidth=2)
+    axis.set_ylim(bottom=0)
     axis.set_xlabel("Events (n_events)")
     axis.set_ylabel(ylabel)
     axis.spines[["top", "right"]].set_visible(False)

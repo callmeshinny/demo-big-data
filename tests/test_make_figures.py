@@ -36,6 +36,11 @@ class FigureTest(unittest.TestCase):
             self.assertIn("Source: tv2-20261124", text)
             self.assertIn(f"team {self.payload['team_commit']}", text)
 
+    def test_e5_line_charts_start_at_zero(self):
+        figure = make_figure("e5-scaling", self.payload)
+        self.assertEqual(len(figure.axes), 2)
+        self.assertTrue(all(axis.get_ylim()[0] == 0 for axis in figure.axes))
+
     def test_only_six_confirmed_official_figures_are_generated(self):
         with TemporaryDirectory() as directory:
             output = Path(directory)

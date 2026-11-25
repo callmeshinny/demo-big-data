@@ -51,19 +51,22 @@ function OfficialE2Panel({ results }) {
 }
 
 function E5Chart({ chart }) {
-  const points = chartCoordinates(chart.series);
-  const first = points[0];
-  const last = points.at(-1);
+  const { points, yTicks } = chartCoordinates(chart.series);
   const path = points.map((point, index) => `${index ? "L" : "M"}${point.cx},${point.cy}`).join(" ");
   return <figure className="scaling-chart">
     <figcaption>{chart.title}</figcaption>
     <svg viewBox="0 0 600 300" role="img" aria-label={chart.title}>
+      {yTicks.map(({ value, cy }) => <g key={value}>
+        <line x1="66" y1={cy} x2="576" y2={cy} className="chart-gridline" />
+        <text x="58" y={cy + 4} textAnchor="end" className="chart-tick">{chart.formatY(value).text}</text>
+      </g>)}
       <line x1="66" y1="246" x2="576" y2="246" className="chart-axis" />
       <line x1="66" y1="24" x2="66" y2="246" className="chart-axis" />
       <text x="320" y="288" textAnchor="middle" className="chart-axis-label">{t("e5_x_axis_events")}</text>
       <text x="18" y="138" textAnchor="middle" transform="rotate(-90 18 138)" className="chart-axis-label">{chart.yLabel}</text>
-      {first && <text x="66" y="265" textAnchor="start" className="chart-tick">{formatCount(first.x).text}</text>}
-      {last && <text x="576" y="265" textAnchor="end" className="chart-tick">{formatCount(last.x).text}</text>}
+      {points.map((point) => <text key={point.runId} x={point.cx} y="265" textAnchor="middle" className="chart-tick">
+        {formatCount(point.x).text}
+      </text>)}
       <path d={path} className="chart-line" />
       {points.map((point) => <g key={point.runId}>
         <circle cx={point.cx} cy={point.cy} r="5" className="chart-point"><title>{`${formatCount(point.x).text} · ${chart.formatY(point.y).text} · ${point.runId}`}</title></circle>
@@ -74,9 +77,16 @@ function E5Chart({ chart }) {
 }
 
 function OfficialE5Panel({ results }) {
-  const { e5Table, charts } = buildScalingView(results);
+  const { e5Table, charts, registrySummary } = buildScalingView(results);
   return <section className="panel scaling-panel">
     <div className="panel-heading"><h2>{t("e5_scalability")}</h2></div>
+    <InterpretationNote dictionaryKey="E5_derived_from_E2" />
+    {registrySummary && <p className="registry-summary">{t(
+      "run_registry_summary",
+      registrySummary.passed,
+      registrySummary.derived_from_verified_E2,
+      registrySummary.excluded,
+    )}</p>}
     <div className="table-scroll"><table className="metric-table scaling-table e5-table">
       <caption className="sr-only">{t("e5_scalability")}</caption>
       <thead><tr><th scope="col">{t("metric")}</th>{e5Table.columns.map((column) => <th scope="col" key={column.runId}>{column.subset}%</th>)}</tr></thead>
