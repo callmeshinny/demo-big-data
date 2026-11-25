@@ -1,7 +1,7 @@
 import { readLanguage, setLanguage, t } from "./i18n.js";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { loadJson, normalizeDemo, normalizeProductInfo, normalizeResults } from "./data.js";
+import { loadJson, normalizeDemo, normalizeProductInfo } from "./data.js";
 import Recommendation from "./Recommendation.jsx";
 import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
@@ -32,8 +32,11 @@ const base = import.meta.env.BASE_URL;
 const DEMO_URL = source("demo", `${base}demo-data.json`);
 const PRODUCTS_URL = source("products", `${base}product-info.json`);
 const DATASET_URL = source("dataset", `${base}dataset-overview.json`);
-const RESULTS_URL = source("results", `${base}run-results.json`);
 const OFFICIAL_RESULTS_URL = `${base}official-results.json`;
+
+function normalizeOfficialResults(data) {
+  return { results: data };
+}
 
 function useData(url, normalize, language) {
   const [state, setState] = useState({ loading: true });
@@ -70,8 +73,7 @@ function App() {
   const demo = useData(DEMO_URL, normalizeDemo, language);
   const products = useData(PRODUCTS_URL, normalizeProductInfo, language);
   const dataset = useData(DATASET_URL, normalizeDataset, language);
-  const results = useData(RESULTS_URL, normalizeResults, language);
-  const officialResults = useData(OFFICIAL_RESULTS_URL, (data) => ({ results: data }), language);
+  const officialResults = useData(OFFICIAL_RESULTS_URL, normalizeOfficialResults, language);
 
   useEffect(() => {
     const onHash = () => setRoute(currentRoute());
@@ -79,7 +81,7 @@ function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const state = { recommendation: demo, data: dataset, experiments: results }[tab];
+  const state = { recommendation: demo, data: dataset, experiments: officialResults }[tab];
 
   return (
     <main className="shell">
@@ -104,14 +106,14 @@ function App() {
       <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
       <div role="tabpanel">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} officialResults={officialResults} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>
 
       <footer>
         <p>{t("values_pending_delivery_show_not_available")}</p>
         <ul>{[
           ["demo-data.json", demo], ["product-info.json", products],
-          ["dataset-overview.json", dataset], ["run-results.json", results],
+          ["dataset-overview.json", dataset], ["official-results.json", officialResults],
         ].map(([name, file]) => <li key={name}>
           <code>{name}</code> {t("commit")} {file.provenance?.team_commit ?? t("not_available_yet")} {t("exported")} {file.provenance?.generated_at ?? t("not_available_yet")} · {file.provenance?.data_kind ?? t("not_available_yet")}
         </li>)}</ul>

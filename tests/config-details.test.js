@@ -1,0 +1,39 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { setLanguage } from "../src/i18n.js";
+import { configurationRows } from "../src/run-config.js";
+
+const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
+
+test("configuration details keep planned and actual values distinct and localize missing fields", () => {
+  setLanguage("en");
+  const popularity = configurationRows(official.configs["e1-popularity-010"]);
+  const byKey = Object.fromEntries(popularity.map((row) => [row.key, row]));
+  assert.equal(byKey.batch_size.planned, "Not applicable");
+  assert.equal(byKey.batch_size.actual, "Not applicable");
+  assert.equal(byKey.sequence_length.planned, "Not applicable");
+  assert.equal(byKey.sequence_length.actual, "Not applicable");
+
+  const gru = Object.fromEntries(configurationRows(official.configs["e1-gru-010"]).map((row) => [row.key, row]));
+  assert.equal(gru.batch_size.planned, "256");
+  assert.equal(gru.batch_size.actual, "256");
+  assert.equal(gru.batch_size.differs, false);
+  assert.equal(gru.eval_batch_size.planned, "Not available");
+  assert.equal(gru.eval_batch_size.actual, "32");
+  assert.equal(gru.sequence_length.actual, "Not available");
+  assert.equal(gru.learning_rate.differs, false);
+});
+
+test("configuration difference flags require both values and an actual difference", () => {
+  setLanguage("en");
+  const config = {
+    planned: { model: "gru", batch_size: 32 },
+    actual: { model: "gru", batch_size: 128 },
+  };
+  const batch = configurationRows(config).find((row) => row.key === "batch_size");
+  assert.equal(batch.differs, true);
+  const absent = configurationRows({ planned: { model: "gru" }, actual: { model: "gru" } })
+    .find((row) => row.key === "batch_size");
+  assert.equal(absent.differs, false);
+});

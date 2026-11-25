@@ -246,54 +246,7 @@ export function sessionContext(group, sessionId) {
   return { prefix, target, prefixCatalog, targetCatalog };
 }
 
-// ---------------------------------------------------------------- Part B
-
 export const EXPERIMENTS = ["E1", "E2", "E3", "E4", "E5"];
-
-export function normalizeResults(raw) {
-  const issues = [];
-  if (!isObject(raw)) return { runs: [], meta: {}, issues, fatal: t("the_results_file_is_not_a") };
-  if (!Array.isArray(raw.runs)) return { runs: [], meta: {}, issues, fatal: t("cannot_find_the_runs_array") };
-  const runs = [];
-  raw.runs.forEach((r, i) => {
-    if (!isObject(r) || !isId(r.run_id) || !isId(r.experiment)) {
-      issues.push(t("record_0_skipped_because_run_id", i + 1));
-      return;
-    }
-    runs.push({
-      ...r,
-      model: r.model ?? null,
-      kind: r.kind ?? (r.model ? "model" : "io"),
-      matrix_run_id: r.matrix_run_id ?? r.run_id,
-      planned: isObject(r.planned) ? r.planned : {},
-      actual: isObject(r.actual) ? r.actual : {},
-      environment: isObject(r.environment) ? r.environment : {},
-      metrics: isObject(r.metrics) ? r.metrics : {},
-      sources: isObject(r.sources) ? r.sources : {},
-    });
-  });
-  return {
-    runs,
-    meta: {
-      environment_baseline: raw.environment_baseline ?? null,
-      package_id: raw.package_id ?? null,
-      confirmed_by_tv2: raw.confirmed_by_tv2 === true,
-      team_commit: raw.team_commit ?? null,
-    },
-    issues,
-    fatal: null,
-  };
-}
-
-/** Official = not toy. Toy runs are reference only and never mixed with official ones. */
-export function splitByKind(runs, experiment) {
-  const inExp = runs.filter((r) => r.experiment === experiment);
-  return {
-    official: inExp.filter((r) => r.data_kind !== "toy"),
-    toy: inExp.filter((r) => r.data_kind === "toy"),
-  };
-}
-
 // ---------------------------------------------------------------- formatting
 import { formatGeneralNumber } from "./format.js";
 

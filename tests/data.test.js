@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   INVALID_PRODUCT_ID, compareConfig, displayCell, formatValue, loadJson,
-  normalizeDemo, normalizeResults, sessionContext, splitByKind, usersBySession,
+  normalizeDemo, sessionContext, usersBySession,
 } from "../src/data.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
@@ -107,22 +107,6 @@ test("loadJson reports empty, malformed and HTTP errors", async () => {
   assert.match((await loadJson("x", fakeFetch(read("./fixtures/malformed.json")))).error, /JSON/);
   assert.match((await loadJson("x", fakeFetch("", 404))).error, /404/);
   assert.deepEqual((await loadJson("x", fakeFetch('{"a":1}'))).data, { a: 1 });
-});
-
-test("shipped run-results.json: planned runs have no invented values", () => {
-  const { runs, fatal, meta } = normalizeResults(json("../public/run-results.json"));
-  assert.equal(fatal, null);
-  assert.equal(meta.confirmed_by_tv2, false);
-  const e3 = splitByKind(runs, "E3");
-  assert.deepEqual(e3.official.map((r) => r.run_id), ["e3-gru-010-b32", "e3-gru-010-b128"]);
-  for (const run of runs.filter((r) => r.data_kind !== "toy")) {
-    for (const [name, m] of Object.entries(run.metrics)) assert.equal(m.value, null, `${run.run_id} ${name}`);
-  }
-  assert.ok(e3.toy.every((r) => r.data_kind === "toy"));
-});
-
-test("bad run-results shape is a fatal error", () => {
-  assert.ok(normalizeResults(json("./fixtures/bad-results.json")).fatal);
 });
 
 test("formatting never turns missing into zero", () => {

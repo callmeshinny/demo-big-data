@@ -166,21 +166,9 @@ try {
             has: page.getByRole("heading", { name: new RegExp(`^${id} ·`, "i") }),
           });
           await panel.waitFor();
-          assert.equal(await page.getByText(t("smoke_awaiting_tv2_confirmation"), { exact: true }).count(), 0);
-          if (["e2", "e4"].includes(id)) {
-            assert.equal(await panel.getByText(/118[,.]?113[,.]?591|25945758|25,945,758|30\.449049160999493/).count(), 0);
-          }
-          const toy = panel.locator(".toy-block");
-          assert.equal(await panel.locator(".metric-chart meter").count(), await toy.locator("meter").count());
-          assert.ok((await panel.locator(".metric-chart").first().innerText()).includes(t("not_available_yet")));
-          if (["e1", "e3"].includes(id)) await toy.locator(".badge-toy").first().waitFor();
-          if (id === "e3") {
-            const checkbox = page.getByRole("checkbox");
-            await checkKeyboardFocus(page, checkbox);
-            await checkbox.uncheck();
-            await checkbox.check();
-            assert.equal(await checkbox.evaluate((input) => getComputedStyle(input).accentColor), "rgb(98, 69, 31)");
-          }
+          const config = panel.locator("details.config-bundle");
+          assert.equal(await config.count(), 1, `${id}: expected one configuration disclosure`);
+          assert.equal(await config.evaluate((details) => details.open), false, `${id}: configuration should be closed by default`);
           await capture(`experiments-${id}`);
         }
         await page.route("**/dataset-overview.json", (route) => route.fulfill({ body: "{", contentType: "application/json" }));
