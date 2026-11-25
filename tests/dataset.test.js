@@ -18,9 +18,12 @@ test("rejects a malformed dataset overview", () => {
 
 test("official supplementary tables are shipped with source columns and confirmation", () => {
   assert.equal(overview.data_kind, "real");
-  assert.equal(overview.confirmed_by_tv1, true);
+  assert.equal(overview.source_confirmed_by, "TV2 package tv2-20261124 supplementary tables");
   assert.equal(overview.source_package, "tv2-20261124");
   assert.equal(overview.subsets.length, 4);
+  assert.deepEqual([overview.subsets[0].length_TV_vs_100, overview.subsets.at(-1).length_TV_vs_100], [0.0018243727980889587, 0]);
+  assert.ok(overview.subsets.every((row) => row.last_partition_D === 7));
+  assert.equal(overview.subsets[0].event_TV_vs_100, 0.000025267934947149364);
   assert.deepEqual(
     [overview.subsets[0].model_sequences, overview.subsets[0].cleaned_categories, overview.subsets[0].actual_raw_event_pct],
     [96433, 557, 9.998602382925785],

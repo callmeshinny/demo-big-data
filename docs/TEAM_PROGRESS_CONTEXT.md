@@ -288,7 +288,7 @@ Data files and their current state:
 | File (demo repo) | Current | Should become |
 | --- | --- | --- |
 | `public/run-results.json` | `package_id: null`, `confirmed_by_tv2: false`, `data_kind: "unconfirmed"`, 16 runs with `null` metrics | Generated from `metrics/releases/tv2-20261124/` (`metrics.json` + `configs.json` + `run_registry.json` + `data_dictionary.json`), `package_id: "tv2-20261124"`, `confirmed_by_tv2: true`, `data_kind: "real"`, with the environment from §4 |
-| `public/dataset-overview.json` | `data_kind: "unconfirmed"`, `confirmed_by_tv1: false` | Filled from `reports/tables/tv2-20261124/*.csv`, `data/raw_audit.csv`, `data/manifests/*` |
+| `public/dataset-overview.json` | `data_kind: "unconfirmed"`, `source_confirmed_by: null` | Filled from TV2 supplementary tables, `data/raw_audit.csv`, and verified manifests |
 | `figures/*.svg` | Toy or empty-state | Official figures from the package (E1 ranking, E1 training time, E2 runtime, E3 tradeoff, E4 size/read, E5 scaling), each with title, axis units, legend, source `run_id` |
 | `public/demo-data.json` | Toy (6 runs) | Stays toy until §6 real predictions arrive. Keep the toy badge. |
 | `public/product-info.json` | Toy metadata | Stays toy until TV1 delivers metadata |

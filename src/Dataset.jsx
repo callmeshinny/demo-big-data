@@ -40,6 +40,7 @@ export default function Dataset({ state }) {
       <section className="panel">
         <h2>{t("e_commerce_dataset")}</h2>
         <p>{t("the_kaggle_ecommerce_dataset_records_activity")} {raw.min_timestamp_utc?.slice(0, 7) ?? t("not_available_yet")}{t("each_event_is_a_view_add")}</p>
+        <p>{t("dataset_product_identifiers")}</p>
         <h3>{t("raw_month")}</h3>
         <dl className="env">
           {[
@@ -66,6 +67,11 @@ export default function Dataset({ state }) {
         <p>{t("single_interaction_caveat", formatValue(subset?.single_interaction_session_pct))}</p>
         <p>{t("browsing_heavy_caveat", formatValue(subset?.view_pct_clean_events))}</p>
         <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.preprocessing_retention)}</code> · <code>{formatValue(overview.supplementary_sources?.subset_distribution)}</code></p>
+      </section>
+      <section className="panel">
+        <h2>{t("representativeness_limits")}</h2>
+        <ul><li>{t("representativeness_week_only")}</li><li>{t("representativeness_no_slices")}</li><li>{t("distinct_not_distribution")}</li><li>{t("no_generalization_claim")}</li></ul>
+        <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.subset_distribution)}</code> · <code>scripts/analyze_sampling.py</code></p>
       </section>
       <section className="panel">
         <h2>{t("split_population")}</h2>

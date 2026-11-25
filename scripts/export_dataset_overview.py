@@ -8,14 +8,15 @@ from pathlib import Path
 
 from export_run_results import team_commit
 
-AUDIT = Path("data/raw_audit.csv")
-VERIFIED = Path("data/manifests/e2_preprocessing_verified.json")
+TEAM_ROOT = Path(__file__).resolve().parents[2] / "Big-Data"
+AUDIT = TEAM_ROOT / "data/raw_audit.csv"
+VERIFIED = TEAM_ROOT / "data/manifests/e2_preprocessing_verified.json"
 SAMPLING = VERIFIED.with_name("session_sampling_manifest.json")
 CLEANUP = VERIFIED.with_name("timestamp_session_cleanup.json")
-DICTIONARY = Path("docs/data_dictionary.md")
-PROTOCOL = Path("docs/modeling/model_protocol.md")
+DICTIONARY = TEAM_ROOT / "docs/data_dictionary.md"
+PROTOCOL = TEAM_ROOT / "docs/modeling/model_protocol.md"
 SUBSETS = (10, 25, 50, 100)
-TABLES = Path("reports/tables/tv2-20261124")
+TABLES = TEAM_ROOT / "reports/tables/tv2-20261124"
 SUPPLEMENTARY_FILES = (
     "sampling_population.csv", "subset_distribution.csv", "event_mix_before_after.csv",
     "preprocessing_retention.csv", "split_population.csv",
@@ -91,13 +92,20 @@ def export(raw_only=False):
     distribution_by_subset = {int(row["subset"]): row for row in supplementary.get("subset_distribution", [])}
     retention_by_subset = {int(row["subset"]): row for row in supplementary.get("preprocessing_retention", [])}
     split_by_subset = {int(row["subset"]): row for row in supplementary.get("split_population", [])}
+    distribution_keys = ("length_TV_vs_100", "event_TV_vs_100")
+    for subset, row in distribution_by_subset.items():
+        if any(not isinstance(row.get(key), (int, float)) for key in distribution_keys):
+            raise ValueError(f"subset_distribution.csv: subset {subset} is missing a TV distance")
+    for subset, row in split_by_subset.items():
+        if not isinstance(row.get("last_partition_D"), int):
+            raise ValueError(f"split_population.csv: subset {subset} is missing last_partition_D")
     index = {}
     if not raw_only:
         records = json.loads(VERIFIED.read_text(encoding="utf-8"))["runs"]
         index = {int(row["subset"]): row for row in records}
         if len(records) != len(index) or set(index) != set(SUBSETS):
             raise ValueError(f"{VERIFIED}: expected one record per cuDF subset")
-    commit = team_commit(Path.cwd())
+    commit = team_commit(TEAM_ROOT)
     if not commit:
         raise ValueError("Cannot identify the team commit")
     return {
@@ -106,7 +114,7 @@ def export(raw_only=False):
         "team_commit": commit,
         "generated_at": date.today().isoformat(),
         "data_kind": "real" if supplementary else "unconfirmed",
-        "confirmed_by_tv1": bool(supplementary),
+        "source_confirmed_by": "TV2 package tv2-20261124 supplementary tables" if supplementary else None,
         "source_package": "tv2-20261124" if supplementary else None,
         "raw_month": raw_audit(),
         "subsets": [
