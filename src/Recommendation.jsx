@@ -8,6 +8,7 @@ import { ProductCard } from "./ProductCard.jsx";
 import { DataKindBadge, DataLoadFailure, Issues, Notice } from "./ui.jsx";
 import { experimentHref } from "./navigation.js";
 import { Glossary } from "./Glossary.jsx";
+import { useStickyBar } from "./sticky.js";
 
 /** Same cells as the E1 table, so the strip and the table always agree. */
 export function e1StripRows(official) {
@@ -63,6 +64,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
   const [choice, setChoice] = useState("");
   const [sessionChoice, setSessionChoice] = useState(() => new URLSearchParams(window.location.search).get("session"));
   const [linked, setLinked] = useState(false);
+  const sticky = useStickyBar();
 
   const group = groups[0];
   const runs = group?.runs ?? [];
@@ -109,7 +111,8 @@ export default function Recommendation({ state, productInfo, protocol, official 
       </div>
       <Issues issues={issues} />
 
-      <section className="control-bar glass" aria-label={t("choose_data")}>
+      <div ref={sticky.sentinel} className="sticky-sentinel" aria-hidden="true" />
+      <section ref={sticky.bar} className={`control-bar glass subbar${sticky.stuck ? " is-stuck" : ""}`} aria-label={t("choose_data")}>
         <div className="control-group">
           <span className="control-label" id="model-label">{t("model")}</span>
           <div className="segmented model-picker" role="group" aria-labelledby="model-label">
@@ -120,7 +123,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
         </div>
         <label className="control-group">
           <span className="control-label">{t("session")} <Glossary term="session" /></span>
-          <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
+          <select aria-label={t("session")} value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
             {unknownSession && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
           </select>

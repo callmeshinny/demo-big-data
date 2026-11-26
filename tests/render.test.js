@@ -189,7 +189,7 @@ test("Recommendation: order, presenter tip computed from data, closed method det
   for (const locale of ["en", "vi"]) {
     i18n.setLanguage(locale);
     const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
-    const order = ['class="page-head"', 'class="control-bar glass"', 'class="panel history-panel"', 'class="panel actual-panel', 'class="ranking"', 'class="e1-strip', 'class="method-details glass"'].map((marker) => html.indexOf(marker));
+    const order = ['class="page-head"', 'class="control-bar glass subbar', 'class="panel history-panel"', 'class="panel actual-panel', 'class="ranking"', 'class="e1-strip', 'class="method-details glass"'].map((marker) => html.indexOf(marker));
     assert.ok(order.every((index) => index >= 0), `${locale}: every section rendered`);
     assert.deepEqual([...order].sort((a, b) => a - b), order, `${locale}: sections in the agreed order`);
     assert.ok(text(html).includes(i18n.t("presenter_tip", expected, 3)), locale);

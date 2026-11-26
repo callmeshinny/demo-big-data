@@ -305,6 +305,21 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .model-dot.model-xlnet { border-radius: 0; transform: rotate(45deg) scale(.85); }
 .presenter-tip { min-height: var(--control-height); margin-left: auto; padding: 0 var(--s3); border: 1px dashed var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-table); cursor: pointer; text-align: left; }
 .presenter-tip:hover { border-style: solid; }
+/* Stuck control bar on narrow screens: drop the presenter tip (< 900 px); below 600 px also drop the
+   visible labels (the controls keep their accessible names) and the model dots so Model + Session fit
+   one row and the bar stays <= ~64 px. */
+@media (max-width: 899px) {
+  .control-bar.is-stuck { padding-block: var(--s1); }
+  .control-bar.is-stuck .presenter-tip { display: none; }
+}
+@media (max-width: 599px) {
+  .control-bar.is-stuck { flex-wrap: nowrap; gap: var(--s2); padding: var(--s1) var(--s2); border-radius: 0 0 var(--radius-control) var(--radius-control); }
+  .control-bar.is-stuck .control-label { display: none; }
+  .control-bar.is-stuck .control-group { flex-wrap: nowrap; min-width: 0; }
+  .control-bar.is-stuck .model-picker > button { padding: 0 var(--s2); }
+  .control-bar.is-stuck .model-dot { display: none; }
+  .control-bar.is-stuck select { min-width: 0; width: 104px; }
+}
 
 /* Panels */
 .panel { border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: var(--s5); margin-bottom: var(--s4); min-width: 0; }
