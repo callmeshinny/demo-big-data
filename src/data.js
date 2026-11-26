@@ -177,6 +177,7 @@ function normalizeRun(raw, index, issues) {
     evalPartition: provenance.eval_day ?? null,
     sample: isObject(provenance.sample) ? provenance.sample : null,
     experiment: provenance.experiment ?? null,
+    provenance,
     scoreAvailable: sessions.some((s) => s.recommendations?.some((r) => r.score !== null)),
     sessions,
   };

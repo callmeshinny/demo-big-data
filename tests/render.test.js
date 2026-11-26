@@ -95,18 +95,20 @@ test("exported scores are shown with the shared formatter; null scores show the 
   assert.ok(!html.includes(m.i18n.t("models_export_ranked_ids_only")));
 });
 
-test("E1 strip matches the E1 table and never prints NaN", async () => {
+test("E1 strip shows the selected model via the shared formatter and never prints NaN", async () => {
   const m = await modules();
   m.i18n.setLanguage("en");
   const rows = m.e1StripRows(official);
   assert.deepEqual(rows.map((row) => [row.label, row.recall.text]), [["Popularity", "0.0868"], ["GRU", "0.0883"], ["XLNet", "0.1249"]]);
+  const html = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, official }));
+  const strip = html.slice(html.indexOf('<section class="e1-strip'), html.indexOf("</section>", html.indexOf('<section class="e1-strip')));
+  assert.ok(strip.includes('Recall@20 <b class="num">0.0868</b>'), "first model in the sample is Popularity");
+  assert.ok(strip.includes('href="#experiments/e1"'));
   const broken = structuredClone(official);
-  delete broken.tables.E1.find((row) => row.model === "gru")["Recall@20"];
-  const gru = m.e1StripRows(broken).find((row) => row.label === "GRU");
-  assert.equal(gru.recall.text, m.i18n.t("not_available_yet"));
-  const html = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, official: broken }));
-  assert.ok(!html.includes("NaN"));
-  assert.ok(html.includes(`Recall@20: ${m.i18n.t("not_available_yet")}`));
+  delete broken.tables.E1.find((row) => row.model === "Popularity")["Recall@20"];
+  const brokenHtml = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, official: broken }));
+  assert.ok(!brokenHtml.includes("NaN"));
+  assert.ok(brokenHtml.includes(`Recall@20 <b class="num">${m.i18n.t("not_available_yet")}</b>`));
 });
 
 test("navigation is links with exactly one aria-current page per nav, and no tab roles", async () => {
@@ -166,27 +168,34 @@ test("one colour, one meaning: neutral history tag, accent chart, shared hit mar
     }
   };
   const hit = render("21546");
-  assert.match(hit, /<article class="panel actual-panel is-hit">/);
-  assert.equal((hit.match(/<tr class="hit is-hit"/g) ?? []).length, 1);
-  assert.ok(hit.includes(`<p class="match">${i18n.t("hit_at_rank_0", 7)}</p>`));
+  assert.match(hit, /<article class="panel actual-panel is-hit"/);
+  assert.equal((hit.match(/<tr class="hit is-hit/g) ?? []).length, 1);
+  assert.ok(text(hit).includes(i18n.t("hit_sentence", 7, 20)));
+  assert.ok(hit.includes(`<span class="tag tag-hit"><span aria-hidden="true">✓ </span>${i18n.t("actual_next_item")}</span>`));
   const miss = render("46465");
   assert.ok(!miss.includes("is-hit"));
-  assert.ok(miss.includes(`<p class="miss">${i18n.t("not_in_top_20")}</p>`));
+  assert.ok(miss.includes('<p class="hit-sentence miss">'));
+  assert.ok(text(miss).includes(i18n.t("miss_sentence", 20)));
 });
 
-test("Recommendation: intro folded into method details, presenter tip computed, readable labels", async () => {
+test("Recommendation: order, presenter tip computed from data, closed method details, translated dataset labels", async () => {
   const i18n = await load("/src/i18n.js");
   const data = await load("/src/data.js");
   const ds = await load("/src/dataset.js");
   const { default: Recommendation } = await load("/src/Recommendation.jsx");
   const { default: Dataset } = await load("/src/Dataset.jsx");
+  const expected = data.firstAllModelHitSession(data.normalizeDemo(demo).groups[0]);
+  assert.ok(expected, "the shipped sample has an all-model hit session");
   for (const locale of ["en", "vi"]) {
     i18n.setLanguage(locale);
     const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
-    const details = html.slice(html.indexOf('<details class="method-details glass"'), html.indexOf("</details>"));
-    assert.ok(details.includes(i18n.t("recommendation_tab_intro")), locale);
-    assert.ok(details.includes(i18n.t("presenter_hit_tip", "21546", 3)), locale);
-    assert.ok(html.indexOf('class="controls"') < html.indexOf('class="e1-accuracy"'), locale);
+    const order = ['class="page-head"', 'class="control-bar glass"', 'class="panel history-panel"', 'class="panel actual-panel', 'class="ranking"', 'class="e1-strip', 'class="method-details glass"'].map((marker) => html.indexOf(marker));
+    assert.ok(order.every((index) => index >= 0), `${locale}: every section rendered`);
+    assert.deepEqual([...order].sort((a, b) => a - b), order, `${locale}: sections in the agreed order`);
+    assert.ok(text(html).includes(i18n.t("presenter_tip", expected, 3)), locale);
+    assert.ok(!/<details class="method-details glass" open/.test(html), "method details closed by default");
+    assert.equal((html.match(/class="badge /g) ?? []).length, 1, "exactly one data badge");
+    assert.ok(text(html).includes(i18n.t("real_e1_badge", "30", "1,337")), locale);
     const dataset = text(dom.renderToStaticMarkup(React.createElement(Dataset, { state: ds.normalizeDataset(overview) })));
     for (const key of ["product_categories_by_category_id", "pipeline_fit_workflow", "pipeline_model", "pipeline_top_20"]) {
       assert.ok(dataset.includes(i18n.t(key)), `${locale}: ${key}`);
@@ -198,4 +207,43 @@ test("Recommendation: intro folded into method details, presenter tip computed, 
   for (const run of noHit.runs) for (const session of run.sessions) delete session.target_rank;
   const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(noHit), productInfo: {}, official }));
   assert.ok(!html.includes("presenter-tip"), "no tip when no session is a hit for every model");
+});
+
+test("presenter tip follows the data: fixture with a known all-hit session", async () => {
+  const i18n = await load("/src/i18n.js");
+  const data = await load("/src/data.js");
+  const { default: Recommendation } = await load("/src/Recommendation.jsx");
+  i18n.setLanguage("en");
+  const fixture = structuredClone(demo);
+  // Make the 5th session (sample order) the first all-model hit by placing its target at rank 3 for every model
+  // and removing the target from every earlier session.
+  const ids = fixture.runs[0].sessions.map((session) => session.user_session);
+  for (const run of fixture.runs) for (const session of run.sessions) {
+    const index = ids.indexOf(session.user_session);
+    session.top20 = session.top20.filter((id) => id !== session.target);
+    if (index === 4) session.top20.splice(2, 0, session.target);
+    session.top20 = session.top20.slice(0, 20);
+    delete session.target_rank;
+  }
+  const group = data.normalizeDemo(fixture).groups[0];
+  assert.equal(data.firstAllModelHitSession(group), ids[4]);
+  const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(fixture), productInfo: {}, official }));
+  assert.ok(text(html).includes(i18n.t("presenter_tip", ids[4], 3)));
+  const source = readFileSync(new URL("../src/Recommendation.jsx", import.meta.url), "utf8");
+  assert.ok(!/21546/.test(source), "the tip session is never hard-coded");
+});
+
+test("main result area: no category matching, interactions wording, history and actual item always shown", async () => {
+  const i18n = await load("/src/i18n.js");
+  const data = await load("/src/data.js");
+  const { default: Recommendation } = await load("/src/Recommendation.jsx");
+  for (const locale of ["en", "vi"]) {
+    i18n.setLanguage(locale);
+    const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
+    const main = text(html.slice(0, html.indexOf('<details class="method-details')));
+    for (const banned of ["Same category", "categorized recommendations match", "Cùng danh mục", "Products viewed", "views"]) {
+      assert.ok(!main.includes(banned), `${locale}: ${banned}`);
+    }
+    assert.ok(main.includes(i18n.t("history")) && main.includes(i18n.t("actual_next_item")), locale);
+  }
 });

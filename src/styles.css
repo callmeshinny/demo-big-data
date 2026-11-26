@@ -153,7 +153,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 /* Header: sticky, hairline separator, at most 56 px tall; anchors land below it. */
 .topbar { position: sticky; top: 0; z-index: 10; border-width: 0 0 1px; }
 [id] { scroll-margin-top: calc(var(--header-height) + var(--s4)); }
-.topbar-inner { display: flex; align-items: center; gap: var(--s3); max-width: 1200px; min-height: var(--header-height); margin: 0 auto; padding: 0 var(--s5); }
+.topbar-inner { display: flex; align-items: center; gap: var(--s3); max-width: 1200px; min-height: calc(var(--header-height) - 1px); margin: 0 auto; padding: 0 var(--s5); }
 .brand { display: flex; flex: 0 1 auto; align-items: center; gap: var(--s3); min-width: 0; }
 .brand-name { font: var(--t-lead); font-weight: 600; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-logo { display: block; max-width: 140px; max-height: 44px; object-fit: contain; }
@@ -217,7 +217,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .tag-hit { background: var(--positive-bg); color: var(--positive-text); box-shadow: inset 0 0 0 1px var(--positive); }
 .tag-diff { background: var(--danger-bg); color: var(--danger); }
 /* Being in the history is a neutral fact (AGENTS rule 6): neutral tag, no problem colour. */
-.tag-history { background: var(--fill); color: var(--label); }
+.tag-history { background: var(--fill); color: var(--label); box-shadow: inset 0 0 0 1px var(--control-border); }
 
 /* Notices and disclosures */
 .notice { border: 1px solid var(--separator); border-radius: var(--radius); background: var(--surface); padding: var(--s3) var(--s4); margin-bottom: var(--s4); }
@@ -233,14 +233,32 @@ details > summary { cursor: pointer; font-weight: 600; min-height: 28px; }
 .toy-format-example, .config { background: var(--surface); }
 
 /* Controls */
-.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); margin-bottom: var(--s3); }
-.controls label, label { display: grid; gap: var(--s2); color: var(--label-2); font: var(--t-footnote); font-weight: 600; min-width: 0; }
+label { display: grid; gap: var(--s2); color: var(--label-2); font: var(--t-footnote); font-weight: 600; min-width: 0; }
 select { width: 100%; height: var(--control-height); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); padding: 0 var(--s3); font: var(--t-body); }
-.toggle { margin-left: auto; display: flex; align-items: center; gap: var(--s2); font: var(--t-footnote); color: var(--label-2); }
-.toggle input { accent-color: var(--accent); }
 .meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin-bottom: var(--s4); color: var(--label-2); font: var(--t-footnote); min-width: 0; overflow-wrap: anywhere; }
 .meta-row strong { color: var(--label); font-family: var(--mono); }
 .meta-row > span { min-width: 0; }
+
+/* Page head: title, one intro sentence, one data badge */
+.page-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s3); margin: 0 0 var(--s4); }
+.page-title { flex: 1 1 100%; font: var(--t-title); color: var(--label); }
+.page-intro { margin: 0; color: var(--label-2); max-width: 75ch; }
+
+/* Control bar (glass): model segmented control, session select, presenter tip. Only --label text on glass. */
+.control-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); padding: var(--s2) var(--s3); margin: 0 0 var(--s4); border-radius: var(--radius); }
+@media (min-width: 1101px) { .control-bar { position: sticky; top: calc(var(--header-height) + var(--s2)); z-index: 5; } }
+.control-group { display: flex; align-items: center; gap: var(--s2); color: var(--label); font: var(--t-table); font-weight: 600; min-width: 0; }
+.control-group select { width: auto; min-width: 150px; font-weight: 400; }
+.control-label { display: inline-flex; align-items: center; gap: var(--s1); color: var(--label); }
+.model-picker > button { gap: var(--s2); }
+.model-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--model-colour, var(--chart-neutral)); flex: 0 0 auto; }
+.model-popularity { --model-colour: var(--model-popularity); }
+.model-gru { --model-colour: var(--model-gru); }
+.model-xlnet { --model-colour: var(--model-xlnet); }
+.model-dot.model-gru { border-radius: 2px; }
+.model-dot.model-xlnet { border-radius: 0; transform: rotate(45deg) scale(.85); }
+.presenter-tip { min-height: var(--control-height); margin-left: auto; padding: 0 var(--s3); border: 1px dashed var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-table); cursor: pointer; text-align: left; }
+.presenter-tip:hover { border-style: solid; }
 
 /* Panels */
 .panel { border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: var(--s5); margin-bottom: var(--s4); min-width: 0; }
@@ -255,20 +273,26 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .muted { color: var(--label-2); font: var(--t-footnote); margin: 0; }
 .missing { color: var(--label-2); }
 
-.grid { display: grid; grid-template-columns: 1.7fr 0.8fr; gap: var(--s4); margin-bottom: var(--s4); }
-.grid .panel { margin-bottom: 0; }
-.recommendation-status { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2) var(--s3); margin: 0 0 var(--s3); color: var(--label-2); }
-.e1-accuracy { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); margin: var(--s3) 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--radius-control); background: var(--surface); box-shadow: var(--shadow); font: var(--t-table); }
-.e1-accuracy > div { display: flex; gap: var(--s3); flex-wrap: wrap; }
-.e1-accuracy-title { flex-basis: 100%; }
+.result-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--s4); margin-bottom: var(--s4); }
+.result-row .panel { margin-bottom: 0; }
+
+/* E1 headline strip for the selected model */
+.e1-strip { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin: 0 0 var(--s4); padding: var(--s3) var(--s4); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); box-shadow: inset 4px 0 0 var(--model-colour), var(--shadow); }
+.e1-strip b { font-weight: 600; font-size: inherit; }
+.e1-strip a { margin-left: auto; color: var(--accent); font-weight: 600; text-decoration: none; min-height: var(--control-height); display: inline-flex; align-items: center; }
+.e1-strip a:hover { text-decoration: underline; }
+.model-badge { display: inline-flex; align-items: center; gap: var(--s2); border-radius: 999px; background: var(--fill); color: var(--label); padding: 2px var(--s3); font: var(--t-footnote); font-weight: 600; }
 
 /* History and actual next item */
 .history { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s2); min-height: 56px; list-style: none; margin: 0; padding: 0; }
 .history li { display: flex; align-items: center; gap: var(--s2); max-width: 100%; }
 .arrow { color: var(--label-2); }
-.actual-panel { text-align: center; }
-.actual-panel h2 { margin-bottom: 0; }
-.actual-panel .product-card { margin: var(--s3) 0; }
+.actual-panel h2 { margin-bottom: var(--s3); }
+.actual-panel .product-card { display: inline-flex; margin: 0 0 var(--s3); }
+.hit-sentence { display: flex; align-items: baseline; gap: var(--s2); font: var(--t-lead); font-weight: 600; }
+.outcome-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: var(--t-table); font-weight: 700; flex: 0 0 auto; align-self: center; }
+.match .outcome-icon { background: var(--positive); color: #ffffff; }
+.miss .outcome-icon { box-shadow: inset 0 0 0 1.5px var(--label-2); color: var(--label-2); }
 /*
  * Colour meanings: --accent = interactive/active only; --positive = hit/passed;
  * --danger = problems only (failed/excluded run, config "Differs", load error); a miss is neutral;
@@ -277,6 +301,8 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
  * .is-hit is shared by the target row and the Actual-next-item panel so the hit reads at a glance.
  */
 .match, .miss { margin: 0; font-weight: 600; }
+.is-hit.is-linked, .ranking tr.is-linked td { outline: 2px solid var(--positive); outline-offset: -2px; }
+.actual-panel.is-hit:focus-visible, .ranking tr.is-hit:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .match { color: var(--positive-text); }
 /* A miss is an ordinary outcome, not a problem: neutral text plus the word "Miss" and a cross. */
 .miss { color: var(--label-2); }
@@ -294,7 +320,12 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 /* Top-20 ranking */
 .ranking { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0 var(--s1); margin-top: var(--s2); font: var(--t-table); }
 .ranking th { text-align: left; color: var(--label-2); font: var(--t-footnote); font-weight: 600; padding: 0 var(--s3); overflow-wrap: anywhere; }
-.ranking td { background: var(--bg); padding: var(--s2) var(--s3); }
+.ranking td { background: var(--bg); padding: var(--s1) var(--s3); height: 40px; }
+.ranking .product-card { border: 0; background: transparent; padding: 0; }
+.ranking-item { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); }
+.ranking-item .tag { margin-left: 0; }
+/* "In history" is a neutral fact: grey outline marker, no semantic colour. */
+.ranking tr.in-history td:first-child { box-shadow: inset 4px 0 0 var(--control-border); }
 .ranking td:first-child { border-radius: var(--radius-control) 0 0 var(--radius-control); }
 .ranking td:last-child { border-radius: 0 var(--radius-control) var(--radius-control) 0; }
 .ranking th:first-child, .ranking td:first-child { width: 52px; text-align: center; padding-inline: var(--s1); white-space: nowrap; }
@@ -422,7 +453,9 @@ footer code { overflow-wrap: anywhere; }
   .subtabs > a:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .shell { padding: var(--s4) var(--s4) var(--s6); }
   .scaling-charts { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: 1fr; }
+  .result-row { grid-template-columns: 1fr; }
+  .presenter-tip { margin-left: 0; }
+  .control-group { flex-wrap: wrap; }
   .panel { padding: var(--s4); }
   .ranking .tag { margin: var(--s1) var(--s1) 0 0; }
   .ranking td { padding: var(--s2); }
