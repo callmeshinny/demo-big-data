@@ -206,30 +206,33 @@ function E3Panel({ results }) {
 function E4Panel({ results }) {
   const { e4 } = buildE3E4View(results);
   const [selected, setSelected] = useSelection();
-  const runs = results?.tables?.E4 ?? [];
-  const label = (run) => String(run.format ?? missingText()).toUpperCase();
+  // CSV first, Parquet second, matching the takeaway (Parquet compared with CSV).
+  const runs = e4Pair(results) ?? results?.tables?.E4 ?? [];
+  const label = (run) => formatLabel(run.format);
   const chartPoints = (field, formatter, unit) => runs.map((run) => point({
     key: run.run_id, label: label(run), value: run[field], formatter, displayUnit: formatter === formatBytes ? unit : undefined, unit, runId: run.run_id, source: basename(run.source_metrics),
   }));
-  const [a, b] = runs;
-  const takeaway = a && b ? t("e4_takeaway", label(a), formatBytes(a.bytes, "MiB").text, formatSeconds(a.read_seconds).text, label(b), formatBytes(b.bytes, "MiB").text, formatSeconds(b.read_seconds).text) : missingText();
-  return <Panel id="E4" title={`E4 · ${t("experiment_nav_e4")}`} subtitle={t("e4_subtitle", formatCount(a?.n_events).text)} takeaway={takeaway}>
-    <div className="charts">
+  const byRun = new Map(e4.formats.map((format) => [format.runId, format]));
+  const formats = runs.map((run) => byRun.get(run.run_id)).filter(Boolean);
+  return <Panel id="E4" title={t("e4_panel_title")} subtitle={e4Subtitle(results)} course={t("e4_course_item")} takeaway={e4Takeaway(results)}>
+    <div className="charts charts-3">
       <BarChart title={t("e4_file_size_bytes")} metric={t("e4_file_size_bytes")} yLabel={t("mib_axis")} points={chartPoints("bytes", formatBytes, "MiB")} selected={selected} onSelect={setSelected} />
       <BarChart title={t("e4_read_time_s")} metric={t("e4_read_time_s")} yLabel={t("seconds_axis")} points={chartPoints("read_seconds", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e4_chart_preprocessing")} metric={t("e4_preprocessing_wall_including_read_s")} yLabel={t("seconds_axis")} points={chartPoints("preprocessing_wall_seconds_including_read", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
     </div>
     <SelectionBar label={runs.find((run) => run.run_id === selected) ? label(runs.find((run) => run.run_id === selected)) : null} onClear={() => setSelected(null)} />
-    <MetricTable caption={t("experiment_e4_csv_vs_parquet")} className="e4-table" selected={selected} onSelect={setSelected}
-      columns={e4.formats.map((format) => ({ key: format.runId, header: format.label.toUpperCase(), title: format.runId }))}
-      rows={e4.rows.map((row, rowIndex) => ({ ...row, cells: e4.formats.map((format) => format.cells[rowIndex]) }))} />
+    <MetricTable caption={t("e4_panel_title")} className="e4-table" selected={selected} onSelect={setSelected}
+      columns={formats.map((format) => ({ key: format.runId, header: formatLabel(format.label), title: format.runId }))}
+      rows={e4.rows.map((row, rowIndex) => ({ ...row, cells: formats.map((format) => format.cells[rowIndex]) }))} />
     <Notes>
+      <p className="interpretation-note">{t("e4_limit")}</p>
       <InterpretationNote dictionaryKey="E4_preprocessing_wall" />
       <p className="interpretation-note">{t("e4_bytes_tooltip_note")}</p>
       <details className="excluded-runs"><summary>{t("e4_excluded_runs")}</summary>
         <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
       </details>
     </Notes>
-    <PanelConfigDetails results={results} runIds={e4.formats.map(({ runId }) => runId)} />
+    <PanelConfigDetails results={results} runIds={formats.map(({ runId }) => runId)} />
   </Panel>;
 }
 

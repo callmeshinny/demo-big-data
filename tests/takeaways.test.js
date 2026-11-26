@@ -71,3 +71,50 @@ test("10% rules: similar and small part", () => {
   assert.equal(isSmallPart(10, 100), false);
   assert.equal(isSmallPart(1, null), false);
 });
+
+import { e4Subtitle, e4Takeaway, formatLabel } from "../src/takeaways.js";
+const withE4 = (patch) => {
+  const copy = structuredClone(official);
+  copy.tables.E4 = copy.tables.E4.map((run) => ({ ...run, ...(patch[run.format] ?? {}) }));
+  return copy;
+};
+
+test("E4 takeaway with the shipped data: similar preprocessing, 'because' clause applies", () => {
+  setLanguage("en");
+  assert.equal(e4Takeaway(official),
+    "Parquet is smaller (24.2 MiB vs 127.8 MiB) and reads faster (0.109 s vs 0.454 s); total preprocessing time is similar (33.6 s vs 35.0 s) because reading is only a small part of it.");
+  setLanguage("vi");
+  assert.equal(e4Takeaway(official),
+    "Parquet nhỏ hơn (24.2 MiB so với 127.8 MiB) và đọc nhanh hơn (0.109 s so với 0.454 s); tổng thời gian tiền xử lý gần như tương đương (33.6 s so với 35.0 s) vì bước đọc chỉ chiếm một phần nhỏ.");
+  setLanguage("en");
+  assert.equal(e4Subtitle(official), "The same 882,808 events stored as CSV and as Parquet: file size, read time, preprocessing time");
+  assert.equal(formatLabel("parquet"), "Parquet");
+  assert.equal(formatLabel("orc"), "ORC", "unknown formats fall back to the raw value");
+});
+
+test("E4: >= 10% preprocessing difference names the faster one; no 'because' then", () => {
+  setLanguage("en");
+  const text = e4Takeaway(withE4({ parquet: { preprocessing_wall_seconds_including_read: 20 } }));
+  assert.match(text, /total preprocessing is faster \(20\.0 s vs 35\.0 s\)\.$/);
+  assert.ok(!text.includes("because"));
+  const slower = e4Takeaway(withE4({ parquet: { preprocessing_wall_seconds_including_read: 50 } }));
+  assert.match(slower, /total preprocessing is slower/);
+});
+
+test("E4: 'because' only when each read is < 10% of its preprocessing time", () => {
+  setLanguage("en");
+  const bigRead = e4Takeaway(withE4({ csv: { read_seconds: 5 } }));
+  assert.match(bigRead, /similar \(33\.6 s vs 35\.0 s\)\.$/, bigRead);
+  assert.ok(!bigRead.includes("because"));
+});
+
+test("E4: equal or missing size/read values give a neutral sentence", () => {
+  setLanguage("en");
+  for (const results of [withE4({ parquet: { bytes: 134004153 } }), withE4({ parquet: { read_seconds: null } })]) {
+    const text = e4Takeaway(results);
+    assert.ok(!/smaller|larger|faster|slower|similar/.test(text), text);
+    assert.match(text, /^Parquet: file size /);
+  }
+  const flipped = e4Takeaway(withE4({ parquet: { bytes: 300000000, read_seconds: 1 } }));
+  assert.match(flipped, /Parquet is larger .* reads slower/);
+});
