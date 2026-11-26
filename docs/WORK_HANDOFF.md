@@ -6,7 +6,7 @@ Official source package: `tv2-20261124` from the adjacent read-only `../Big-Data
 
 ## Overall result
 
-The demo now uses the official TV2 package for E1–E5 experiment results, dataset overview, figures, and bilingual demo materials. The recommendation view remains in its waiting state because the real per-session prediction bundle, matching catalog, and real product lookup are not present. Toy prediction examples remain clearly separated from official results.
+The demo uses the official TV2 package for E1–E5 experiment results, dataset overview, figures, and bilingual demo materials. The Recommendation view now replays a fixed, checksum-verified sample of real E1 predictions. TV1 product metadata remains pending, so recommendation cards show original product IDs only.
 
 No team-repository files were changed and nothing was pushed.
 
@@ -27,6 +27,7 @@ No team-repository files were changed and nothing was pushed.
 | 10 | Generated official figures and captions from package JSON | `e945059 feat: official figures and captions from tv2-20261124` |
 | 11 | Updated context, bilingual talk track, demo runbook and README; captured EN/VI screenshots | `11e75d2 docs: demo script with official results, context and fallback` |
 | 12 | Final audit; localized E5 axis labels and tested them | `aaa0825 fix: final audit corrections` |
+| 13 | Added verified real E1 predictions as a fixed 30-session sample; product metadata remains pending | See current Step 13 commit below |
 
 ## Key data and interpretation decisions
 
@@ -38,7 +39,8 @@ No team-repository files were changed and nothing was pushed.
 - E5 composed time excludes shared first-seen and is not observed end-to-end wall time.
 - E1 results represent a single run and seed.
 - Missing values stay unavailable; no scores are inferred from ranks.
-- Recommendation bundle status: not found locally. Real predictions/catalog remain pending from TV2/TV3; product lookup remains pending from TV1.
+- The local `../tv4-real-bundle/` is an export input only and must never be committed. The public app stores only sampled IDs and the catalog subset; full-catalog SHA and size are retained.
+- TV1 product lookup remains pending; product cards show original IDs only.
 
 ## Final audit evidence
 
@@ -56,4 +58,4 @@ Ten screen-to-package spot checks are documented in the Step 12 report from the 
 
 ## Current stopping point
 
-The supplied task prompt defines Steps 0–12 only. Step 12 is complete; there is no Step 13 in that prompt.
+Step 13 adds the checksum-verified real E1 sample and Recommendation UI; TV1 product metadata remains pending. No team-repository files were changed and nothing was pushed.
