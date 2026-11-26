@@ -32,6 +32,7 @@ const PAIRS = [
   ["label-2", "bg", 4.5, "secondary / footnote text on page"],
   ["label-2", "surface", 4.5, "secondary / footnote text on card"],
   ["label", "fill", 4.5, "neutral tag text"],
+  ["label", "segment", 4.5, "selected segment text"],
   ["positive", "positive-bg", 4.5, "positive text on its pale background"],
   ["negative", "negative-bg", 4.5, "negative text on its pale background"],
   ["caution", "caution-bg", 4.5, "caution text on its pale background"],
@@ -46,7 +47,7 @@ const PAIRS = [
 
 for (const [scheme, theme] of Object.entries(themes)) {
   test(`${scheme} tokens meet contrast minimums`, () => {
-    for (const name of ["bg", "surface", "label", "label-2", "separator", "control-border", "accent", "fill", "positive", "positive-bg", "negative", "negative-bg", "caution", "caution-bg"]) {
+    for (const name of ["bg", "surface", "label", "label-2", "separator", "control-border", "accent", "fill", "segment", "positive", "positive-bg", "negative", "negative-bg", "caution", "caution-bg"]) {
       assert.match(theme[name] ?? "", /^#[0-9a-f]{6}$/, `${scheme}: --${name} must be a hex token`);
     }
     const failures = PAIRS.map(([fg, bg, minimum, what]) => ({ what, fg, bg, minimum, value: ratio(theme[fg], theme[bg]) }))

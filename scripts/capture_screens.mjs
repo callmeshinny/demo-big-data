@@ -92,6 +92,8 @@ try {
             ));
             assert.deepEqual(overlaps, [], `Metric cells overlap in ${name} at ${width}`);
           }
+          const currentCounts = await page.evaluate(() => [...document.querySelectorAll("nav")].map((nav) => nav.querySelectorAll('[aria-current="page"]').length));
+          assert.ok(currentCounts.length >= 1 && currentCounts.every((n) => n === 1), `${name}: one aria-current per nav (${currentCounts})`);
           const chartProblems = await page.evaluate(() => [...document.querySelectorAll("figure.scaling-chart")].flatMap((figure, chartIndex) => {
             const card = figure.getBoundingClientRect();
             const texts = [...figure.querySelectorAll("svg text")].map((node) => ({ text: node.textContent, rect: node.getBoundingClientRect() }));
@@ -145,7 +147,9 @@ try {
         const weight = (button) => button.evaluate((node) => Number(getComputedStyle(node).fontWeight));
         assert.ok(await weight(activeLanguage) > await weight(inactiveLanguage));
         await checkKeyboardFocus(page, inactiveLanguage);
-        await checkKeyboardFocus(page, page.getByRole("tab").first());
+        const mainNav = page.getByRole("navigation", { name: t("views_2"), exact: true });
+        assert.equal(await page.locator("[role=tab], [role=tablist], [role=tabpanel]").count(), 0);
+        await checkKeyboardFocus(page, mainNav.getByRole("link").first());
 
         const session = page.getByLabel(t("session"), { exact: true });
         const model = page.getByLabel(t("model"), { exact: true });
@@ -187,7 +191,7 @@ try {
         assert.equal(await session.inputValue(), "21546");
         await page.locator(".recommendations table").waitFor();
 
-        await page.getByRole("tab", { name: t("dataset") }).click();
+        await mainNav.getByRole("link", { name: t("dataset"), exact: true }).click();
         await page.getByRole("heading", { name: t("session_length") }).waitFor();
         const weekly = page.locator("section").filter({ has: page.getByRole("heading", { name: t("weekly_cudf_subsets"), exact: true }) });
         for (const key of ["missing_brand", "missing_category"]) {
@@ -196,13 +200,13 @@ try {
         assert.equal(await weekly.getByRole("rowheader", { name: "categories (category_id)", exact: true }).count(), 1);
         assert.equal(await weekly.getByRole("rowheader", { name: t("actual_raw_event_pct"), exact: true }).count(), 1);
         await page.getByRole("heading", { name: t("data_caveats") }).waitFor();
-        assert.equal(await page.locator("[role=tabpanel] meter").count(), 21);
+        assert.equal(await page.locator("#view meter").count(), 21);
         await page.getByLabel(t("subset"), { exact: true }).selectOption("100");
         await capture("dataset");
 
         for (const id of ["e1", "e2", "e3", "e4", "e5"]) {
           await page.goto(`${home}/#experiments-${id}`);
-          const panel = page.locator("[role=tabpanel] > .panel").filter({
+          const panel = page.locator("#view > .panel").filter({
             has: page.getByRole("heading", { name: new RegExp(`^${id} ·`, "i") }),
           });
           await panel.waitFor();

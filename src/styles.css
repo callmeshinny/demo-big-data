@@ -15,6 +15,7 @@
   --control-border: #86868b;
   --accent: #0066cc;
   --fill: #e8e8ed;
+  --segment: #ffffff;
   --positive: #1a7f37;
   --positive-bg: #edf8f0;
   --negative: #c9302c;
@@ -61,6 +62,7 @@
     --control-border: #8e8e93;
     --accent: #2997ff;
     --fill: #2c2c2e;
+    --segment: #636366;
     --positive: #30d158;
     --positive-bg: #0e2a16;
     --negative: #ff453a;
@@ -117,18 +119,27 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .brand-cover { display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover; border-radius: var(--radius); margin-bottom: var(--s5); }
 .tab-intro { margin: 0 0 var(--s4); color: var(--label-2); max-width: 75ch; }
 
-/* Navigation */
-.tabs { display: flex; flex: 1 1 auto; flex-wrap: wrap; justify-content: center; gap: var(--s1); }
-.tabs a { display: inline-flex; align-items: center; min-height: var(--control-height); padding: 0 var(--s4); border-radius: var(--radius-control); color: var(--label); text-decoration: none; font-weight: 500; }
-.tabs a[aria-current="page"], .tabs a.active { color: var(--accent); background: var(--fill); font-weight: 600; }
-
-.subtabs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-bottom: var(--s4); }
-.subtabs a { display: inline-flex; align-items: center; min-height: var(--control-height); padding: 0 var(--s4); border: 1px solid var(--control-border); border-radius: 999px; background: var(--surface); color: var(--label); text-decoration: none; font-weight: 600; }
-.subtabs a.active { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-
-.language-switch { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--radius-control); background: var(--fill); }
-.language-switch button { min-width: 44px; min-height: 32px; border: 0; border-radius: 8px; background: transparent; padding: 0 var(--s3); color: var(--label); font: var(--t-footnote); font-weight: 400; cursor: pointer; }
-.language-switch [aria-pressed="true"] { background: var(--surface); font-weight: 600; box-shadow: var(--shadow); }
+/* Navigation: segmented controls (grey track, raised selected segment, 44 px targets) */
+.segmented { display: flex; gap: 2px; padding: 2px; border-radius: 12px; background: var(--fill); }
+.segmented > a, .segmented > button {
+  flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: var(--s1);
+  min-height: var(--control-height); padding: 0 var(--s4); border: 0; border-radius: var(--radius-control);
+  background: transparent; color: var(--label); font: var(--t-table); font-weight: 500;
+  text-align: center; text-decoration: none; cursor: pointer;
+}
+.segmented > a:hover:not([aria-current="page"]), .segmented > button:hover:not([aria-pressed="true"]) { background: color-mix(in srgb, var(--label) 6%, transparent); }
+.segmented > [aria-current="page"], .segmented > [aria-pressed="true"] {
+  background: var(--segment); color: var(--label); font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .12), 0 0 0 .5px rgb(0 0 0 / .04);
+}
+.tabs { flex: 0 1 auto; margin: 0 auto; }
+.tabs > a { font: var(--t-body); font-weight: 500; white-space: nowrap; }
+.tabs > a[aria-current="page"] { font-weight: 600; }
+.language-switch { flex: 0 0 auto; }
+.language-switch > button { min-width: 48px; padding: 0 var(--s3); }
+.subtabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: var(--s4); }
+.subtabs > a { padding: 0 var(--s3); }
+.subtabs strong { font-weight: 600; }
 
 /* Badges and tags */
 .badge, .tag { display: inline-block; border-radius: 999px; padding: 2px var(--s2); font: var(--t-footnote); font-weight: 600; white-space: nowrap; background: var(--fill); color: var(--label); }
@@ -309,16 +320,19 @@ footer code { overflow-wrap: anywhere; }
 .loading { margin: var(--s6) 0; text-align: center; color: var(--label-2); }
 
 /* Motion: none required; anything that moves is short and optional. */
-.tabs a, .subtabs a, .language-switch button { transition: background-color 120ms ease, color 120ms ease; }
+.segmented > a, .segmented > button { transition: background-color 120ms ease, color 120ms ease; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
 
 @media (max-width: 760px) {
+  /* On phones the tall header scrolls away instead of covering a sixth of the screen. */
+  .topbar { position: static; }
   .topbar-inner { flex-wrap: wrap; gap: var(--s2) var(--s3); padding: var(--s2) var(--s4); }
   .brand { flex: 1 1 calc(100% - 120px); }
   .brand h1 { font: var(--t-section); }
-  .tabs { order: 3; flex-basis: 100%; justify-content: flex-start; }
+  .tabs { order: 3; flex: 1 1 100%; }
+  .tabs > a { padding: 0 var(--s2); font: var(--t-table); font-weight: 500; white-space: normal; }
   .shell { padding: var(--s4) var(--s4) var(--s6); }
   .controls { grid-template-columns: 1fr; }
   .scaling-charts { grid-template-columns: 1fr; }

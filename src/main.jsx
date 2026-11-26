@@ -7,6 +7,7 @@ import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
 import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
+import { LanguageSwitch, MainNav } from "./Nav.jsx";
 import "./styles.css";
 
 const branding = import.meta.glob(["./branding/logo.png", "./branding/cover.jpg"], {
@@ -14,12 +15,6 @@ const branding = import.meta.glob(["./branding/logo.png", "./branding/cover.jpg"
 });
 const logo = branding["./branding/logo.png"];
 const cover = branding["./branding/cover.jpg"];
-
-const TABS = () => [
-  { id: "recommendation", label: t("recommendations") },
-  { id: "data", label: t("dataset") },
-  { id: "experiments", label: t("experiments_e1_e5") },
-];
 
 // Optional overrides for testing broken files, e.g. ?demo=/tests/fixtures/empty.json
 // Only same-origin absolute paths are accepted.
@@ -119,23 +114,16 @@ function App() {
           {logo && <img className="brand-logo" src={logo} alt="" />}
           <h1>{siteName}</h1>
         </div>
-        <nav className="tabs" role="tablist" aria-label={t("views_2")}>
-          {TABS().map(({ id, label }) => (
-            <a key={id} href={`#${id}`} role="tab" aria-selected={tab === id} className={tab === id ? "active" : ""}>{label}</a>
-          ))}
-        </nav>
+        <MainNav tab={tab} />
         <div className="header-utility">
-          <div className="language-switch" role="group" aria-label={t("language")}>
-            {["en", "vi"].map((code) => <button type="button" key={code}
-              aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
-          </div>
+          <LanguageSwitch language={language} onChoose={chooseLanguage} />
         </div>
         </div>
       </header>
       <main className="shell">
       {cover && <img className="brand-cover" src={cover} alt="" />}
       <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
-      <div role="tabpanel">
+      <div className="view" id="view">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
           : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
       </div>

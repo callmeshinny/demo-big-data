@@ -167,8 +167,10 @@ export default function Experiments({ state, active }) {
   if (!results) return <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{t("MISSING")}</Notice>;
   return <>
     <EnvironmentCard results={results} />
-    <nav className="subtabs" aria-label={t("experiments")}>{EXPERIMENTS.map((id) => (
-      <a key={id} href={`#experiments-${id.toLowerCase()}`} className={id === active ? "active" : ""} aria-current={id === active ? "page" : undefined}>{id}</a>
+    <nav className="segmented subtabs" aria-label={t("experiments")}>{EXPERIMENTS.map((id) => (
+      <a key={id} href={`#experiments-${id.toLowerCase()}`} aria-current={id === active ? "page" : undefined}>
+        <strong>{id}</strong> · {t(`experiment_nav_${id.toLowerCase()}`)}
+      </a>
     ))}</nav>
     {active === "E1" ? <OfficialE1Panel results={results} />
       : active === "E2" ? <OfficialE2Panel results={results} />
