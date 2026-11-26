@@ -39,13 +39,13 @@
 
 *Tiếng Việt. E2 huấn luyện GRU trên từng tập con lồng nhau. Recall@20 trên test là 0.0883 ở 10% và 0.3899 ở 100%. Dữ liệu test và catalog thay đổi theo tập con, nên đây không chỉ là ảnh hưởng của kích thước tập huấn luyện.*
 
-**English.** E3 compares train batches 32 and 128 on validation, holding other conditions fixed. Batch 32 gives Recall@20 0.1964 and process wall 65.9 seconds; batch 128 gives 0.1299 and 44.8 seconds. This validation tradeoff is not directly comparable with E1 or E2 test accuracy.
+**English.** For compute resources, we kept the same VM and GPU and changed the GRU training batch from 32 to 128. The larger batch trained faster but used more GPU memory and scored lower on validation. This is a validation result, so we don't compare it with the test results in E1.
 
-*Tiếng Việt. E3 so sánh batch huấn luyện 32 và 128 trên validation, giữ các điều kiện khác cố định. Batch 32 có Recall@20 là 0.1964 và thời gian tiến trình 65.9 giây; batch 128 lần lượt là 0.1299 và 44.8 giây. Đây là sự đánh đổi trên validation, không nên so sánh trực tiếp độ chính xác với test E1 hoặc E2.*
+*Tiếng Việt. Với tài nguyên tính toán, nhóm giữ nguyên VM và GPU, chỉ đổi batch huấn luyện GRU từ 32 lên 128. Batch lớn hơn huấn luyện nhanh hơn nhưng dùng nhiều bộ nhớ GPU hơn và cho điểm validation thấp hơn. Đây là kết quả trên validation, nên nhóm không so sánh với kết quả test của E1.*
 
-**English.** E4 reports CSV at 127.8 MiB and Parquet at 24.2 MiB. Reads take 0.454 and 0.109 seconds; preprocessing including read takes 35.0 and 33.6 seconds. The package measured a warm cache, so these results describe that run, not every storage setup.
+**English.** For storage, we saved the same events as CSV and Parquet. Parquet is much smaller and faster to read, but total preprocessing barely changes, because reading is a small part of the pipeline.
 
-*Tiếng Việt. E4 ghi nhận CSV có dung lượng 127.8 MiB và Parquet 24.2 MiB. Thời gian đọc lần lượt là 0.454 giây với CSV và 0.109 giây với Parquet. Thời gian preprocessing wall, vốn đã bao gồm đọc dữ liệu, lần lượt là 35.0 và 33.6 giây. Package đo trong điều kiện cache ấm, nên đây là số liệu của lần chạy đó, không đại diện cho mọi hệ thống lưu trữ.*
+*Tiếng Việt. Với lưu trữ, nhóm lưu cùng một tập sự kiện dưới dạng CSV và Parquet. Parquet nhỏ hơn nhiều và đọc nhanh hơn, nhưng tổng thời gian tiền xử lý gần như không đổi, vì bước đọc chỉ là một phần nhỏ của pipeline.*
 
 **English.** E5 reuses verified E2 runs across four subset sizes. Normalized time is 66.7, 56.9, 55.8 and 55.6 seconds per million events. Composed time excludes shared first-seen and is not observed end-to-end wall time. These measured curves do not guarantee throughput.
 
@@ -100,6 +100,10 @@
 12. **What does the Recommendation tab show?** Real E1 predictions for 30 of 1,337 sessions, selected by the seed-1 hash rule, with history, actual next product and Top-20. It shows no per-item scores or product names.
 
     *Tab Recommendation hiển thị gì? Dự đoán E1 thật cho 30 trong 1.337 phiên, chọn theo quy tắc hash seed 1, cùng lịch sử, sản phẩm tiếp theo thực tế và Top-20. Tab không hiển thị điểm từng sản phẩm hay tên sản phẩm.*
+
+13. **Why didn't you vary CPU, RAM or workers?** We had one AWS VM with a single T4 GPU, so the hardware was fixed. Batch size was the resource setting we could control: it changes how much work the GPU does per step and how much GPU memory it uses. Varying CPU, RAM or workers would need more VM types, which we list as future work.
+
+    *Vì sao không thay đổi CPU, RAM hay số worker? Nhóm có một VM AWS với một GPU T4, nên phần cứng cố định. Batch size là thiết lập tài nguyên nhóm điều khiển được: nó thay đổi lượng việc GPU làm mỗi bước và lượng bộ nhớ GPU dùng. Thay đổi CPU, RAM hay số worker cần thêm loại VM khác, nhóm ghi nhận là hướng phát triển.*
 
 ## Sources
 

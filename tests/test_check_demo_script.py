@@ -33,5 +33,21 @@ class DemoScriptCheckTest(unittest.TestCase):
         self.assertTrue(any("Recommendation tab show" in error for error in errors))
 
 
+    def test_rejects_a_decimal_that_is_not_a_displayed_json_value(self):
+        text = self.text.replace("0.3899", "0.3999", 1)
+        errors, _ = check_text(text)
+        self.assertTrue(any("0.3999 is not a displayed value" in error for error in errors))
+
+    def test_requires_e3_batch_sizes_from_json(self):
+        text = self.text.replace("from 32 to 128", "from 16 to 64", 1)
+        errors, _ = check_text(text)
+        self.assertTrue(any("E3 batch sizes" in error for error in errors))
+
+    def test_requires_fixed_hardware_question(self):
+        text = self.text.replace("Why didn't you vary CPU, RAM or workers?", "Why?", 1)
+        errors, _ = check_text(text)
+        self.assertTrue(any("vary CPU" in error for error in errors))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,23 +1,70 @@
-"""Check the English demo talk track's length, metric precision and required Q&A."""
+"""Check the English demo talk track's length, metric precision, numbers against the JSON, and required Q&A."""
 
+import json
+import math
 import re
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parents[1] / "docs/DEMO_SCRIPT.md"
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "docs/DEMO_SCRIPT.md"
+OFFICIAL = ROOT / "public/official-results.json"
 REQUIRED_QUESTIONS = (
     "How is a session’s prediction evaluated?",
     "Does the demo run live inference, and how can it be rebuilt?",
     "How is the 30-session sample selected?",
+    "Why didn't you vary CPU, RAM or workers?",
     "Are these toy or real recommendations?",
     "Why might the sample be browsing-heavy?",
     "What does the Recommendation tab show?",
 )
-# Rounded exactly as the UI shows them (src/format.js: 4 decimals for ratios, 3 significant digits for times).
+# Values the walkthrough must quote, rounded exactly as the UI shows them (src/format.js).
 DISPLAY_VALUES = (
-    "0.1249", "0.0883", "0.3899", "0.1964", "65.9", "0.1299", "44.8", "127.8 MiB",
-    "24.2 MiB", "0.454", "0.109", "35.0", "33.6",
+    "0.1249", "0.0883", "0.3899",
     "66.7, 56.9, 55.8 and 55.6",
 )
+
+
+def significant3(value):
+    """Mirror of significant3() in src/format.js (3 significant digits, no exponent)."""
+    if value == 0:
+        return "0"
+    if abs(value) >= 1000:
+        return f"{round(value):,}"
+    rounded = float(f"{value:.3g}")
+    decimals = max(0, 2 - math.floor(math.log10(abs(rounded)))) if abs(rounded) < 1000 else 0
+    return f"{rounded:,.{decimals}f}"
+
+
+def displayed_decimals(official):
+    """Every decimal string the UI can show for a numeric value in official-results.json tables."""
+    shown = set()
+    def walk(value):
+        if isinstance(value, dict):
+            for item in value.values():
+                walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+        elif isinstance(value, (int, float)) and not isinstance(value, bool):
+            shown.add(f"{value:.4f}")
+            shown.add(significant3(value))
+            shown.add(f"{value / 1024 ** 2:.1f}")
+            shown.add(f"{value / 1024 ** 3:.1f}")
+    walk(official.get("tables", {}))
+    return shown
+
+
+def check_numbers(walkthrough, official):
+    """Each decimal in the walkthrough must be a displayed JSON value; E3 batch sizes must match the JSON."""
+    errors = []
+    allowed = displayed_decimals(official)
+    for number in re.findall(r"(?<![\w.])\d+\.\d+(?![\w.])", walkthrough):
+        if number not in allowed:
+            errors.append(f"English walkthrough number {number} is not a displayed value from official-results.json")
+    batches = sorted(run["train_batch_size"] for run in official.get("tables", {}).get("E3", []))
+    if batches and f"from {batches[0]} to {batches[-1]}" not in walkthrough:
+        errors.append(f"English walkthrough must state the E3 batch sizes from the JSON ({batches[0]} and {batches[-1]})")
+    return errors
 
 
 def english_walkthrough(text):
@@ -43,6 +90,7 @@ def check_text(text):
     missing_values = [value for value in DISPLAY_VALUES if value not in walkthrough]
     if missing_values:
         errors.append(f"English walkthrough is missing displayed values: {', '.join(missing_values)}")
+    errors.extend(check_numbers(walkthrough, json.loads(OFFICIAL.read_text(encoding="utf-8"))))
 
     q4 = re.search(
         r"(?ms)^4\. \*\*What does Recall@20 mean\?\*\*(.*?)(?=^\s*\*Tiếng Việt\.|^5\.)",
