@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class SamplePredictionsTest(unittest.TestCase):
     def test_csv_matches_json_and_catalog(self):
         demo = json.loads((ROOT / "public/demo-data.json").read_text())
+        self.assertIsNone(demo["provenance"]["product_lookup"])
         with (ROOT / "public/sample-predictions.csv").open(newline="") as stream:
             reader = csv.DictReader(stream)
             fields = ("run_id", "model", "subset", "split", "data_kind", "catalog_sha256", "user_session",

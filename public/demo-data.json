@@ -1,6 +1,9 @@
 {
   "schema": "tv4-demo-data/v2",
   "team_commit": "88f7e02",
+  "provenance": {
+    "product_lookup": null
+  },
   "runs": [
     {
       "model": "Popularity",

@@ -25,6 +25,7 @@ import hashlib
 import json
 import tempfile
 from pathlib import Path
+from pathlib import PurePosixPath
 
 from evaluation.data import Catalog, encoded_id
 from team_repo import team_commit
@@ -293,6 +294,22 @@ def write_sample_csv(path, runs):
                     writer.writerow((*run_values, *session_values, recommendation["rank"], recommendation["product_id"], recommendation["score"]))
 
 
+def public_product_lookup_path(value):
+    if value is None:
+        return None
+    clean_value = value.strip()
+    path = PurePosixPath(clean_value)
+    if (
+        not path.parts
+        or path.is_absolute()
+        or ".." in path.parts
+        or any(char in clean_value for char in "\\?#")
+        or path.suffix.lower() != ".json"
+    ):
+        raise ValueError("--product-lookup must be a relative JSON path within public/")
+    return path.as_posix()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--run", action="append", metavar="RUN_DIR=CATALOG")
@@ -301,6 +318,8 @@ def main():
     parser.add_argument("--sample", type=int, metavar="N")
     parser.add_argument("--sample-seed", type=int, default=0, metavar="S")
     parser.add_argument("--team-commit", help="Source revision when exporting from a Git archive")
+    parser.add_argument("--product-lookup", type=public_product_lookup_path, metavar="PUBLIC_PATH",
+                        help="Optional relative JSON path for the public product lookup")
     parser.add_argument("--real-e1-bundle", type=Path, help="Verified delivered real E1 bundle directory")
     parser.add_argument("--metrics", type=Path, help="Official metrics.json for real E1 export")
     parser.add_argument("--configs", type=Path, help="Official configs.json for real E1 export")
@@ -345,7 +364,12 @@ def main():
                     "n_total": provenance["n_total"],
                     "sample": provenance["sample"],
                 }
-        payload = {"schema": "tv4-demo-data/v2", "team_commit": args.team_commit or team_commit(), "runs": runs}
+        payload = {
+            "schema": "tv4-demo-data/v2",
+            "team_commit": args.team_commit or team_commit(),
+            "provenance": {"product_lookup": args.product_lookup},
+            "runs": runs,
+        }
         if args.stamp or args.sample is not None:
             kinds = {run["data_kind"] for run in runs}
             payload.update(generated_at=date.today().isoformat(),

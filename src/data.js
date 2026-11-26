@@ -1,5 +1,5 @@
 import { t } from "./i18n.js";
-// Loading and validation for the two JSON files in public/.
+// Loading and validation for JSON artifacts in public/.
 // Pure functions (no React) so they can be tested with `node --test`.
 
 
@@ -40,6 +40,13 @@ export async function loadJson(url, fetchImpl = fetch) {
   } catch (cause) {
     return { error: t("0_is_invalid_json_1", url, cause.message) };
   }
+}
+
+export async function loadDeclaredProductInfo(productLookup, fetchImpl = fetch) {
+  if (typeof productLookup !== "string" || !productLookup.trim()) {
+    return { data: null, error: null, requested: false };
+  }
+  return { ...await loadJson(productLookup, fetchImpl), requested: true };
 }
 
 export function normalizeProductInfo(raw) {

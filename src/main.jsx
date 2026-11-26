@@ -1,7 +1,7 @@
 import { readLanguage, setLanguage, t } from "./i18n.js";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { loadJson, normalizeDemo, normalizeProductInfo } from "./data.js";
+import { loadDeclaredProductInfo, loadJson, normalizeDemo, normalizeProductInfo } from "./data.js";
 import Recommendation from "./Recommendation.jsx";
 import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
@@ -30,7 +30,6 @@ function source(param, fallback) {
 }
 const base = import.meta.env.BASE_URL;
 const DEMO_URL = source("demo", `${base}demo-data.json`);
-const PRODUCTS_URL = source("products", `${base}product-info.json`);
 const DATASET_URL = source("dataset", `${base}dataset-overview.json`);
 const OFFICIAL_RESULTS_URL = `${base}official-results.json`;
 
@@ -45,11 +44,36 @@ function useData(url, normalize, language) {
     loadJson(url).then(({ data, error }) => {
       if (!alive) return;
       setState(error ? { error } : { ...normalize(data), provenance: {
-        team_commit: data?.team_commit, generated_at: data?.generated_at, data_kind: data?.data_kind,
+        team_commit: data?.team_commit,
+        generated_at: data?.generated_at,
+        data_kind: data?.data_kind,
+        product_lookup: data?.provenance?.product_lookup,
       } });
     });
     return () => { alive = false; };
   }, [url, normalize, language]);
+  return state;
+}
+
+function useOptionalProductInfo(url, language) {
+  const [state, setState] = useState({});
+  useEffect(() => {
+    let alive = true;
+    setState(url ? { loading: true } : {});
+    loadDeclaredProductInfo(url).then(({ data, error, requested }) => {
+      if (!alive) return;
+      if (!requested) {
+        setState({});
+        return;
+      }
+      setState(error ? { error } : { ...normalizeProductInfo(data), provenance: {
+        team_commit: data?.team_commit,
+        generated_at: data?.generated_at,
+        data_kind: data?.data_kind,
+      } });
+    });
+    return () => { alive = false; };
+  }, [url, language]);
   return state;
 }
 
@@ -71,7 +95,11 @@ function App() {
   }
   const [{ tab, experiment }, setRoute] = useState(currentRoute);
   const demo = useData(DEMO_URL, normalizeDemo, language);
-  const products = useData(PRODUCTS_URL, normalizeProductInfo, language);
+  const productLookup = demo.provenance?.product_lookup;
+  const productsUrl = typeof productLookup === "string" && productLookup.trim()
+    ? source("products", `${base}${productLookup}`)
+    : null;
+  const products = useOptionalProductInfo(productsUrl, language);
   const dataset = useData(DATASET_URL, normalizeDataset, language);
   const officialResults = useData(OFFICIAL_RESULTS_URL, normalizeOfficialResults, language);
 

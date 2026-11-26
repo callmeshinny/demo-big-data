@@ -12,6 +12,7 @@
 | `data_kind` for runs without `run.json` | `"toy"` only when `subset == "toy"`, otherwise `null` (UI: "data_kind: Chưa có"). | `metrics/tv2-toy-day1` has no collector record. |
 | Real E1 catalog subset | The public real-E1 sample stores only original product IDs used by the sampled prefix, target and Top-20; `catalog_size` and `provenance.catalog_size` retain the full catalog count, and `catalog_sha256` retains the full catalog hash. | Keeps the 30-session public JSON small while preserving catalog identity and membership checks. |
 | Real E1 provenance | Adds `provenance.predictions_path`, `predictions_sha256`, `catalog_path`, `catalog_sha256`, `catalog_size`, `n_total` and `sample`. | Makes the TV3 bundle inputs and fixed hash sample traceable. |
+| Optional product lookup | `provenance.product_lookup` is `null` unless an optional same-origin public JSON lookup is explicitly supplied. | Prevents an absent TV1 lookup from being requested by the browser. |
 
 ## Experiment results
 

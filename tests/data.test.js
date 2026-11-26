@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   INVALID_PRODUCT_ID, compareConfig, displayCell, formatValue, loadJson,
-  normalizeDemo, sessionContext, usersBySession,
+  loadDeclaredProductInfo, normalizeDemo, sessionContext, usersBySession,
 } from "../src/data.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
@@ -108,6 +108,23 @@ test("loadJson reports empty, malformed and HTTP errors", async () => {
   assert.match((await loadJson("x", fakeFetch(read("./fixtures/malformed.json")))).error, /JSON/);
   assert.match((await loadJson("x", fakeFetch("", 404))).error, /404/);
   assert.deepEqual((await loadJson("x", fakeFetch('{"a":1}'))).data, { a: 1 });
+});
+
+test("product lookup is not requested unless demo provenance declares a file", async () => {
+  const requests = [];
+  const missing = await loadDeclaredProductInfo(null, async (url) => {
+    requests.push(url);
+    return { ok: true, text: async () => "{}" };
+  });
+  assert.deepEqual(missing, { data: null, error: null, requested: false });
+  assert.deepEqual(requests, []);
+
+  const declared = await loadDeclaredProductInfo("product-info.json", async (url) => {
+    requests.push(url);
+    return { ok: true, text: async () => '{"data_kind":"real","products":{}}' };
+  });
+  assert.equal(declared.requested, true);
+  assert.deepEqual(requests, ["product-info.json"]);
 });
 
 test("formatting never turns missing into zero", () => {

@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from export_demo_data import export_run, sample_runs, subset_catalogs
+from export_demo_data import export_run, public_product_lookup_path, sample_runs, subset_catalogs
 
 
 class PredictionAdapterTest(unittest.TestCase):
@@ -35,6 +35,14 @@ class PredictionAdapterTest(unittest.TestCase):
 
     def write(self, path, data):
         path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+
+    def test_optional_product_lookup_path_is_relative_json_or_null(self):
+        self.assertIsNone(public_product_lookup_path(None))
+        self.assertEqual(public_product_lookup_path("product-info.json"), "product-info.json")
+        self.assertEqual(public_product_lookup_path("metadata/products.json"), "metadata/products.json")
+        for path in ("/product-info.json", "../product-info.json", "product-info.csv", r"..\product-info.json"):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                public_product_lookup_path(path)
 
     def test_maps_history_and_target_and_ignores_validation_files(self):
         row, = export_run(self.run, self.catalog)["sessions"]
