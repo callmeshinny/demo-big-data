@@ -47,9 +47,9 @@
 
 *Tiếng Việt. Với lưu trữ, nhóm lưu cùng một tập sự kiện dưới dạng CSV và Parquet, dấu vân tay dữ liệu trùng khớp. Theo phân tích của TV2, Parquet nhỏ hơn khoảng năm lần và đọc nhanh hơn khoảng bốn lần, nhưng tổng thời gian tiền xử lý gần như không đổi, vì bước đọc chỉ là một phần nhỏ của pipeline.*
 
-**English.** E5 reuses the verified E2 runs. The bottleneck moves from preprocessing at 10% to training at 100%, so faster reading alone will not fix it at scale. Time per million events is 66.7, 56.9, 55.8 and 55.6 seconds, as fixed costs spread over more data.
+**English.** E5 reuses the verified E2 runs. The bottleneck moves from preprocessing at 10% to training at 100%, so faster reading alone will not fix it at scale. Time per million events is 66.7, 56.9, 55.8 and 55.6 seconds, consistent with fixed costs being spread over more data.
 
-*Tiếng Việt. E5 dùng lại các lượt E2 đã xác minh. Nút thắt chuyển từ tiền xử lý ở 10% sang huấn luyện ở 100%, nên chỉ đọc nhanh hơn sẽ không giải quyết được ở quy mô lớn. Thời gian cho mỗi triệu sự kiện lần lượt là 66.7, 56.9, 55.8 và 55.6 giây, vì chi phí cố định được chia cho nhiều dữ liệu hơn.*
+*Tiếng Việt. E5 dùng lại các lượt E2 đã xác minh. Nút thắt chuyển từ tiền xử lý ở 10% sang huấn luyện ở 100%, nên chỉ đọc nhanh hơn sẽ không giải quyết được ở quy mô lớn. Thời gian cho mỗi triệu sự kiện lần lượt là 66.7, 56.9, 55.8 và 55.6 giây, phù hợp với việc chi phí cố định được chia cho nhiều dữ liệu hơn.*
 
 ## Likely questions
 
