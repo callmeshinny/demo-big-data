@@ -1,6 +1,6 @@
 # TV4 demo work handoff
 
-Snapshot: 25 November 2026  
+Snapshot: 26 November 2026 (UI refresh appended below; earlier steps from 25 November)\
 Repository: `tv4-demo-web`  
 Official source package: `tv2-20261124` from the adjacent read-only `../Big-Data` repository.
 
@@ -59,3 +59,24 @@ Ten screen-to-package spot checks are documented in the Step 12 report from the 
 ## Current stopping point
 
 Step 13 adds the checksum-verified real E1 sample and Recommendation UI; TV1 product metadata remains pending. No team-repository files were changed and nothing was pushed.
+
+## UI refresh 26/11 — Apple-inspired design and TV2 reviewer feedback
+
+Local commits on `main` (not pushed). The team repository was not touched.
+
+| Step | Work |
+|---|---|
+| 1 | Design tokens, five-step type scale, colour meanings, model colours; contrast test covers HC and glass |
+| 2 | Selective translucency (header, control bars, tooltips/popovers, method details) with solid fallbacks |
+| 3 | Hash routes per tab and experiment, link navigation, E1–E5 segmented subtitles, single About popover |
+| 4 | Recommendation layout from the review: control bar, History + Actual next item + Hit/Miss sentence above the fold, linked hit row, E1 strip, closed Method details |
+| 5 | Presenter mode (`?present=1`, header switch, remembered) |
+| 6 | Shared formatter (`src/format.js`), unit-tested for every branch |
+| 7–9 | Experiments: takeaways from JSON, interactive charts linked to tables, units in headers, one notes block, empty-state rule, E3 validation framing, E5 runtime/normalized charts and E2 link |
+| 10 | Glossary ⓘ popovers |
+| 11 | Remaining 25/11 and 26/11 audit items (code-chip contrast, 5V grid, table alignment, Dataset title) |
+| 12 | Allowed cross-links: Recommendation E1 strip → E1; E5 level → E2 level; Dataset subset → E2 level |
+| 13 | `scripts/check_ui.mjs` (`npm run test:e2e`), `tests/test_official_values.py`, chart/presenter/format tests; screenshots in `/tmp/tv4-after/` (outside the repo) |
+| 14 | DEMO_SCRIPT (presenter notes, E2 paragraph, on-screen rounding), DEMO_DAY order, CONTEXT, this handoff |
+
+Open items for humans: confirm Windows High Contrast on the presentation laptop (forced colours cannot be judged from headless screenshots); the `public/sample-predictions.csv` Git exception (AGENTS rule 9) is unchanged and still needs a decision.

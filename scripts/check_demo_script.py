@@ -12,9 +12,10 @@ REQUIRED_QUESTIONS = (
     "Why might the sample be browsing-heavy?",
     "What does the Recommendation tab show?",
 )
+# Rounded exactly as the UI shows them (src/format.js: 4 decimals for ratios, 3 significant digits for times).
 DISPLAY_VALUES = (
-    "0.1249", "0.1964", "65.94", "0.1299", "44.77", "127.8 MiB",
-    "24.2 MiB", "0.454", "0.109", "34.99", "33.57",
+    "0.1249", "0.0883", "0.3899", "0.1964", "65.9", "0.1299", "44.8", "127.8 MiB",
+    "24.2 MiB", "0.454", "0.109", "35.0", "33.6",
     "66.7, 56.9, 55.8 and 55.6",
 )
 

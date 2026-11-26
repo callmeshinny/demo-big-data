@@ -11,16 +11,20 @@
    ```
 
 3. For the hosted demo, open [https://demo-big-data.onrender.com/](https://demo-big-data.onrender.com/) and confirm the page loads. For a local demo, start Vite with `npm run dev`.
-4. Open Recommendations, Dataset and Experiments E1–E5 once from the segmented control at the top. Confirm the real E1 badge, 30/1,337 hash-sample note, and three enabled model choices. The page follows the system light or dark appearance.
+4. Open Recommendations, Dataset and Experiments E1–E5 once from the segmented control at the top. Confirm the one badge “Real E1 predictions · Showing 30 of 1,337 sessions” and three model choices. The page follows the system light or dark appearance.
+5. Turn on **Presenter mode** in the header (or open `?present=1`). It is remembered on this browser.
 
 ## Live three-minute walkthrough
 
-1. **Dataset:** explain session-based next-item prediction and the weekly cuDF subsets. Point out the official population, cleaning and split tables.
-2. **Experiments → E1 · Models:** show Recall@20 and NDCG@20 across Popularity, GRU and XLNet. Say that this is one run and seed.
-3. **E3 · Batch size:** explain the validation batch-size tradeoff. Point out the validation note and avoid comparing it directly with E1/E2 test.
-4. **E4 · CSV vs Parquet:** compare file size and read time, then preprocessing wall time. Mention warm-cache conditions and that preprocessing already includes reading.
-5. **E5 · Scalability:** show composed time and seconds per million events against event count; units are in the axis titles. State that the composed metric excludes shared first-seen and is not observed end-to-end wall time.
-6. **Recommendations:** choose a real session, show its interactions, actual next item, hit rank or miss, and the model’s ordered Top-20. On a hit, the target row and the Actual next item panel share a green bar and read “Hit at rank N”. For a hit with every model, use the session named in the presenter tip inside “Method details & sources” (computed from the data). Explain that the fixed seed-1 sample is outcome-independent and that official E1 scores are not recomputed on this sample. Models export ranked IDs only, so the Top-20 has no Score column; the page replays saved outputs and never retrains or runs live inference.
+The order matches [DEMO_SCRIPT.md](DEMO_SCRIPT.md): Dataset → Recommendations → E1 → E2 → E3 → E4 → E5.
+
+1. **Dataset:** explain session-based next-item prediction and the weekly cuDF subsets. Point out the official population, cleaning and split tables. Each subset column links to its E2 result.
+2. **Recommendations:** click the presenter tip “Try session X: hit for all 3 models” (X is computed from the data; currently 21546). Show the interaction history, the actual next item and the sentence “Hit — the actual item is ranked N of 20”. Hover the green row in the Top-20: the Actual next item panel highlights too. Switch models with the segmented control. Explain that the fixed seed-1 sample is outcome-independent, that the E1 strip below the list is the official full-test result (not recomputed on this sample), and that the page replays saved outputs (no Score column, no live inference).
+3. **Experiments → E1 · Model comparison:** read the takeaway sentence. Click the XLNet bar: the other bars dim and the XLNet table column highlights. Press Esc. Say this is one run and one seed.
+4. **E2 · Data size:** read the takeaway (Recall@20 at 10% and 100%). Say that test data and catalog change with the subset, so it is not a pure train-size effect.
+5. **E3 · Train batch (validation):** point at the Validation badge and the “held constant” note. Do not compare with E1/E2 test.
+6. **E4 · CSV vs Parquet:** compare file size (MiB) and read time; preprocessing wall time already includes reading. Mention warm-cache conditions.
+7. **E5 · Scalability:** show composed time and seconds per million events against event count (axes start at zero). Click a point to show its tooltip and the link to the same E2 level. State that composed time excludes shared first-seen and is not observed end-to-end wall time.
 
 Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the bilingual talk track and Q&A. Read detailed values from the screen so labels, units and source IDs remain visible.
 
@@ -40,7 +44,7 @@ Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the bilingual talk track and Q&A. Read 
    ```
 
 3. Open the local preview URL in the browser. The built site is static and uses the JSON files shipped in `public/`.
-4. If the preview browser is unavailable, present screenshots from `screenshots/en/` or `screenshots/vi/` at 1280 px or 375 px. Choose `recommendation`, `recommendation-hit`, `recommendation-miss`, `dataset`, and `experiments-e1` through `experiments-e5`.
+4. If the preview browser is unavailable, present screenshots from `screenshots/` (`<lang>-<light|dark>-<1280|375>-<view>.png`). The recommendation shot uses the all-model hit session; also choose `dataset` and `experiments-e1` through `experiments-e5`.
 
 ## Recovery notes
 

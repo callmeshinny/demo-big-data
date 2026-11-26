@@ -1,5 +1,12 @@
 # TV4 demo talk track
 
+## Presenter notes (not spoken)
+
+- **Presenter mode.** Turn on **Presenter mode** in the header, or open the site with `?present=1` (for example `https://demo-big-data.onrender.com/?present=1`). Text grows to 18 px, chart labels to 16 px, glass is turned off and measurement notes start collapsed. The choice is remembered on this browser; turn it off with the same switch or `?present=0`.
+- **Session to show.** The control bar shows “Try session X: hit for all 3 models”. X is computed from `public/demo-data.json` as the first session, in sample order, that every model ranks in its Top-20. With the current data it is **21546** (Popularity rank 7, GRU rank 13, XLNet rank 5). Click the tip to load it; the History, Actual next item and the Hit/Miss sentence fit above the fold at 1280×800. Session 46465 (the default, first in sample order) is a miss for all three models.
+- **Clicking charts during the talk.** In every E panel, hover or tap a bar/point to see its tooltip (value, raw value, unit, run ID, source file). Click to select it: the other marks dim and the matching table column is highlighted. Click again or press **Esc** to clear. Arrow keys move between marks. In E5, selecting a level shows “Open the N% run in E2 →”. In E2, the same level arrives preselected.
+- **Numbers.** Every number on screen comes from `public/*.json`. Read the rounded values shown on screen: Recall/NDCG to 4 decimals, times to 3 significant digits, sizes in MiB. The exact value is in each tooltip. The values below match the screen.
+
 ## Three-minute walkthrough
 
 ### Dataset
@@ -14,27 +21,31 @@
 
 ### Recommendations
 
-**English.** The Recommendation tab replays official E1 test predictions for Popularity, GRU and XLNet. It shows 30 of 1,337 sessions, selected across all models by the seed-1 SHA-256 rule on session ID. Selection is independent of hit or miss. Choose a session to see its history, actual next product and model-ordered Top-20.
+**English.** The Recommendation tab replays official E1 test predictions for Popularity, GRU and XLNet. It shows 30 of 1,337 sessions, selected by the seed-1 SHA-256 rule on session ID, independent of hit or miss. Choose a model and session to see the history, the actual next product and the model-ordered Top-20.
 
 *Tiếng Việt. Tab Recommendation phát lại dự đoán test E1 chính thức của Popularity, GRU và XLNet. Tab hiển thị 30 trong 1.337 phiên, chọn theo cùng quy tắc SHA-256 với seed 1 cho cả ba mô hình. Quy tắc băm mã phiên nên việc chọn không phụ thuộc mô hình có dự đoán trúng hay không. Chọn phiên để xem lịch sử tương tác, sản phẩm tiếp theo thực tế và Top-20 theo thứ tự mô hình.*
 
-**English.** A hit means the actual product ID appears in Top-20; otherwise it is a miss. Recall@20 and NDCG@20 beside the selector are official full-test E1 metrics, not recomputed from these 30 sessions. Models export ranked IDs only, so there is no Score column and cards show original IDs. This is saved-output replay, not live inference or retraining.
+**English.** A hit means the actual product ID appears in the Top-20; the sentence under the actual item gives its rank. The E1 strip below the list shows official full-test metrics, not values recomputed from these 30 sessions. Models export ranked IDs only, so there is no Score column. This is saved-output replay, not live inference.
 
-*Tiếng Việt. Target được tô sáng là dự đoán trúng nếu mã sản phẩm gốc xuất hiện trong danh sách; nếu không, đó là phiên trượt. Recall@20 và NDCG@20 cạnh bộ chọn mô hình là metric chính thức trên toàn bộ test E1, không phải điểm tính lại trên 30 phiên đang hiển thị. Model chỉ xuất mã sản phẩm theo thứ hạng, nên không có cột Điểm và thẻ hiển thị mã sản phẩm gốc. Đây là phát lại output đã lưu, không phải suy luận trực tiếp hay chạy huấn luyện mới.*
+*Tiếng Việt. Dự đoán trúng nghĩa là mã sản phẩm thực tế nằm trong Top-20; câu dưới sản phẩm thực tế cho biết thứ hạng. Dải E1 bên dưới danh sách là metric chính thức trên toàn bộ test, không phải giá trị tính lại trên 30 phiên này. Model chỉ xuất mã sản phẩm theo thứ hạng, nên không có cột Điểm. Đây là phát lại output đã lưu, không phải suy luận trực tiếp.*
 
 ### Experiments
 
-**English.** E1 compares the three models under the delivered test protocol. XLNet leads Recall@20 at 0.1249 in this single run. Treat this as a descriptive result from one seed, not evidence of repeat-run stability. Metrics come from the official package; the recommendation sample is for inspecting examples.
+**English.** E1 compares the three models under the delivered test protocol. XLNet leads Recall@20 at 0.1249 in this single run. Treat this as a descriptive result from one seed, not evidence of repeat-run stability.
 
-*Tiếng Việt. E1 so sánh ba mô hình theo protocol test đã bàn giao. Trong lần chạy đơn lẻ này, XLNet có Recall@20 cao nhất: 0.1249. Đây là kết quả của một lần chạy và một seed, không phải bằng chứng về độ ổn định qua nhiều lần chạy. Metric lấy từ package chính thức; mẫu recommendation dùng để xem từng ví dụ.*
+*Tiếng Việt. E1 so sánh ba mô hình theo protocol test đã bàn giao. Trong lần chạy đơn lẻ này, XLNet có Recall@20 cao nhất: 0.1249. Đây là kết quả của một lần chạy và một seed, không phải bằng chứng về độ ổn định qua nhiều lần chạy.*
 
-**English.** E3 compares train batches 32 and 128 on validation, holding other conditions fixed. Batch 32 gives Recall@20 0.1964 and process wall 65.94 seconds; batch 128 gives 0.1299 and 44.77 seconds. This validation tradeoff is not directly comparable with E1 or E2 test accuracy.
+**English.** E2 trains GRU on each nested subset. Test Recall@20 is 0.0883 at 10% and 0.3899 at 100%. The test data and catalog change with the subset, so this is not a pure train-size effect.
 
-*Tiếng Việt. E3 so sánh batch huấn luyện 32 và 128 trên validation, giữ các điều kiện khác cố định. Batch 32 có Recall@20 là 0.1964 và thời gian tiến trình 65.94 giây; batch 128 lần lượt là 0.1299 và 44.77 giây. Đây là sự đánh đổi trên validation, không nên so sánh trực tiếp độ chính xác với test E1 hoặc E2.*
+*Tiếng Việt. E2 huấn luyện GRU trên từng tập con lồng nhau. Recall@20 trên test là 0.0883 ở 10% và 0.3899 ở 100%. Dữ liệu test và catalog thay đổi theo tập con, nên đây không chỉ là ảnh hưởng của kích thước tập huấn luyện.*
 
-**English.** E4 reports CSV at 127.8 MiB and Parquet at 24.2 MiB. Reads take 0.454 and 0.109 seconds; preprocessing including read takes 34.99 and 33.57 seconds. The package measured a warm cache, so these results describe that run, not every storage setup.
+**English.** E3 compares train batches 32 and 128 on validation, holding other conditions fixed. Batch 32 gives Recall@20 0.1964 and process wall 65.9 seconds; batch 128 gives 0.1299 and 44.8 seconds. This validation tradeoff is not directly comparable with E1 or E2 test accuracy.
 
-*Tiếng Việt. E4 ghi nhận CSV có dung lượng 127.8 MiB và Parquet 24.2 MiB. Thời gian đọc lần lượt là 0.454 giây với CSV và 0.109 giây với Parquet. Thời gian preprocessing wall, vốn đã bao gồm đọc dữ liệu, lần lượt là 34.99 và 33.57 giây. Package đo trong điều kiện cache ấm, nên đây là số liệu của lần chạy đó, không đại diện cho mọi hệ thống lưu trữ.*
+*Tiếng Việt. E3 so sánh batch huấn luyện 32 và 128 trên validation, giữ các điều kiện khác cố định. Batch 32 có Recall@20 là 0.1964 và thời gian tiến trình 65.9 giây; batch 128 lần lượt là 0.1299 và 44.8 giây. Đây là sự đánh đổi trên validation, không nên so sánh trực tiếp độ chính xác với test E1 hoặc E2.*
+
+**English.** E4 reports CSV at 127.8 MiB and Parquet at 24.2 MiB. Reads take 0.454 and 0.109 seconds; preprocessing including read takes 35.0 and 33.6 seconds. The package measured a warm cache, so these results describe that run, not every storage setup.
+
+*Tiếng Việt. E4 ghi nhận CSV có dung lượng 127.8 MiB và Parquet 24.2 MiB. Thời gian đọc lần lượt là 0.454 giây với CSV và 0.109 giây với Parquet. Thời gian preprocessing wall, vốn đã bao gồm đọc dữ liệu, lần lượt là 35.0 và 33.6 giây. Package đo trong điều kiện cache ấm, nên đây là số liệu của lần chạy đó, không đại diện cho mọi hệ thống lưu trữ.*
 
 **English.** E5 reuses verified E2 runs across four subset sizes. Normalized time is 66.7, 56.9, 55.8 and 55.6 seconds per million events. Composed time excludes shared first-seen and is not observed end-to-end wall time. These measured curves do not guarantee throughput.
 
@@ -92,4 +103,4 @@
 
 ## Sources
 
-Values are copied from package `tv2-20261124`, chiefly `E1.csv`, `E3.csv`, `E4.csv`, and `E5.csv`. Limitations are from `manifest.json → limits` and `data_dictionary.json`.
+Values are copied from package `tv2-20261124`, chiefly `E1.csv`, `E2.csv`, `E3.csv`, `E4.csv`, and `E5.csv`, and rounded as the UI shows them. Limitations are from `manifest.json → limits` and `data_dictionary.json`.
