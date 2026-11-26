@@ -1,164 +1,264 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { t } from "./i18n.js";
-import { EXPERIMENTS } from "./data.js";
+import { EXPERIMENTS, modelLabel } from "./data.js";
 import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
-import { buildE3E4View, buildScalingView, chartLayout, formatE3Context } from "./scaling.js";
-import { formatCount, formatSeconds } from "./format.js";
+import { buildE3E4View, buildScalingView, formatE3Context } from "./scaling.js";
+import { formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
 import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 import { experimentHref } from "./navigation.js";
+import { BarChart, LineChart, useSelection } from "./Chart.jsx";
+import { usePresenter } from "./presenter.js";
+import { modelColourKey } from "./Recommendation.jsx";
 
-function OfficialE1Panel({ results }) {
-  const view = buildE1View(results);
-  return <section className="panel e1-panel">
-    <div className="panel-heading"><h2>{t("e1_model_comparison")}</h2></div>
-    <p className="e1-context">{formatE1Context(view.context)}</p>
-    <div className="table-scroll"><table className="metric-table e1-table">
-      <caption className="sr-only">{t("e1_model_comparison")}</caption>
-      <thead><tr><th scope="col">{t("metric")}</th>{view.models.map(({ label }) => <th scope="col" key={label}>{label}</th>)}</tr></thead>
-      <tbody>{view.rows.map((row) => <tr key={row.field}>
-        <th scope="row">{row.label}</th>{row.cells.map((cell, index) => <td key={`${row.field}/${index}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>)}
-      </tr>)}</tbody>
-    </table></div>
-    <aside className="e1-footnotes">
-      <p>{t("e1_fair_statement")}</p>
-      <ul>{view.notes.map(({ label, dictionaryKey }) => <li key={dictionaryKey}><strong>{label}:</strong> <InterpretationNote dictionaryKey={dictionaryKey} /></li>)}</ul>
-    </aside>
-    <PanelConfigDetails results={results} runIds={view.models.map(({ run }) => run?.run_id).filter(Boolean)} />
+const basename = (value) => (typeof value === "string" && value ? value.split("/").at(-1) : null);
+const missingText = () => t("MISSING");
+
+/** One chart point from a delivered value; `formatter` is the shared formatter for its unit. */
+function point({ key, label, value, formatter, unit, runId, source, colour, x, displayUnit }) {
+  const full = formatter(value, displayUnit);
+  const short = formatNumberOnly(formatter, value, displayUnit).text;
+  return { key, label, y: isMissing(value) ? null : value, short, display: full.text, raw: full.raw, unit, runId, source, colour, x };
+}
+
+/** Panel shell: title + subtitle, one plain-language takeaway, charts, table, one shared note block. */
+function Panel({ id, title, subtitle, badge, takeaway, children }) {
+  return <section className="panel experiment-panel" id={`panel-${id.toLowerCase()}`} aria-labelledby={`title-${id}`}>
+    <header className="experiment-head">
+      <h2 id={`title-${id}`}>{title}{badge}</h2>
+      {subtitle && <p className="experiment-subtitle">{subtitle}</p>}
+    </header>
+    {takeaway && <p className="takeaway">{takeaway}</p>}
+    {children}
   </section>;
 }
 
-function OfficialE2Panel({ results }) {
-  const { e2Table } = buildScalingView(results);
-  return <section className="panel scaling-panel">
-    <div className="panel-heading"><h2>{t("e2_effect_of_dataset_size")}</h2></div>
-    <div className="table-scroll"><table className="metric-table scaling-table">
-      <caption className="sr-only">{t("e2_effect_of_dataset_size")}</caption>
-      <thead><tr><th scope="col">{t("metric")}</th>{e2Table.columns.map((column) => <th scope="col" key={column.runId}>
-        <strong>{column.subset}%</strong><span className="column-subtitle" title={column.events.raw}>{column.events.text} {t("events")}</span>
+/** Notes under a table: one block. In presenter mode it starts collapsed. */
+function Notes({ children }) {
+  const presenter = usePresenter();
+  return presenter
+    ? <details className="notes"><summary>{t("measurement_notes")}</summary>{children}</details>
+    : <aside className="notes" aria-label={t("measurement_notes")}>{children}</aside>;
+}
+
+/**
+ * Metric × run table. Each run is a column: its header is a button that selects the matching chart
+ * mark, and clicking any cell in the column does the same. Units live in the row labels.
+ * If no cell has a value, one empty state replaces the table.
+ */
+function MetricTable({ caption, columns, rows, selected, onSelect, waitingDetails, className = "" }) {
+  const allMissing = rows.every((row) => row.cells.every((cell) => cell.text === missingText() || cell.text === t("not_measured")));
+  if (allMissing) {
+    return <div className="empty-state" role="status">
+      <strong>{t("waiting_for_tv2_package")}</strong>
+      {waitingDetails}
+    </div>;
+  }
+  const select = (key) => onSelect(selected === key ? null : key);
+  return <>
+    <p className="scroll-hint">{t("scroll_sideways")}</p>
+    <div className="table-scroll"><table className={`metric-table ${className}`}>
+      <caption className="sr-only">{caption}</caption>
+      <thead><tr><th scope="col">{t("metric")}</th>{columns.map((column) => <th scope="col" key={column.key} className={selected === column.key ? "is-selected" : undefined}>
+        <button type="button" className="column-select" aria-pressed={selected === column.key} onClick={() => select(column.key)} title={column.title}>
+          {column.colour && <span className={`model-dot model-${column.colour}`} aria-hidden="true" />}
+          <span>{column.header}{column.sub && <span className="column-subtitle">{column.sub}</span>}</span>
+        </button>
       </th>)}</tr></thead>
-      <tbody>{e2Table.rows.map((row, rowIndex) => <tr key={row.field}>
-        <th scope="row">{row.label}</th>{e2Table.columns.map((column) => {
-          const cell = column.cells[rowIndex];
-          return <td key={`${row.field}/${column.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
-        })}
-      </tr>)}</tbody>
+      <tbody>{rows.map((row) => <React.Fragment key={row.field}>
+        {row.group && <tr className="group-row"><th scope="rowgroup" colSpan={columns.length + 1}>{row.group}</th></tr>}
+        <tr className={row.primary ? "primary-row" : undefined}>
+          <th scope="row">{row.label}</th>
+          {row.cells.map((cell, index) => {
+            const key = columns[index].key;
+            const absent = cell.text === missingText() || cell.text === t("not_measured");
+            const classes = [absent ? "missing" : row.text ? "stage-value" : "num", selected === key && "is-selected"].filter(Boolean).join(" ");
+            return <td key={`${row.field}/${key}`} title={cell.raw} className={classes} onClick={() => select(key)}>{cell.text}</td>;
+          })}
+        </tr>
+      </React.Fragment>)}</tbody>
     </table></div>
-    <p className="scaling-shared"><strong title={String(e2Table.firstSeen)}>{t("e2_first_seen_shared", formatSeconds(e2Table.firstSeen).text)}</strong></p>
-    <InterpretationNote dictionaryKey="first_seen_shared" />
-    <InterpretationNote dictionaryKey="E2_accuracy" />
-    <PanelConfigDetails results={results} runIds={e2Table.columns.map(({ runId }) => runId)} />
-  </section>;
+  </>;
 }
 
-/** Width of an element in CSS pixels, so the chart draws text at its real size. */
-function useWidth(fallback) {
-  const ref = useRef(null);
-  const [width, setWidth] = useState(fallback);
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || typeof ResizeObserver === "undefined") return undefined;
-    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(240, Math.floor(entry.contentRect.width))));
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, width];
+/** "Selected: …" line under the charts, with Clear and an optional allowed cross-link. */
+function SelectionBar({ label, onClear, link }) {
+  if (!label) return <p className="selection-bar muted">{t("chart_hint")}</p>;
+  return <p className="selection-bar" role="status">
+    <span>{t("selected_item", label)}</span>
+    {link}
+    <button type="button" className="link-button" onClick={onClear}>{t("clear_selection")}</button>
+  </p>;
 }
 
-function E5Chart({ chart }) {
-  const [ref, width] = useWidth(600);
-  const height = width < 420 ? 260 : 300;
-  const layout = chartLayout(chart.series, { width, height, formatValue: chart.formatValue });
-  const { padding, points } = layout;
-  const path = points.map((point, index) => `${index ? "L" : "M"}${point.cx},${point.cy}`).join(" ");
-  return <figure className="scaling-chart">
-    <figcaption>{chart.title}</figcaption>
-    <div ref={ref} className="chart-frame">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${chart.title}. ${chart.yLabel}`}>
-        {layout.ticks.map((tick) => <g key={tick.key}>
-          <line x1={padding.left} y1={tick.cy} x2={padding.right} y2={tick.cy} className="chart-gridline" />
-          {tick.visible && <text x={tick.x} y={tick.y} textAnchor="end" className="chart-tick">{tick.text}</text>}
-        </g>)}
-        <line x1={padding.left} y1={padding.bottom} x2={padding.right} y2={padding.bottom} className="chart-axis" />
-        <line x1={padding.left} y1={padding.top} x2={padding.left} y2={padding.bottom} className="chart-axis" />
-        <text x={layout.xTitle.x} y={layout.xTitle.y} textAnchor="middle" className="chart-axis-label">{t("e5_x_axis_events")}</text>
-        <text x={layout.yTitle.x} y={layout.yTitle.y} textAnchor="middle" transform={`rotate(-90 ${layout.yTitle.x} ${layout.yTitle.y})`} className="chart-axis-label">{chart.yLabel}</text>
-        {layout.xLabels.map((label) => label.visible && <text key={label.key} x={label.x} y={label.y} textAnchor="middle" className="chart-tick">{label.text}</text>)}
-        <path d={path} className="chart-line" />
-        {points.map((point, index) => <g key={point.runId}>
-          <circle cx={point.cx} cy={point.cy} r="5" className="chart-point"><title>{`${formatCount(point.x).text} · ${chart.formatValue(point.y).text} · ${point.runId}`}</title></circle>
-          {layout.pointLabels[index].visible && <text x={layout.pointLabels[index].x} y={layout.pointLabels[index].y} textAnchor={layout.pointLabels[index].anchor} className="chart-value">{layout.pointLabels[index].text}</text>}
-        </g>)}
-      </svg>
+function E1Panel({ results }) {
+  const view = buildE1View(results);
+  const [selected, setSelected] = useSelection();
+  const runs = view.models;
+  const chartPoints = (field, formatter) => runs.map(({ label, run }) => point({
+    key: label, label, value: run?.[field], formatter, runId: run?.run_id, source: basename(run?.source_metrics), colour: modelColourKey(label),
+  }));
+  const recall = chartPoints("Recall@20", formatRatio);
+  const ndcg = chartPoints("NDCG@20", formatRatio);
+  const ranked = recall.filter((p) => p.y != null).sort((a, b) => b.y - a.y);
+  const takeaway = ranked.length >= 2
+    ? t("e1_takeaway", ranked[0].label, ranked[0].display, ranked.at(-1).label, ranked.at(-1).display)
+    : missingText();
+  const rows = view.rows.map((row, index) => ({ ...row, primary: index < 2, group: index === 2 ? t("time_and_memory_secondary") : null }));
+  return <Panel id="E1" title={`E1 · ${t("experiment_nav_e1")}`} subtitle={formatE1Context(view.context)} takeaway={takeaway}>
+    <p className="fair-note">{t("e1_fair_note")}</p>
+    <div className="charts">
+      <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={recall} selected={selected} onSelect={setSelected} />
+      <BarChart title={`${t("e1_ndcg_20")} (${t("test_split")})`} metric={t("e1_ndcg_20")} yLabel={t("e1_ndcg_20")} points={ndcg} selected={selected} onSelect={setSelected} />
     </div>
-  </figure>;
+    <SelectionBar label={selected} onClear={() => setSelected(null)} />
+    <MetricTable caption={t("e1_model_comparison")} className="e1-table" selected={selected} onSelect={setSelected}
+      columns={runs.map(({ label, run }) => ({ key: label, header: label, colour: modelColourKey(label), title: run?.run_id }))} rows={rows}
+      waitingDetails={<PanelConfigDetails results={results} runIds={runs.map(({ run }) => run?.run_id).filter(Boolean)} />} />
+    <Notes>
+      <p className="notes-title">{t("measurement_scope")}</p>
+      <ul>{view.notes.map(({ label, dictionaryKey }) => <li key={dictionaryKey}><strong>{label}:</strong> <InterpretationNote dictionaryKey={dictionaryKey} /></li>)}</ul>
+    </Notes>
+    <PanelConfigDetails results={results} runIds={runs.map(({ run }) => run?.run_id).filter(Boolean)} />
+  </Panel>;
 }
 
-function OfficialE5Panel({ results }) {
-  const { e5Table, charts, registrySummary } = buildScalingView(results);
-  return <section className="panel scaling-panel">
-    <div className="panel-heading"><h2>{t("e5_scalability")}</h2></div>
-    {results.E5_aggregation_only === true && <InterpretationNote dictionaryKey="E5_derived_from_E2" source={t("source_metrics_flag", "E5_aggregation_only")} />}
-    {registrySummary && <p className="registry-summary">{t(
-      "run_registry_summary",
-      registrySummary.passed,
-      registrySummary.derived_from_verified_E2,
-      registrySummary.excluded,
-    )}</p>}
-    <div className="table-scroll"><table className="metric-table scaling-table e5-table">
-      <caption className="sr-only">{t("e5_scalability")}</caption>
-      <thead><tr><th scope="col">{t("metric")}</th>{e5Table.columns.map((column) => <th scope="col" key={column.runId}>{column.subset}%</th>)}</tr></thead>
-      <tbody>{e5Table.rows.map((row) => <tr key={row.field}>
-        <th scope="row">{row.label}</th>{row.cells.map((cell, index) => <td key={`${row.field}/${index}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : row.field === "bottleneck" ? "stage-value" : "num"}>{cell.text}</td>)}
-      </tr>)}</tbody>
-    </table></div>
-    <div className="scaling-charts">{charts.map((chart) => <E5Chart key={chart.id} chart={chart} />)}</div>
-    <InterpretationNote dictionaryKey="E5_composed" />
-    <PanelConfigDetails results={results} runIds={e5Table.columns.map(({ runId }) => runId)} />
-  </section>;
+function E2Panel({ results, initial }) {
+  const { e2Table } = buildScalingView(results);
+  const runs = [...(results?.tables?.E2 ?? [])].sort((a, b) => a.subset - b.subset);
+  const [selected, setSelected] = useSelection(runs.some((run) => String(run.subset) === initial) ? initial : null);
+  const model = modelLabel(runs[0]?.model);
+  const colour = modelColourKey(runs[0]?.model);
+  const chartPoints = (field) => runs.map((run) => point({
+    key: String(run.subset), label: `${run.subset}%`, value: run[field], formatter: formatRatio, runId: run.run_id, source: basename(run.source_metrics), colour,
+  }));
+  const first = runs[0], last = runs.at(-1);
+  const takeaway = first && last ? t("e2_takeaway", model, formatRatio(first["Recall@20"]).text, first.subset, formatCount(first.n_events).text, formatRatio(last["Recall@20"]).text, last.subset, formatCount(last.n_events).text) : missingText();
+  return <Panel id="E2" title={`E2 · ${t("experiment_nav_e2")}`} subtitle={t("e2_subtitle", model)} takeaway={takeaway}>
+    <div className="charts">
+      <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20")} selected={selected} onSelect={setSelected} />
+      <BarChart title={`${t("e1_ndcg_20")} (${t("test_split")})`} metric={t("e1_ndcg_20")} yLabel={t("e1_ndcg_20")} points={chartPoints("NDCG@20")} selected={selected} onSelect={setSelected} />
+    </div>
+    <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)} />
+    <MetricTable caption={t("e2_effect_of_dataset_size")} className="scaling-table" selected={selected} onSelect={setSelected}
+      columns={e2Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: `${column.events.text} ${t("events")}`, title: column.runId }))}
+      rows={e2Table.rows.map((row, rowIndex) => ({ ...row, cells: e2Table.columns.map((column) => column.cells[rowIndex]) }))} />
+    <Notes>
+      <InterpretationNote dictionaryKey="E2_accuracy" />
+      <p className="interpretation-note"><span title={String(e2Table.firstSeen)}>{t("e2_first_seen_shared", formatSeconds(e2Table.firstSeen).text)}</span> <InterpretationNote dictionaryKey="first_seen_shared" /></p>
+    </Notes>
+    <PanelConfigDetails results={results} runIds={runs.map((run) => run.run_id)} />
+  </Panel>;
 }
 
-function OfficialE3Panel({ results }) {
+function heldConstant(results, runIds) {
+  const configs = runIds.map((id) => results?.configs?.[id]?.actual ?? {});
+  const value = (key) => {
+    const values = [...new Set(configs.map((config) => config[key]).filter((v) => v !== null && v !== undefined).map(String))];
+    return values.length ? values.join(" / ") : missingText();
+  };
+  return t("e3_held_constant", value("eval_batch_size"), value("epochs"), value("seed"), value("learning_rate"), value("subset"), value("split"), value("train_through"));
+}
+
+function E3Panel({ results }) {
   const { e3 } = buildE3E4View(results);
-  return <section className="panel scaling-panel">
-    <div className="panel-heading"><h2>{t("e3_effect_of_resources")}</h2></div>
-    <p className="e1-context">{formatE3Context(e3.context)}</p>
-    <div className="table-scroll"><table className="metric-table e3-table">
-      <caption className="sr-only">{t("e3_effect_of_resources")}</caption>
-      <thead><tr><th scope="col">{t("metric")}</th>{e3.models.map((run) => <th scope="col" key={run.runId}>{t("e3_train_batch_header", run.batchSize)}</th>)}</tr></thead>
-      <tbody>{e3.rows.map((row, rowIndex) => <tr key={row.field}>
-        <th scope="row">{row.label}</th>{e3.models.map((run) => {
-          const cell = run.cells[rowIndex];
-          return <td key={`${row.field}/${run.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
-        })}
-      </tr>)}</tbody>
-    </table></div>
-    <InterpretationNote dictionaryKey="inference_protocol" />
-    <InterpretationNote dictionaryKey="E3_accuracy" />
-    <PanelConfigDetails results={results} runIds={e3.models.map(({ runId }) => runId)} />
-  </section>;
+  const [selected, setSelected] = useSelection();
+  const runs = [...(results?.tables?.E3 ?? [])].sort((a, b) => a.train_batch_size - b.train_batch_size);
+  // Column headers read the train batch from the run configuration (configs → actual.batch_size).
+  const batchOf = (run) => results?.configs?.[run.run_id]?.actual?.batch_size ?? results?.configs?.[run.run_id]?.planned?.batch_size ?? run.train_batch_size;
+  const header = (run) => t("e3_train_batch_header", batchOf(run) ?? missingText());
+  const colour = modelColourKey(runs[0]?.model);
+  const chartPoints = (field, formatter) => runs.map((run) => point({
+    key: run.run_id, label: header(run), value: run[field], formatter, runId: run.run_id, source: basename(run.source_metrics), colour,
+    unit: formatter === formatSeconds ? "s" : undefined,
+  }));
+  const [a, b] = runs;
+  const takeaway = a && b ? t("e3_takeaway", batchOf(a), formatRatio(a["Recall@20"]).text, formatSeconds(a.process_wall_seconds).text, batchOf(b), formatRatio(b["Recall@20"]).text, formatSeconds(b.process_wall_seconds).text) : missingText();
+  return <Panel id="E3" title={`E3 · ${t("experiment_nav_e3")}`} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
+    subtitle={formatE3Context(e3.context)} takeaway={takeaway}>
+    <p className="fair-note">{t("e3_not_beside_test")}</p>
+    <div className="charts">
+      <BarChart title={t("e3_recall_20_validation")} metric={t("e3_recall_20_validation")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20", formatRatio)} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e1_process_wall_time_s")} metric={t("e1_process_wall_time_s")} yLabel={t("seconds_axis")} points={chartPoints("process_wall_seconds", formatSeconds)} selected={selected} onSelect={setSelected} />
+    </div>
+    <SelectionBar label={runs.find((run) => run.run_id === selected) ? header(runs.find((run) => run.run_id === selected)) : null} onClear={() => setSelected(null)} />
+    <MetricTable caption={t("e3_effect_of_resources")} className="e3-table" selected={selected} onSelect={setSelected}
+      columns={runs.map((run) => ({ key: run.run_id, header: header(run), colour, title: run.run_id }))}
+      rows={e3.rows.map((row, rowIndex) => ({ ...row, cells: e3.models.map((model) => model.cells[rowIndex]) }))} />
+    <Notes>
+      <p className="interpretation-note">{heldConstant(results, runs.map((run) => run.run_id))}</p>
+      <InterpretationNote dictionaryKey="E3_accuracy" />
+      <InterpretationNote dictionaryKey="inference_protocol" />
+    </Notes>
+    <PanelConfigDetails results={results} runIds={runs.map((run) => run.run_id)} />
+  </Panel>;
 }
 
-function OfficialE4Panel({ results }) {
+function E4Panel({ results }) {
   const { e4 } = buildE3E4View(results);
-  return <section className="panel scaling-panel">
-    <div className="panel-heading"><h2>{t("experiment_e4_csv_vs_parquet")}</h2></div>
-    <div className="table-scroll"><table className="metric-table e4-table">
-      <caption className="sr-only">{t("experiment_e4_csv_vs_parquet")}</caption>
-      <thead><tr><th scope="col">{t("metric")}</th>{e4.formats.map((format) => <th scope="col" key={format.runId}>{format.label.toUpperCase()}</th>)}</tr></thead>
-      <tbody>{e4.rows.map((row, rowIndex) => <tr key={row.field}>
-        <th scope="row">{row.label}</th>{e4.formats.map((format) => {
-          const cell = format.cells[rowIndex];
-          return <td key={`${row.field}/${format.runId}`} title={cell.raw} className={cell.text === t("MISSING") ? "missing" : "num"}>{cell.text}</td>;
-        })}
-      </tr>)}</tbody>
-    </table></div>
-    <InterpretationNote dictionaryKey="E4_preprocessing_wall" />
-    <section className="excluded-runs"><h3>{t("e4_excluded_runs")}</h3>
-      <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
-    </section>
+  const [selected, setSelected] = useSelection();
+  const runs = results?.tables?.E4 ?? [];
+  const label = (run) => String(run.format ?? missingText()).toUpperCase();
+  const chartPoints = (field, formatter, unit) => runs.map((run) => point({
+    key: run.run_id, label: label(run), value: run[field], formatter, displayUnit: unit, unit, runId: run.run_id, source: basename(run.source_metrics),
+  }));
+  const [a, b] = runs;
+  const takeaway = a && b ? t("e4_takeaway", label(a), formatBytes(a.bytes, "MiB").text, formatSeconds(a.read_seconds).text, label(b), formatBytes(b.bytes, "MiB").text, formatSeconds(b.read_seconds).text) : missingText();
+  return <Panel id="E4" title={`E4 · ${t("experiment_nav_e4")}`} subtitle={t("e4_subtitle", formatCount(a?.n_events).text)} takeaway={takeaway}>
+    <div className="charts">
+      <BarChart title={t("e4_file_size_bytes")} metric={t("e4_file_size_bytes")} yLabel={t("mib_axis")} points={chartPoints("bytes", formatBytes, "MiB")} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e4_read_time_s")} metric={t("e4_read_time_s")} yLabel={t("seconds_axis")} points={chartPoints("read_seconds", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
+    </div>
+    <SelectionBar label={runs.find((run) => run.run_id === selected) ? label(runs.find((run) => run.run_id === selected)) : null} onClear={() => setSelected(null)} />
+    <MetricTable caption={t("experiment_e4_csv_vs_parquet")} className="e4-table" selected={selected} onSelect={setSelected}
+      columns={e4.formats.map((format) => ({ key: format.runId, header: format.label.toUpperCase(), title: format.runId }))}
+      rows={e4.rows.map((row, rowIndex) => ({ ...row, cells: e4.formats.map((format) => format.cells[rowIndex]) }))} />
+    <Notes>
+      <InterpretationNote dictionaryKey="E4_preprocessing_wall" />
+      <p className="interpretation-note">{t("e4_bytes_tooltip_note")}</p>
+      <details className="excluded-runs"><summary>{t("e4_excluded_runs")}</summary>
+        <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
+      </details>
+    </Notes>
     <PanelConfigDetails results={results} runIds={e4.formats.map(({ runId }) => runId)} />
-  </section>;
+  </Panel>;
+}
+
+function E5Panel({ results }) {
+  const { e5Table, registrySummary } = buildScalingView(results);
+  const [selected, setSelected] = useSelection();
+  const e5 = [...(results?.tables?.E5 ?? [])].sort((a, b) => a.subset - b.subset);
+  const events = new Map((results?.tables?.E2 ?? []).map((row) => [row.subset, row.n_events]));
+  const chartPoints = (field, formatter) => e5.map((run) => point({
+    key: String(run.subset), label: `${run.subset}% · ${formatCount(events.get(run.subset) ?? run.n_events).text} ${t("events")}`,
+    value: run[field], formatter, runId: run.run_id, source: basename(run.source_log), x: events.get(run.subset) ?? run.n_events, unit: "s",
+  }));
+  const first = e5[0], last = e5.at(-1);
+  const takeaway = first && last ? t("e5_takeaway",
+    formatSeconds(first.composed_seconds_excluding_first_seen).text, first.subset, formatCount(first.n_events).text,
+    formatSeconds(last.composed_seconds_excluding_first_seen).text, last.subset, formatCount(last.n_events).text,
+    formatSeconds(first.seconds_per_million_events).text, formatSeconds(last.seconds_per_million_events).text) : missingText();
+  const firstSeen = e5.find((run) => !isMissing(run.first_seen_seconds_shared))?.first_seen_seconds_shared;
+  return <Panel id="E5" title={`E5 · ${t("experiment_nav_e5")}`} subtitle={t("e5_subtitle")} takeaway={takeaway}>
+    <div className="charts">
+      <LineChart title={t("e5_composed_seconds_chart")} metric={t("e5_composed_time_s")} yLabel={t("e5_composed_seconds_axis")} xLabel={t("e5_x_axis_events")}
+        points={chartPoints("composed_seconds_excluding_first_seen", formatSeconds)} selected={selected} onSelect={setSelected} />
+      <LineChart title={t("e5_normalized_seconds_chart")} metric={t("e5_seconds_per_million_events")} yLabel={t("e5_normalized_seconds_axis")} xLabel={t("e5_x_axis_events")}
+        points={chartPoints("seconds_per_million_events", formatSecondsPerMillionEvents)} selected={selected} onSelect={setSelected} />
+    </div>
+    <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)}
+      link={selected == null ? null : <a href={experimentHref("E2", selected)}>{t("open_in_e2", selected)}</a>} />
+    <MetricTable caption={t("e5_scalability")} className="scaling-table e5-table" selected={selected} onSelect={setSelected}
+      columns={e5Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: `${formatCount(events.get(column.subset)).text} ${t("events")}`, title: column.runId }))}
+      rows={e5Table.rows.map((row) => ({ ...row, text: row.field === "bottleneck" }))} />
+    <Notes>
+      {results.E5_aggregation_only === true && <InterpretationNote dictionaryKey="E5_derived_from_E2" source={t("source_metrics_flag", "E5_aggregation_only")} />}
+      <InterpretationNote dictionaryKey="E5_composed" />
+      <p className="interpretation-note"><span title={String(firstSeen)}>{t("e5_first_seen_once", formatSeconds(firstSeen).text)}</span></p>
+      {registrySummary && <p className="registry-summary">{t("run_registry_summary", registrySummary.passed, registrySummary.derived_from_verified_E2, registrySummary.excluded)}</p>}
+    </Notes>
+    <PanelConfigDetails results={results} runIds={e5Table.columns.map(({ runId }) => runId)} />
+  </Panel>;
 }
 
 export default function Experiments({ state, active, select = null }) {
@@ -167,16 +267,20 @@ export default function Experiments({ state, active, select = null }) {
   const results = state.results;
   if (!results) return <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{t("MISSING")}</Notice>;
   return <>
-    <EnvironmentCard results={results} />
+    <div className="page-head">
+      <h1 className="page-title">{t("experiments_e1_e5")}</h1>
+      <p className="page-intro">{t("experiments_intro")}</p>
+    </div>
     <nav className="segmented subtabs glass" aria-label={t("experiment_subnav")}>{EXPERIMENTS.map((id) => (
       <a key={id} href={experimentHref(id)} aria-current={id === active ? "page" : undefined}>
         <span className="subtab-label"><strong>{id}</strong> · {t(`experiment_nav_${id.toLowerCase()}`)}</span>
       </a>
     ))}</nav>
-    {active === "E1" ? <OfficialE1Panel results={results} />
-      : active === "E2" ? <OfficialE2Panel results={results} />
-        : active === "E3" ? <OfficialE3Panel results={results} />
-          : active === "E4" ? <OfficialE4Panel results={results} />
-            : <OfficialE5Panel results={results} />}
+    {active === "E1" ? <E1Panel results={results} />
+      : active === "E2" ? <E2Panel results={results} initial={select} />
+        : active === "E3" ? <E3Panel results={results} />
+          : active === "E4" ? <E4Panel results={results} />
+            : <E5Panel results={results} />}
+    <EnvironmentCard results={results} />
   </>;
 }

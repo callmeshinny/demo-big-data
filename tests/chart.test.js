@@ -1,0 +1,62 @@
+// Chart geometry and selection logic (pure functions behind src/Chart.jsx).
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { barLayout, formatTick, nextMarkIndex, niceTicks, textWidth, toggleSelection, wrapLabel } from "../src/chart-math.js";
+
+const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
+
+test("nice ticks start at zero, cover the maximum and use round steps", () => {
+  assert.deepEqual(niceTicks(0.1249).ticks, [0, 0.05, 0.1, 0.15]);
+  assert.deepEqual(niceTicks(491.2).ticks, [0, 200, 400, 600]);
+  assert.deepEqual(niceTicks(66.7).ticks, [0, 20, 40, 60, 80]);
+  assert.deepEqual(niceTicks(0).ticks, [0, 0.25, 0.5, 0.75, 1]);
+  assert.equal(formatTick(0.05, 0.05), "0.05");
+  assert.equal(formatTick(0.075, 0.025), "0.075");
+  assert.equal(formatTick(7.5, 2.5), "7.5");
+  assert.equal(formatTick(400, 200), "400");
+});
+
+test("selection: click selects, clicking again clears", () => {
+  assert.equal(toggleSelection(null, "GRU"), "GRU");
+  assert.equal(toggleSelection("GRU", "GRU"), null);
+  assert.equal(toggleSelection("GRU", "XLNet"), "XLNet");
+});
+
+test("keyboard: arrows move between marks and wrap; other keys do nothing", () => {
+  assert.equal(nextMarkIndex(0, "ArrowRight", 3), 1);
+  assert.equal(nextMarkIndex(2, "ArrowRight", 3), 0);
+  assert.equal(nextMarkIndex(0, "ArrowLeft", 3), 2);
+  assert.equal(nextMarkIndex(1, "ArrowDown", 3), 2);
+  assert.equal(nextMarkIndex(1, "Home", 3), 0);
+  assert.equal(nextMarkIndex(1, "End", 3), 2);
+  assert.equal(nextMarkIndex(1, "a", 3), null);
+});
+
+test("bar layout: zero baseline, ticks never clipped, 44 px hit areas, labels fit their band", () => {
+  const e1 = official.tables.E1.map((run) => ({ key: run.model, label: run.model, y: run["Recall@20"], short: run["Recall@20"].toFixed(4) }));
+  const e3 = official.tables.E3.map((run) => ({ key: run.run_id, label: `Train batch ${run.train_batch_size}`, y: run.process_wall_seconds, short: String(run.process_wall_seconds) }));
+  for (const points of [e1, e3]) {
+    for (const width of [600, 420, 300, 260]) {
+      for (const fontSize of [13, 16]) {
+        const layout = barLayout(points, { width, height: 250, fontSize });
+        assert.equal(layout.ticks[0].value, 0);
+        for (const tick of layout.ticks) assert.ok(tick.x - textWidth(tick.text, fontSize) >= fontSize, `tick "${tick.text}" fits at ${width}`);
+        const band = (layout.padding.right - layout.padding.left) / points.length;
+        for (const bar of layout.bars) {
+          assert.ok(bar.hit.width >= 44 && bar.hit.height >= 44, "hit area >= 44 x 44");
+          assert.ok(bar.lines.length <= 2);
+          for (const line of bar.lines) assert.ok(textWidth(line.text, fontSize) <= band, `"${line.text}" fits ${band}`);
+          if (bar.valueLabel.visible) assert.ok(bar.valueLabel.y >= fontSize, "value label inside the chart");
+          assert.ok(bar.top >= layout.padding.top - 0.5);
+        }
+      }
+    }
+  }
+});
+
+test("labels wrap to at most two lines", () => {
+  assert.deepEqual(wrapLabel("Train batch 128", 1000, 13), ["Train batch 128"]);
+  assert.equal(wrapLabel("Train batch 128", 70, 13).length, 2);
+  assert.ok(wrapLabel("Popularity", 30, 13)[0].endsWith("…"));
+});

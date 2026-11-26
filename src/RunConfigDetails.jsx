@@ -53,9 +53,9 @@ export function EnvironmentCard({ results }) {
     [t("runtime_transformers4rec"), valueFor(null, "transformers4rec")],
     [t("cost"), t("not_measured")],
   ];
-  return <section className="panel environment-card">
-    <h2>{t("environment")}</h2>
+  return <details className="panel environment-card">
+    <summary><span className="summary-title">{t("environment")}</span> <span className="summary-sub">{t("environment_summary")}</span></summary>
     <dl className="env">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value ?? t("MISSING")}</dd></div>)}</dl>
     <p className="environment-source">{t("environment_source_note", vm.source ?? t("MISSING"), vm.checksum_note ?? t("MISSING"))}</p>
-  </section>;
+  </details>;
 }

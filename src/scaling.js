@@ -1,6 +1,7 @@
 import { t } from "./i18n.js";
 import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds, formatSecondsPerMillionEvents } from "./format.js";
 import { modelLabel } from "./data.js";
+import { formatTick, niceTicks, textWidth } from "./chart-math.js";
 
 const E2_FIELDS = [
   ["Recall@20", "e1_recall_20", formatRatio],
@@ -178,25 +179,18 @@ export function chartCoordinates(series, width = 600, height = 300, padding = {}
   if (!points.length) return { points: [], yTicks: [] };
   const { left = 66, right = width - 24, top = 24, bottom = height - 54 } = padding;
   const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), maxY = Math.max(0, ...ys), yScale = maxY || 1;
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const axis = niceTicks(Math.max(0, ...ys));
   const coordinates = points.map((point) => ({
     ...point,
     cx: left + (maxX === minX ? 0.5 : (point.x - minX) / (maxX - minX)) * (right - left),
-    cy: bottom - (point.y / yScale) * (bottom - top),
+    cy: bottom - (point.y / axis.max) * (bottom - top),
   }));
-  const yTicks = Array.from({ length: 4 }, (_, index) => {
-    const value = yScale * index / 3;
-    return { value, cy: bottom - (value / yScale) * (bottom - top) };
-  });
+  const yTicks = axis.ticks.map((value) => ({ value, step: axis.step, cy: bottom - (value / axis.max) * (bottom - top) }));
   return { points: coordinates, yTicks };
 }
 
-// Glyph width as a share of font size. Monospace is 0.6; 0.62 leaves a margin.
-const GLYPH = 0.62;
-
-export function textWidth(text, fontSize) {
-  return String(text).length * fontSize * GLYPH;
-}
+export { textWidth };
 
 function textBox({ x, y, text, anchor, fontSize }) {
   const width = textWidth(text, fontSize);
@@ -228,10 +222,10 @@ function crossesLine(box, points) {
  * table above the chart and in the point tooltip.
  */
 export function chartLayout(series, { width = 600, height = 300, fontSize = 13, formatValue, formatX = (value) => formatCount(value).text } = {}) {
-  const tickText = (value) => (value === 0 ? "0" : formatValue(value).text);
   const valid = series.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
-  const maxY = Math.max(0, ...valid.map((point) => point.y)) || 1;
-  const tickValues = Array.from({ length: 4 }, (_, index) => maxY * index / 3);
+  const axis = niceTicks(Math.max(0, ...valid.map((point) => point.y)));
+  const tickValues = axis.ticks;
+  const tickText = (value) => formatTick(value, axis.step);
   const longestTick = Math.max(...tickValues.map((value) => textWidth(tickText(value), fontSize)));
   const titleBand = fontSize * 1.6;
   const lastX = valid.length ? formatX(valid.at(-1).x) : "";

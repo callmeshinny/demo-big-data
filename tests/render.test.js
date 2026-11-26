@@ -145,9 +145,9 @@ test("one colour, one meaning: neutral history tag, accent chart, shared hit mar
   };
   assert.ok(!/--danger|--caution|--positive/.test(rule(".tag-history")), "history tag must be neutral");
   assert.match(rule(".tag-history"), /var\(--fill\)/);
-  for (const selector of [".chart-line", ".chart-point"]) {
-    assert.match(rule(selector), /var\(--accent\)/, selector);
-    assert.ok(!/--danger/.test(rule(selector)), selector);
+  for (const selector of [".chart-line", ".chart-point", ".bar"]) {
+    assert.match(rule(selector), /var\(--model-colour/, `${selector} uses the fixed model colour`);
+    assert.ok(!/--danger|--positive|--accent\)/.test(rule(selector)), selector);
   }
   assert.match(rule(".ranking tr.is-hit td"), /var\(--positive-bg\)/);
   assert.match(rule(".ranking tr.is-hit td:first-child"), /inset 4px 0 0 var\(--positive\)/);

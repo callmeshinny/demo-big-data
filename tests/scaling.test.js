@@ -16,8 +16,9 @@ test("E5 charts use all E2 event counts and exclude shared first-seen", () => {
     assert.deepEqual(chart.series.map((point) => point.x), e2Events);
     const coordinates = chartCoordinates(chart.series);
     assert.equal(coordinates.points.length, 4);
-    assert.equal(coordinates.yTicks.length, 4);
-    assert.equal(coordinates.yTicks[0].value, 0);
+    assert.ok(coordinates.yTicks.length >= 3 && coordinates.yTicks.length <= 6);
+    assert.equal(coordinates.yTicks[0].value, 0, "axis starts at zero");
+    assert.ok(coordinates.yTicks.at(-1).value >= Math.max(...chart.series.map((p) => p.y)), "axis covers the largest value");
   }
   const composed = view.charts.find((chart) => chart.id === "composed");
   assert.deepEqual(composed.series.map((point) => point.y), official.tables.E5.map((row) => row.composed_seconds_excluding_first_seen));
@@ -26,11 +27,11 @@ test("E5 charts use all E2 event counts and exclude shared first-seen", () => {
   assert.deepEqual(view.registrySummary, { passed: 11, derived_from_verified_E2: 4, excluded: 2 });
 });
 
-test("chart coordinates use a zero baseline and preserve four y ticks", () => {
+test("chart coordinates use a zero baseline and round ticks", () => {
   const chart = chartCoordinates([{ x: 1, y: 0 }, { x: 2, y: 10 }]);
   assert.equal(chart.points[0].cy, 246);
   assert.equal(chart.points[1].cy, 24);
-  assert.deepEqual(chart.yTicks.map(({ value }) => value), [0, 10 / 3, 20 / 3, 10]);
+  assert.deepEqual(chart.yTicks.map(({ value }) => value), [0, 2.5, 5, 7.5, 10]);
 });
 
 test("E3 and E4 panels preserve official configs, measurements, notes, and exclusions", () => {
