@@ -5,6 +5,7 @@ import { histogramBuckets } from "./dataset.js";
 import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { DataLoadFailure } from "./ui.jsx";
+import { experimentHref } from "./navigation.js";
 
 const SUBSET_FIELDS = () => [
   [t("raw_sessions"), "raw_sessions"], [t("actual_raw_session_pct"), "actual_raw_session_pct"],
@@ -26,7 +27,8 @@ const PIPELINE = () => [
   [t("pipeline_top_20"), t("export_a_ranked_list_for_each"), "TV2"],
 ];
 
-export default function Dataset({ state }) {
+export default function Dataset({ state, e2Levels = [] }) {
+  const e2Subsets = new Set(e2Levels);
   const [selected, setSelected] = useState("");
   if (state.error || state.fatal) {
     return <DataLoadFailure title={t("could_not_load_the_dataset_overview")} detail={state.error ?? state.fatal} />;
@@ -39,6 +41,10 @@ export default function Dataset({ state }) {
   const max = Math.max(0, ...buckets.map((bucket) => bucket.count ?? 0));
   return (
     <>
+      <div className="page-head">
+        <h1 className="page-title">{t("dataset")}</h1>
+        <p className="page-intro">{t("dataset_intro")}</p>
+      </div>
       <section className="panel">
         <h2>{t("e_commerce_dataset")}</h2>
         <p>{t("the_kaggle_ecommerce_dataset_records_activity")} {raw.min_timestamp_utc?.slice(0, 7) ?? t("not_available_yet")}{t("each_event_is_a_view_add")}</p>
@@ -57,9 +63,10 @@ export default function Dataset({ state }) {
       <section className="panel">
         <h2>{t("weekly_cudf_subsets")}</h2>
         <div className="table-scroll">
-          <table className="config-table">
-            <thead><tr><th scope="col">{t("metric")}</th>{overview.subsets.map((row) => <th scope="col" key={row.subset}>{row.subset}%</th>)}</tr></thead>
-            <tbody>{subsetFields.map(([label, field]) => <tr key={field}><th scope="row">{label}</th>{overview.subsets.map((row) => <td key={row.subset} title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
+          <table className="config-table numeric-table">
+            <thead><tr><th scope="col">{t("metric")}</th>{overview.subsets.map((row) => <th scope="col" key={row.subset}>{row.subset}%
+              {e2Subsets.has(row.subset) && <a className="column-link" href={experimentHref("E2", row.subset)}>{t("open_e2_level")}</a>}</th>)}</tr></thead>
+            <tbody>{subsetFields.map(([label, field]) => <tr key={field}><th scope="row">{label}</th>{overview.subsets.map((row) => <td key={row.subset} className="num" title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
           </table>
         </div>
         <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.sampling_population)}</code></p>
@@ -77,9 +84,9 @@ export default function Dataset({ state }) {
       </section>
       <section className="panel">
         <h2>{t("split_population")}</h2>
-        <div className="table-scroll"><table className="config-table">
+        <div className="table-scroll"><table className="config-table numeric-table">
           <thead><tr><th scope="col">{t("subset")}</th>{[["final_test_D", t("final_test_partition")], ["train_used_1_to_Dminus1", t("train_used_partitions")], ["validation_used_2_to_D", t("validation_used_partitions")]].map(([field, label]) => <th scope="col" key={field}>{label}</th>)}</tr></thead>
-          <tbody>{overview.subsets.map((row) => <tr key={row.subset}><th scope="row">{row.subset}%</th>{["final_test_D", "train_used_1_to_Dminus1", "validation_used_2_to_D"].map((field) => <td key={field} title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
+          <tbody>{overview.subsets.map((row) => <tr key={row.subset}><th scope="row">{row.subset}%</th>{["final_test_D", "train_used_1_to_Dminus1", "validation_used_2_to_D"].map((field) => <td key={field} className="num" title={row[field] == null ? undefined : String(row[field])}>{formatValue(row[field])}</td>)}</tr>)}</tbody>
         </table></div>
         <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.split_population)}</code></p>
       </section>

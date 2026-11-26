@@ -120,7 +120,8 @@ body {
 @media (prefers-contrast: more), (forced-colors: active) { body { background: var(--bg); } }
 h1, h2, h3, h4 { margin: 0; }
 p { margin: 0 0 var(--s3); }
-code { font-family: var(--mono); font-size: inherit; background: var(--fill); border-radius: 6px; padding: 0 var(--s1); overflow-wrap: anywhere; }
+/* Code chips always use --label on --fill (>= 4.5:1), even inside secondary text. */
+code { font-family: var(--mono); font-size: inherit; color: var(--label); background: var(--fill); border-radius: 6px; padding: 0 var(--s1); overflow-wrap: anywhere; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .num, .metric-table td, .config-table td, .ranking .rank, .env dd, svg text, .tooltip { font-variant-numeric: tabular-nums; }
 
@@ -356,10 +357,16 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .unit { color: var(--label-2); font: var(--t-footnote); }
 .scope { display: block; color: var(--label-2); font: var(--t-footnote); margin-top: 2px; }
 .column-subtitle { display: block; margin-top: var(--s1); font: var(--t-footnote); color: var(--label-2); }
+.column-link { display: inline-flex; align-items: center; min-height: var(--control-height); color: var(--accent); font: var(--t-footnote); font-weight: 600; text-decoration: none; margin-left: var(--s2); }
+.column-link:hover { text-decoration: underline; }
 .run-head { display: grid; gap: var(--s1); font-weight: 400; }
 .run-head .badges { display: flex; flex-wrap: wrap; gap: var(--s1); }
 .run-head .note { color: var(--label-2); font: var(--t-footnote); }
-.config-table th { width: 32%; }
+.config-table tbody th { width: 32%; }
+.config-table td.num, .metric-table td.num { text-align: right; }
+.numeric-table thead th:not(:first-child) { text-align: right; }
+.numeric-table tbody th { width: auto; }
+.metric-table thead th:not(:first-child) .column-select { justify-content: flex-end; text-align: right; }
 .config-table tr.diff td { background: var(--danger-bg); }
 .config-bundle { margin-top: var(--s5); }
 .config-run { margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--separator); }
@@ -470,7 +477,10 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .metric-chart { margin: var(--s4) 0; padding-block: var(--s3); border-bottom: 1px solid var(--separator); overflow-wrap: anywhere; }
 .metric-chart .bars li > span:first-child { flex: 1; }
 .metric-chart .bars small { display: block; }
-.dataset-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--s4); }
+.dataset-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--s4); }
+@media (min-width: 1100px) { .dataset-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.dataset-cards h3 { margin-top: 0; }
+.dataset-cards code { overflow-wrap: break-word; word-break: break-word; }
 .dataset-cards article { padding: var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); overflow-wrap: anywhere; }
 .dataset-tv-table { overflow-x: auto; }
 .dataset-tv-table table { min-width: 34rem; }

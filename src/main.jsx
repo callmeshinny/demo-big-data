@@ -136,7 +136,7 @@ function App() {
       <div className="view" id="view">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
           : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} />
-            : tab === "dataset" ? <Dataset state={state} />
+            : tab === "dataset" ? <Dataset state={state} e2Levels={(officialResults.results?.tables?.E2 ?? []).map((row) => row.subset)} />
               : <Experiments key={`${experiment}/${select ?? ""}`} state={state} active={experiment} select={select} />}
       </div>
 

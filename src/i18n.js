@@ -464,7 +464,9 @@ export const messages = {
     "glossary_ndcg": "Per session: 1/log2(r+1) if the actual next item is at rank r ≤ 20, otherwise 0, averaged over sessions. A hit near the top counts more.",
     "glossary_validation_term": "Validation vs test",
     "glossary_validation": "Validation (the next day) is used to choose settings. Test (the last day) is evaluated once, after settings are fixed. E3 reports validation; E1 and E2 report test, so they are not compared directly.",
-    "terms_label": "Terms:"
+    "terms_label": "Terms:",
+    "dataset_intro": "Source data, sampling, cleanup and session splits behind every result.",
+    "open_e2_level": "E2 result →"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -931,7 +933,9 @@ export const messages = {
     "glossary_ndcg": "Mỗi phiên: 1/log2(r+1) nếu sản phẩm tiếp theo thực tế ở hạng r ≤ 20, ngược lại 0, rồi lấy trung bình. Trúng càng gần đầu danh sách càng được tính cao.",
     "glossary_validation_term": "Validation và test",
     "glossary_validation": "Validation (ngày kế tiếp) dùng để chọn cấu hình. Test (ngày cuối) chỉ đánh giá một lần sau khi đã cố định cấu hình. E3 báo cáo validation; E1 và E2 báo cáo test, nên không so sánh trực tiếp.",
-    "terms_label": "Thuật ngữ:"
+    "terms_label": "Thuật ngữ:",
+    "dataset_intro": "Dữ liệu nguồn, lấy mẫu, làm sạch và chia phiên đứng sau mọi kết quả.",
+    "open_e2_level": "Kết quả E2 →"
   }
 };
 
