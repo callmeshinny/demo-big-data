@@ -88,9 +88,9 @@ test("E5 charts always show the first and last event-count ticks, without overla
     setLanguage(locale);
     const view = buildScalingView(official);
     for (const chart of view.charts) {
-      for (const width of [600, 520, 420, 300, 260]) {
-        const height = width < 420 ? 260 : 290;
-        const layout = chartLayout(chart.series, { width, height, formatValue: chart.formatValue, yLabel: chart.yLabel });
+      for (const [width, fontSize, presenterHeight] of [[600, 13], [520, 13], [420, 13], [300, 13], [260, 13], [560, 16, 320], [516, 16, 320], [496, 16, 320]]) {
+        const height = presenterHeight ?? (width < 420 ? 260 : 290);
+        const layout = chartLayout(chart.series, { width, height, fontSize, formatValue: chart.formatValue, yLabel: chart.yLabel });
         assert.ok(layout.xLabels[0].visible, `${locale} ${chart.id}@${width}: first x tick (${layout.xLabels[0].text})`);
         assert.ok(layout.xLabels.at(-1).visible, `${locale} ${chart.id}@${width}: last x tick`);
         assert.equal(layout.xLabels[0].text, new Intl.NumberFormat("en-US").format(official.tables.E2.toSorted((a, b) => a.subset - b.subset)[0].n_events));

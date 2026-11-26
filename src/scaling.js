@@ -281,7 +281,8 @@ export function chartLayout(series, { width = 600, height = 300, fontSize = 13, 
     return { ...candidates[0], visible: false };
   };
   const ticks = yTicks.map(({ value, cy }) => place({ key: `y${value}`, value, cy, x: padding.left - 8, y: cy + fontSize * 0.35, text: tickText(value), anchor: "end" }));
-  const xLabelY = padding.bottom + fontSize + 10;
+  // 12 px below the axis so the first x label never touches the "0" y tick (16 px presenter labels).
+  const xLabelY = padding.bottom + fontSize + 12;
   // First and last x labels win; middle ones show when there is room.
   const order = points.map((_, index) => index).sort((a, b) => (a === 0 || a === points.length - 1 ? -1 : 0) - (b === 0 || b === points.length - 1 ? -1 : 0));
   const xLabels = [];
