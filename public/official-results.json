@@ -350,6 +350,40 @@
     ]
   },
   "E5_aggregation_only": true,
+  "stage_shares": {
+    "source": "reports/tables/tv2-20261124/stage_shares.csv",
+    "unit": "percent of composed_seconds_excluding_first_seen",
+    "rows": [
+      {
+        "subset": 10,
+        "raw_read": 0.29289392077063475,
+        "preprocessing": 51.68347156956679,
+        "train": 46.83216274711786,
+        "final_eval": 1.1914717625447138
+      },
+      {
+        "subset": 25,
+        "raw_read": 0.2913210233870394,
+        "preprocessing": 27.072791471880187,
+        "train": 70.85414028903803,
+        "final_eval": 1.7817472156947414
+      },
+      {
+        "subset": 50,
+        "raw_read": 0.2977836869172506,
+        "preprocessing": 15.338708058333513,
+        "train": 82.28587896187899,
+        "final_eval": 2.077629292870248
+      },
+      {
+        "subset": 100,
+        "raw_read": 0.27679732721037004,
+        "preprocessing": 9.244263851274257,
+        "train": 88.05888424638515,
+        "final_eval": 2.4200545751302327
+      }
+    ]
+  },
   "configs": {
     "e1-popularity-010": {
       "planned": {

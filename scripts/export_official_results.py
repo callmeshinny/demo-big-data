@@ -1,6 +1,7 @@
 """Export the checksum-verified TV2 official results package."""
 import argparse
 from collections import Counter
+import csv
 import hashlib
 import json
 import subprocess
@@ -62,6 +63,38 @@ def read_vm_environment(team_root):
     return environment
 
 
+STAGE_SHARE_FIELDS = {
+    "raw_read": ("raw_read_share_pct", "raw_read"),
+    "preprocessing": ("preprocessing_share_pct", "preprocessing_excluding_raw_read_and_first_seen"),
+    "train": ("train_share_pct", "train_including_sequence_io"),
+    "final_eval": ("final_eval_share_pct", "final_evaluation_including_io"),
+}
+
+
+def read_stage_shares(package_root, e5_rows):
+    """TV2's stage_shares.csv (percent of composed E5 time per stage). The file is not in the package
+    manifest, so every share is checked against the E5 stage times before export."""
+    relative = f"reports/tables/{package_root.name}/stage_shares.csv"
+    path = package_root.parents[2] / relative
+    e5_by_subset = {int(row["subset"]): row for row in e5_rows}
+    rows = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        for record in csv.DictReader(handle):
+            subset = int(record["subset"])
+            e5 = e5_by_subset.get(subset)
+            if e5 is None:
+                raise ValueError(f"{relative}: subset {subset} has no E5 row")
+            row = {"subset": subset}
+            for name, (column, stage) in STAGE_SHARE_FIELDS.items():
+                value = float(record[column])
+                expected = 100 * e5[stage] / e5["composed_seconds_excluding_first_seen"]
+                if abs(value - expected) > 1e-6:
+                    raise ValueError(f"{relative}: subset {subset} {column}={value} disagrees with E5 ({expected})")
+                row[name] = value
+            rows.append(row)
+    return {"source": relative, "unit": "percent of composed_seconds_excluding_first_seen", "rows": rows}
+
+
 def export(package_root):
     manifest, exceptions = verify_checksums(package_root)
     metrics = read_json(package_root / "metrics.json")
@@ -110,6 +143,7 @@ def export(package_root):
         "excluded": registry["excluded"],
         "tables": metrics["tables"],
         "E5_aggregation_only": metrics.get("E5_aggregation_only"),
+        "stage_shares": read_stage_shares(package_root, metrics["tables"]["E5"]),
         "configs": configs,
         "vm_environment": vm_environment,
     }

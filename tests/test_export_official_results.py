@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import unittest
 
-from export_official_results import VM_ENVIRONMENT_VALUES, read_vm_environment
+from export_official_results import VM_ENVIRONMENT_VALUES, read_stage_shares, read_vm_environment
 
 
 from team_root import BIG_DATA_ROOT, ROOT
@@ -55,6 +55,28 @@ class OfficialResultsExportTest(unittest.TestCase):
             "file": "environment/README.md",
             "reason": "TV3 doc edit after packaging (team commit 88f7e02), log links only",
         }])
+
+    def test_stage_shares_equal_the_csv_and_are_checked_against_e5(self):
+        csv_path = TEAM_ROOT / "reports/tables/tv2-20261124/stage_shares.csv"
+        e5 = json.loads((PACKAGE / "metrics.json").read_text())["tables"]["E5"]
+        exported = read_stage_shares(PACKAGE, e5)
+        self.assertEqual(exported["source"], "reports/tables/tv2-20261124/stage_shares.csv")
+        import csv
+        with csv_path.open(encoding="utf-8", newline="") as handle:
+            records = list(csv.DictReader(handle))
+        self.assertEqual(len(exported["rows"]), len(records))
+        for row, record in zip(exported["rows"], records):
+            self.assertEqual(row["subset"], int(record["subset"]))
+            self.assertEqual(row["raw_read"], float(record["raw_read_share_pct"]))
+            self.assertEqual(row["preprocessing"], float(record["preprocessing_share_pct"]))
+            self.assertEqual(row["train"], float(record["train_share_pct"]))
+            self.assertEqual(row["final_eval"], float(record["final_eval_share_pct"]))
+        public = json.loads((ROOT / "public/official-results.json").read_text())
+        self.assertEqual(public["stage_shares"], exported)
+        broken = [dict(row) for row in e5]
+        broken[0]["train_including_sequence_io"] += 1
+        with self.assertRaises(ValueError):
+            read_stage_shares(PACKAGE, broken)
 
     def test_changed_package_byte_fails_checksum(self):
         copied_root = self.workspace / "Big-Data"
