@@ -18,6 +18,11 @@ import { usePresenter } from "./presenter.js";
 export function useWidth(fallback) {
   const ref = useRef(null);
   const [width, setWidth] = useState(fallback);
+  // Measure before the first paint so the chart never draws wider than its frame.
+  useLayoutEffect(() => {
+    const measured = ref.current?.getBoundingClientRect().width;
+    if (measured) setWidth(Math.max(240, Math.floor(measured)));
+  }, []);
   useEffect(() => {
     const node = ref.current;
     if (!node || typeof ResizeObserver === "undefined") return undefined;

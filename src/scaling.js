@@ -231,13 +231,14 @@ export function chartLayout(series, { width = 600, height = 300, fontSize = 13, 
   const lastX = valid.length ? formatX(valid.at(-1).x) : "";
   const lastPoint = valid.length ? formatValue(valid.at(-1).y).text : "";
   const padding = {
-    left: Math.ceil(titleBand + longestTick + 10),
+    left: Math.ceil(titleBand + longestTick + 12),
     right: width - Math.ceil(Math.max(16, textWidth(lastX, fontSize) / 2, textWidth(lastPoint, fontSize) / 2) + 6),
     top: Math.ceil(fontSize * 2),
     bottom: height - Math.ceil(fontSize * 3 + 18),
   };
   const { points, yTicks } = chartCoordinates(valid, width, height, padding);
-  const placed = [];
+  // The rotated y-axis title owns the left band; no label may sit on it.
+  const placed = [{ x0: 0, x1: fontSize + 5, y0: 0, y1: height }];
   const fits = (label, avoidLine) => {
     const box = textBox({ ...label, fontSize });
     const inside = box.x0 >= 0 && box.x1 <= width && box.y0 >= 0 && box.y1 <= height;
