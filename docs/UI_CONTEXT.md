@@ -1,6 +1,6 @@
 # UI context: TV4 demo web
 
-Snapshot: 26/11/2026. Describes local `main` after the Key findings, the E3 rename and the real E4 configuration. `origin/main` is at `5ecc80b`; later commits are local until the user pushes them. Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
+Snapshot: 26/11/2026. Describes local `main` after the sticky sub-bars and the custom select chevron. `origin/main` is at `5ecc80b`; later commits are local until the user pushes them. Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
 
 ## 1. What the site is
 
@@ -72,7 +72,20 @@ Snapshot: 26/11/2026. Describes local `main` after the Key findings, the E3 rena
 - `<nav>` links with `aria-current`.
 - An About popover, the Presenter mode switch, and the EN/VI segmented switch (remembered in `localStorage`).
 
-**Routes.** `#recommendation`, `#dataset`, `#experiments/e1`…`#experiments/e5`, and `#experiments/e2/N` to preselect a data-size level. Legacy `#data` and `#experiments-e3` still resolve. `?session=<id>` preselects a session. `?present=1` / `?present=0` sets presenter mode. Anchors use `scroll-margin-top` so the header does not cover them.
+**Sticky sub-bars** (one per tab; `src/sticky.js` `useStickyBar`):
+- Experiments: the E1–E5 segmented sub-nav. Recommendations: the glass control bar (Model, Session, presenter tip). Dataset: a segmented section nav (Overview, Subsets, 5V, Key findings, Caveats, Splits, Pipeline) with scroll-spy (`aria-current="true"`, IntersectionObserver).
+- `position: sticky; top: var(--sticky-top)`: 56 px under the sticky header at ≥ 1101 px; 0 below that, where the header scrolls away (so header + sub-bar ≤ 120 px at 375: the sub-bar alone is 48–60 px). Sticky until the end of the tab content.
+- Glass with the usual solid fallbacks (reduced transparency, high contrast, forced colours, presenter mode). A soft separator only while stuck, from an IntersectionObserver sentinel (no per-frame scroll listener). The bar height is published as `--subbar-height`.
+- Switching E1–E5 while scrolled brings the new panel's top just below the sub-nav.
+- Stuck control bar: below 900 px the presenter tip hides; below 600 px the visible labels and model dots hide too (controls keep accessible names), so Model + Session fit one 60 px row.
+- Below 760 px every sub-bar is one horizontally scrolling row (no wrapping, hidden scrollbar, scroll-snap, 48 px, 44 px targets; focus ring drawn inside the link); the Dataset nav already from 900 px. The active item is scrolled into view.
+- Print: header and sub-bars are not sticky. Presenter mode: still sticky, solid.
+
+**z-index order.** Header 10 > chart tooltip 9 > sub-bar 8 > page content. Popovers (About, glossary) are 30; native select menus are OS layers. A chart card must not become a stacking context (no containment, transform or z-index on `.chart`), or its tooltip could not rise above the sub-bar; the container query for the detail area lives on `.chart-detail`.
+
+**Selects.** `Select` in `src/ui.jsx` wraps every `<select>`: `appearance: none`, a `--label-2` chevron (CSS mask) 14 px from the right edge, 40 px right padding, 44 px height, `--control-border`, normal focus ring, native keyboard and mobile pickers. Forced colours fall back to the system arrow.
+
+**Routes.** `#recommendation`, `#dataset`, `#experiments/e1`…`#experiments/e5`, `#experiments/e2/N` to preselect a data-size level, and `#dataset/<slug>` for a Dataset section (`overview`, `subsets`, `5v`, `key-findings`, `caveats`, `splits`, `pipeline`; it scrolls there, also after a reload). Legacy `#data` and `#experiments-e3` still resolve. `?session=<id>` preselects a session. `?present=1` / `?present=0` sets presenter mode. `html { scroll-padding-top }` = header + sub-bar, so anchor jumps and keyboard focus land below both.
 
 **Recommendations tab** (order matters; the reviewer asked for it):
 1. Title, one intro sentence, and one badge ("Real E1 predictions · Showing 30 of 1,337 sessions").
@@ -139,7 +152,7 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 3. Contrast: text ≥ 4.5:1, large text and control borders ≥ 3:1, the high-contrast set ≥ 7:1 where feasible, and text on glass checked against the worst case. Add every new colour pair to `tests/contrast.test.js`.
 4. Keep the Recommendation order and the fold acceptance from section 4.
 5. Never put E3 next to E1/E2. Keep planned and actual configuration separate. Keep the interpretation notes.
-6. No new dependency unless it is justified in the report. The JS bundle is about 309 kB.
+6. No new dependency unless it is justified in the report. The JS bundle is about 314 kB.
 7. Every `public/*.json` stays under 300 KB. Never commit the bundle, the catalog, Parquet or checkpoints.
 
 ## 7. Checks (run from `tv4-demo-web/`)
@@ -159,7 +172,7 @@ python3 scripts/check_demo_script.py
 git diff --check
 ```
 
-Counts at this snapshot: `npm test` 97/97, `npm run test:e2e` 46/46, Python 27/27 (official values 262/262), demo script 415 English walkthrough words. JS bundle 309 kB (gzip 97 kB). Every `public/*.json` is below 300 KB (largest: `demo-data.json`, 80 KB).
+Counts at this snapshot: `npm test` 98/98, `npm run test:e2e` 51/51, Python 27/27 (official values 262/262), demo script 417 English walkthrough words. JS bundle 314 kB (gzip 99 kB). Every `public/*.json` is below 300 KB (largest: `demo-data.json`, 80 KB).
 
 After these pass, look at the screenshots yourself (`scripts/capture_screens.mjs`; save outside the repo, e.g. `/tmp/...`). Automated checks have missed overlap, clipped labels and raw i18n keys before. Check widths 1440, 1280×800, 768 and 375, in EN and VI, in light, dark and high contrast, with presenter mode on and off.
 
