@@ -125,3 +125,17 @@ test("E4: equal or missing size/read values give a neutral sentence", () => {
   const flipped = e4Takeaway(withE4({ parquet: { bytes: 300000000, read_seconds: 1 } }));
   assert.match(flipped, /Parquet is larger .* reads slower/);
 });
+
+import { e4Fairness } from "../src/takeaways.js";
+test("E4 fairness line only when fingerprints, event counts, program and schema policy all agree", () => {
+  setLanguage("en");
+  assert.equal(e4Fairness(official), "Same data: 882,808 events, fingerprints match · same program · all nine columns read as strings");
+  const breakIt = (mutate) => { const copy = structuredClone(official); mutate(copy.configs["e4-full-010-parquet"].e4_config); return e4Fairness(copy); };
+  assert.equal(breakIt((c) => { c.fingerprint_match = false; }), null);
+  assert.equal(breakIt((c) => { c.n_events = 1; }), null);
+  assert.equal(breakIt((c) => { c.program = "other.py"; }), null);
+  assert.equal(breakIt((c) => { c.schema_policy = "typed columns"; }), null);
+  const noConfig = structuredClone(official);
+  delete noConfig.configs["e4-full-010-csv"].e4_config;
+  assert.equal(e4Fairness(noConfig), null);
+});

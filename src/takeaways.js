@@ -137,3 +137,22 @@ export function e4Subtitle(results) {
     ? t("e4_subtitle", count(base))
     : t("e4_subtitle_counts", count(base), count(subject));
 }
+
+/**
+ * E4 fairness line, shown only when the delivered configuration backs every part of it: identical
+ * fingerprints (fingerprint_match), equal event counts, the same program, and the same all-string
+ * schema policy for both runs. Returns the text or null.
+ */
+export function e4Fairness(results) {
+  const pair = e4Pair(results);
+  if (!pair) return null;
+  const configs = pair.map((run) => results?.configs?.[run.run_id]?.e4_config ?? null);
+  if (configs.some((config) => !config)) return null;
+  const [a, b] = configs;
+  const allStrings = (policy) => typeof policy === "string" && /^all nine fields strings/i.test(policy);
+  const backed = a.fingerprint_match === true && b.fingerprint_match === true
+    && !isMissing(a.n_events) && a.n_events === b.n_events
+    && typeof a.program === "string" && a.program === b.program
+    && a.schema_policy === b.schema_policy && allStrings(a.schema_policy);
+  return backed ? t("e4_fairness", formatCount(a.n_events).text) : null;
+}

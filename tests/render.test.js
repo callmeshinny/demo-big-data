@@ -288,3 +288,20 @@ test("E3 keeps the Validation badge next to its renamed title (EN and VI)", asyn
     assert.ok(text(html).includes(`E3 · ${i18n.t("experiment_nav_e3")}`), `${locale}: sub-tab`);
   }
 });
+
+test("E4 configuration: preprocessing table without 'Not available yet'; fairness line from the data", async () => {
+  const i18n = await load("/src/i18n.js");
+  const { default: Experiments } = await load("/src/Experiments.jsx");
+  for (const locale of ["en", "vi"]) {
+    i18n.setLanguage(locale);
+    const html = dom.renderToStaticMarkup(React.createElement(Experiments, { state: { results: official }, active: "E4" }));
+    const config = html.slice(html.indexOf('<details class="config config-bundle e4-config"'), html.indexOf("</details>", html.indexOf('class="config config-bundle e4-config"')));
+    assert.ok(config.includes(i18n.t("e4cfg_title")), locale);
+    assert.ok(!config.includes(i18n.t("MISSING")), `${locale}: no 'Not available yet' in the E4 configuration`);
+    assert.ok(!config.includes(i18n.t("experiment_train_batch")), `${locale}: no training rows for E4`);
+    assert.equal((config.match(/class="tag tag-same"/g) ?? []).length, 15, `${locale}: every row except input format is the same`);
+    assert.ok(text(html).includes(i18n.t("e4_fairness", "882,808")), locale);
+    const finding = html.indexOf('<aside class="key-finding"');
+    assert.ok(html.indexOf('class="fairness-line"') < finding, "fairness line above the Key finding");
+  }
+});

@@ -461,6 +461,11 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .experiment-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-bottom: var(--s1); }
 .experiment-subtitle { color: var(--label-2); margin: 0 0 var(--s1); }
 .experiment-course { color: var(--label-2); margin: 0 0 var(--s3); }
+/* E4 fairness line: a plain check mark in --label (green is reserved for Hit). */
+.fairness-line { display: flex; align-items: baseline; gap: var(--s1); margin: 0 0 var(--s3); color: var(--label); font-weight: 600; }
+.fairness-mark { color: var(--label); }
+.tag-same { background: var(--fill); color: var(--label); }
+.e4-config h3 { margin-top: var(--s3); }
 @media (min-width: 1100px) { .charts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 /* Key finding callout: neutral highlight (no new colour meaning). Presenter mode enlarges it via the tokens. */
 .key-finding { margin: var(--s4) 0; padding: var(--s5); background: var(--surface); border-left: 4px solid var(--label); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .08), 0 0 0 1px var(--separator); max-width: 80ch; }

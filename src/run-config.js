@@ -26,12 +26,33 @@ function readPath(object, path) {
   return path.split(".").reduce((value, key) => value?.[key], object);
 }
 
+/**
+ * Kind of run, which decides which fields exist for it:
+ * "preprocessing" (E4: no model, no training config), "baseline" (Popularity: no neural settings),
+ * "training" (GRU/XLNet). A field that does not exist for the kind is "Not applicable";
+ * "Not available yet" is only for an expected value that was not delivered.
+ */
+export function runKind(config) {
+  if (config?.e4_config) return "preprocessing";
+  const model = String(config?.planned?.model ?? config?.actual?.model ?? "").toLowerCase();
+  return model === "popularity" ? "baseline" : "training";
+}
+
+const NOT_APPLICABLE = {
+  preprocessing: () => true,
+  baseline: (key) => NEURAL_FIELDS.has(key),
+  training: () => false,
+};
+
+export function isApplicableField(config, key) {
+  return !NOT_APPLICABLE[runKind(config)](key);
+}
+
 export function configurationRows(config) {
   const planned = config?.planned;
   const actual = config?.actual;
-  const popularity = String(planned?.model ?? actual?.model ?? "").toLowerCase() === "popularity";
   return CONFIG_FIELDS.map(([key, labelKey, plannedPath, actualPath]) => {
-    const na = popularity && NEURAL_FIELDS.has(key);
+    const na = !isApplicableField(config, key);
     const plannedValue = na ? undefined : readPath(planned, plannedPath);
     const actualValue = na || key === "sequence_length" ? undefined : key === "split"
       ? actual?.split ?? actual?.eval_split
@@ -55,12 +76,13 @@ export function configurationRows(config) {
 export function runtimeRows(config) {
   const runtime = config?.runtime ?? {};
   const packages = runtime.packages ?? {};
-  const popularity = String(config?.planned?.model ?? config?.actual?.model ?? "").toLowerCase() === "popularity";
-  const applicable = (value) => popularity ? t("not_applicable") : value ?? t("MISSING");
+  const kind = runKind(config);
+  // Training runtime fields do not exist for a preprocessing run; GPU/CUDA/torch do not apply to the baseline.
+  const applicable = (value) => (kind !== "training" ? t("not_applicable") : value ?? t("MISSING"));
   return [
     { key: "gpu", label: t("runtime_gpu"), value: applicable(runtime.gpu) },
     { key: "cuda", label: t("runtime_cuda"), value: applicable(runtime.cuda) },
-    { key: "python", label: t("runtime_python"), value: runtime.python ?? t("MISSING") },
+    { key: "python", label: t("runtime_python"), value: kind === "preprocessing" ? t("not_applicable") : runtime.python ?? t("MISSING") },
     { key: "torch", label: t("runtime_torch"), value: applicable(packages.torch) },
     { key: "transformers4rec", label: t("runtime_transformers4rec"), value: applicable(packages.transformers4rec) },
   ];

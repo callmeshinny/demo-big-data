@@ -54,3 +54,14 @@ test("configuration difference flags require both values and an actual differenc
   }).find((row) => row.key === "batch_size");
   assert.equal(differentNumbers.differs, true);
 });
+
+import { runKind, runtimeRows as runtimeRowsForKind, configurationRows as rowsForKind } from "../src/run-config.js";
+test("run kinds: a field that does not exist for the run type is 'Not applicable', never 'Not available yet'", () => {
+  setLanguage("en");
+  const e4 = official.configs["e4-full-010-csv"];
+  assert.equal(runKind(e4), "preprocessing");
+  assert.equal(runKind(official.configs["e1-popularity-010"]), "baseline");
+  assert.equal(runKind(official.configs["e1-gru-010"]), "training");
+  for (const row of rowsForKind(e4)) assert.deepEqual([row.planned, row.actual], ["Not applicable", "Not applicable"], row.key);
+  for (const row of runtimeRowsForKind(e4)) assert.equal(row.value, "Not applicable", row.key);
+});

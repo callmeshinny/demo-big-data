@@ -2191,7 +2191,30 @@
       "warmup": null,
       "cache": "OS cache warm after pair verification; no privileged cache drop",
       "source_run": null,
-      "source_metrics": "metrics/tv2-analysis-20261124/evidence/Big-Data-e4/metrics/raw/e4-full-010-csv/metrics.json"
+      "source_metrics": "metrics/tv2-analysis-20261124/evidence/Big-Data-e4/metrics/raw/e4-full-010-csv/metrics.json",
+      "e4_config": {
+        "program": "pipeline/preprocess_weekly.py",
+        "input_format": "csv",
+        "subset": 10,
+        "n_events": 882808,
+        "fingerprint_match": true,
+        "read_scope": "streaming full decode, all rows consumed; excludes pair verification",
+        "schema_policy": "all nine fields strings; isolates format, excludes dtype conversion",
+        "cache": "OS cache warm after pair verification; no privileged cache drop",
+        "events_after_repeat_removal": 638089,
+        "product_vocabulary_size": 63398,
+        "cudf_version": "23.04.00",
+        "nvtabular_version": "23.08.00",
+        "notebook_commit": "f0ca2b5343dd1e40b5d2422b942f014b224f5c20",
+        "split_seed": 1,
+        "requested_ratios": {
+          "train": 0.8,
+          "valid": 0.1,
+          "test": 0.1
+        },
+        "partition_col": "day_index",
+        "source": "metrics/releases/tv2-20261124/configs.json"
+      }
     },
     "e4-full-010-parquet": {
       "planned": null,
@@ -2204,7 +2227,30 @@
       "warmup": null,
       "cache": "OS cache warm after pair verification; no privileged cache drop",
       "source_run": null,
-      "source_metrics": "metrics/tv2-analysis-20261124/evidence/Big-Data-e4/metrics/raw/e4-full-010-parquet/metrics.json"
+      "source_metrics": "metrics/tv2-analysis-20261124/evidence/Big-Data-e4/metrics/raw/e4-full-010-parquet/metrics.json",
+      "e4_config": {
+        "program": "pipeline/preprocess_weekly.py",
+        "input_format": "parquet",
+        "subset": 10,
+        "n_events": 882808,
+        "fingerprint_match": true,
+        "read_scope": "streaming full decode, all rows consumed; excludes pair verification",
+        "schema_policy": "all nine fields strings; isolates format, excludes dtype conversion",
+        "cache": "OS cache warm after pair verification; no privileged cache drop",
+        "events_after_repeat_removal": 638089,
+        "product_vocabulary_size": 63398,
+        "cudf_version": "23.04.00",
+        "nvtabular_version": "23.08.00",
+        "notebook_commit": "f0ca2b5343dd1e40b5d2422b942f014b224f5c20",
+        "split_seed": 1,
+        "requested_ratios": {
+          "train": 0.8,
+          "valid": 0.1,
+          "test": 0.1
+        },
+        "partition_col": "day_index",
+        "source": "metrics/releases/tv2-20261124/configs.json"
+      }
     }
   },
   "vm_environment": {

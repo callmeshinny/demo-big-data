@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import unittest
 
-from export_official_results import VM_ENVIRONMENT_VALUES, read_stage_shares, read_vm_environment
+from export_official_results import VM_ENVIRONMENT_VALUES, e4_configs, read_stage_shares, read_vm_environment
 
 
 from team_root import BIG_DATA_ROOT, ROOT
@@ -77,6 +77,33 @@ class OfficialResultsExportTest(unittest.TestCase):
         broken[0]["train_including_sequence_io"] += 1
         with self.assertRaises(ValueError):
             read_stage_shares(PACKAGE, broken)
+
+    def test_e4_config_block_and_fingerprint_comparison(self):
+        configs = json.loads((PACKAGE / "configs.json").read_text())
+        e4_ids = [row["run_id"] for row in json.loads((PACKAGE / "metrics.json").read_text())["tables"]["E4"]]
+        exported = e4_configs(configs, e4_ids, "metrics/releases/tv2-20261124/configs.json")
+        self.assertEqual(set(exported), set(e4_ids))
+        for run_id, block in exported.items():
+            source = configs[run_id]
+            self.assertEqual(block["input_format"], source["preprocessing_argv"][source["preprocessing_argv"].index("--input-format") + 1])
+            self.assertEqual(block["subset"], int(source["preprocessing_argv"][source["preprocessing_argv"].index("--subset") + 1]))
+            self.assertEqual(block["n_events"], source["verification"]["n_events"])
+            self.assertEqual(block["schema_policy"], source["schema_policy"])
+            self.assertEqual(block["events_after_repeat_removal"], source["timings"]["events_after_repeat_removal"])
+            self.assertEqual(block["notebook_commit"], source["workflow_manifest"]["notebook_commit"])
+            self.assertEqual(block["split_seed"], source["split_manifest"]["seed"])
+            self.assertTrue(block["fingerprint_match"])
+            for forbidden in ("read_seconds", "prepare_seconds", "workflow_seconds", "split_seconds", "sum_sha256_mod_2_256"):
+                self.assertNotIn(forbidden, block, "stage timings and raw fingerprints are not exported")
+        public = json.loads((ROOT / "public/official-results.json").read_text())
+        for run_id in e4_ids:
+            self.assertEqual(public["configs"][run_id]["e4_config"], exported[run_id])
+        changed = json.loads(json.dumps(configs))
+        changed[e4_ids[1]]["verification"]["sum_squared_sha256_mod_2_256"] = "0"
+        self.assertTrue(all(not block["fingerprint_match"] for block in e4_configs(changed, e4_ids, "x").values()))
+        missing = json.loads(json.dumps(configs))
+        del missing[e4_ids[0]]["verification"]["sum_sha256_mod_2_256"]
+        self.assertTrue(all(not block["fingerprint_match"] for block in e4_configs(missing, e4_ids, "x").values()))
 
     def test_changed_package_byte_fails_checksum(self):
         copied_root = self.workspace / "Big-Data"

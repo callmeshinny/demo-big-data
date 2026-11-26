@@ -95,6 +95,61 @@ def read_stage_shares(package_root, e5_rows):
     return {"source": relative, "unit": "percent of composed_seconds_excluding_first_seen", "rows": rows}
 
 
+def argv_value(argv, flag):
+    """Value after a command-line flag, or None."""
+    if not isinstance(argv, list) or flag not in argv:
+        return None
+    index = argv.index(flag)
+    return argv[index + 1] if index + 1 < len(argv) else None
+
+
+def as_number(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return value
+
+
+def e4_configs(configs_source, e4_run_ids, configs_relative):
+    """Preprocessing configuration of the E4 runs (they have no training config).
+
+    Stage timings are deliberately not exported: their scope differs from the official E4 table.
+    fingerprint_match is true only if both fingerprint sums are identical across all E4 runs; the sums
+    themselves are not exported.
+    """
+    runs = {run_id: configs_source[run_id] for run_id in e4_run_ids if "preprocessing_argv" in configs_source.get(run_id, {})}
+    fingerprints = {(config.get("verification") or {}).get("sum_sha256_mod_2_256") for config in runs.values()}
+    squared = {(config.get("verification") or {}).get("sum_squared_sha256_mod_2_256") for config in runs.values()}
+    match = len(runs) >= 2 and len(fingerprints) == 1 and len(squared) == 1 and None not in fingerprints and None not in squared
+    exported = {}
+    for run_id, config in runs.items():
+        argv = config.get("preprocessing_argv")
+        verification = config.get("verification") or {}
+        workflow = config.get("workflow_manifest") or {}
+        split = config.get("split_manifest") or {}
+        timings = config.get("timings") or {}
+        exported[run_id] = {
+            "program": argv[1] if isinstance(argv, list) and len(argv) > 1 else None,
+            "input_format": argv_value(argv, "--input-format"),
+            "subset": as_number(argv_value(argv, "--subset")),
+            "n_events": verification.get("n_events"),
+            "fingerprint_match": match,
+            "read_scope": config.get("read_scope"),
+            "schema_policy": config.get("schema_policy"),
+            "cache": config.get("cache"),
+            "events_after_repeat_removal": timings.get("events_after_repeat_removal"),
+            "product_vocabulary_size": workflow.get("product_vocabulary_size"),
+            "cudf_version": workflow.get("cudf_version"),
+            "nvtabular_version": workflow.get("nvtabular_version"),
+            "notebook_commit": workflow.get("notebook_commit"),
+            "split_seed": split.get("seed"),
+            "requested_ratios": split.get("requested_ratios"),
+            "partition_col": split.get("partition_col"),
+            "source": configs_relative,
+        }
+    return exported
+
+
 def export(package_root):
     manifest, exceptions = verify_checksums(package_root)
     metrics = read_json(package_root / "metrics.json")
@@ -122,6 +177,9 @@ def export(package_root):
             "source_run": config.get("source_run"),
             "source_metrics": config.get("source_metrics"),
         }
+    configs_relative = f"metrics/releases/{package_root.name}/configs.json"
+    for run_id, e4 in e4_configs(configs_source, [row["run_id"] for row in metrics["tables"]["E4"]], configs_relative).items():
+        configs[run_id]["e4_config"] = e4
     return {
         "schema": "tv4-official-results/v1",
         "package_id": manifest["package_id"],

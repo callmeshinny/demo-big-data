@@ -199,6 +199,22 @@ try {
     }
   });
 
+  await check("E4 fairness line is visible above the Key finding at 1280 and 375 (EN and VI); config has no 'Not available yet'", async () => {
+    for (const lang of ["en", "vi"]) for (const width of [1280, 375]) {
+      const page = await open("#experiments/e4", { width, lang });
+      const line = page.locator(".fairness-line");
+      assert.ok(await line.isVisible(), `${lang} ${width}: fairness line visible`);
+      const box = await line.boundingBox();
+      assert.ok(box.x >= 0 && box.x + box.width <= width, `${lang} ${width}: inside the viewport`);
+      const order = await page.evaluate(() => Boolean(document.querySelector(".fairness-line").compareDocumentPosition(document.querySelector(".key-finding")) & Node.DOCUMENT_POSITION_FOLLOWING));
+      assert.ok(order, "fairness line above the Key finding");
+      await page.locator(".e4-config > summary").click();
+      const configText = await page.locator(".e4-config").innerText();
+      assert.ok(!configText.includes(lang === "en" ? "Not available yet" : "Chưa có"), `${lang} ${width}: E4 config`);
+      await page.context().close();
+    }
+  });
+
   await check("hit row and Actual-next-item panel highlight each other", async () => {
     const tip = await open("#recommendation");
     await tip.locator(".presenter-tip").click();

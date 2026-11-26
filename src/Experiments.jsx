@@ -5,12 +5,12 @@ import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, formatE3Context } from "./scaling.js";
 import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
-import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
+import { E4ConfigDetails, EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 import { experimentHref } from "./navigation.js";
 import { BarChart, LineChart, useSelection } from "./Chart.jsx";
 import { usePresenter } from "./presenter.js";
 import { Glossary } from "./Glossary.jsx";
-import { e3Limitation, e3Subtitle, e4Pair, e4Subtitle, formatLabel } from "./takeaways.js";
+import { e3Limitation, e3Subtitle, e4Fairness, e4Pair, e4Subtitle, formatLabel } from "./takeaways.js";
 import { e1Finding, e2Finding, e3Finding, e4Finding, e5Finding } from "./findings.js";
 import { KeyFinding } from "./KeyFinding.jsx";
 import { modelColourKey } from "./Recommendation.jsx";
@@ -212,7 +212,9 @@ function E4Panel({ results }) {
   }));
   const byRun = new Map(e4.formats.map((format) => [format.runId, format]));
   const formats = runs.map((run) => byRun.get(run.run_id)).filter(Boolean);
-  return <Panel id="E4" title={t("e4_panel_title")} subtitle={e4Subtitle(results)} course={t("e4_course_item")} finding={e4Finding(results)}>
+  const fairness = e4Fairness(results);
+  return <Panel id="E4" title={t("e4_panel_title")} subtitle={e4Subtitle(results)} course={t("e4_course_item")} finding={e4Finding(results)}
+    lead={fairness && <p className="fairness-line"><span className="fairness-mark" aria-hidden="true">✓</span> {fairness}</p>}>
     <div className="charts charts-3">
       <BarChart title={t("e4_file_size_bytes")} metric={t("e4_file_size_bytes")} yLabel={t("mib_axis")} points={chartPoints("bytes", formatBytes, "MiB")} selected={selected} onSelect={setSelected} />
       <BarChart title={t("e4_read_time_s")} metric={t("e4_read_time_s")} yLabel={t("seconds_axis")} points={chartPoints("read_seconds", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
@@ -230,7 +232,7 @@ function E4Panel({ results }) {
         <ul>{e4.excluded.map(([runId, reason]) => <li key={runId}><code>{runId}</code>: {reason}</li>)}</ul>
       </details>
     </Notes>
-    <PanelConfigDetails results={results} runIds={formats.map(({ runId }) => runId)} />
+    <E4ConfigDetails results={results} runIds={formats.map(({ runId }) => runId)} />
   </Panel>;
 }
 
