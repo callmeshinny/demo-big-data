@@ -109,3 +109,37 @@ export function barLayout(points, { width = 480, height = 240, fontSize = 13 } =
   const ticks = axis.ticks.map((value, index) => ({ value, cy: y(value), text: tickTexts[index], x: padding.left - 8 }));
   return { width, height, fontSize, padding, axis, ticks, bars, yTitle: { x: fontSize + 2, y: (padding.top + padding.bottom) / 2 } };
 }
+
+const intersects = (a, b, pad = 4) => a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.y0 < b.y1 + pad && b.y0 < a.y1 + pad;
+
+/**
+ * Where to put a chart tooltip of size {w, h} inside a frame {w, h} so it covers neither the marks in
+ * `marks` (shown and selected) nor any label in `labels`. Tries, in order: above the mark, right of it,
+ * left of it, then the free spot closest to the mark (8 px grid). Returns {left, top} or null when
+ * nothing fits; the caller then shows the tooltip below the chart instead.
+ */
+export function placeTooltip({ size, frame, mark, marks = [], labels = [], gap = 8 }) {
+  const obstacles = [...marks, ...labels];
+  const fits = (left, top) => {
+    const box = { x0: left, x1: left + size.w, y0: top, y1: top + size.h };
+    return left >= 0 && top >= 0 && box.x1 <= frame.w && box.y1 <= frame.h && !obstacles.some((o) => intersects(box, o));
+  };
+  const clampX = (x) => Math.min(Math.max(0, x), Math.max(0, frame.w - size.w));
+  const clampY = (y) => Math.min(Math.max(0, y), Math.max(0, frame.h - size.h));
+  const cx = (mark.x0 + mark.x1) / 2, cy = (mark.y0 + mark.y1) / 2;
+  const preferred = [
+    [clampX(cx - size.w / 2), mark.y0 - gap - size.h],
+    [mark.x1 + gap, clampY(cy - size.h / 2)],
+    [mark.x0 - gap - size.w, clampY(cy - size.h / 2)],
+  ];
+  for (const [left, top] of preferred) if (fits(left, top)) return { left, top };
+  let best = null;
+  for (let top = 0; top + size.h <= frame.h; top += 8) {
+    for (let left = 0; left + size.w <= frame.w; left += 8) {
+      if (!fits(left, top)) continue;
+      const distance = Math.hypot(left + size.w / 2 - cx, top + size.h / 2 - cy);
+      if (!best || distance < best.distance) best = { left, top, distance };
+    }
+  }
+  return best ? { left: best.left, top: best.top } : null;
+}

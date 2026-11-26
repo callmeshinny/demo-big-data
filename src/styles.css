@@ -431,7 +431,8 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .mark-group.is-selected .mark { stroke: var(--label); stroke-width: 2; }
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .mark,
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .chart-value { opacity: .35; }
-.tooltip { position: absolute; z-index: 20; display: grid; gap: 2px; max-width: min(280px, 100%); padding: var(--s2) var(--s3); border-radius: var(--radius-control); color: var(--label); font: var(--t-footnote); pointer-events: none; box-shadow: 0 6px 20px rgb(0 0 0 / .16); overflow-wrap: anywhere; }
+.tooltip { position: absolute; z-index: 20; display: grid; gap: 0; max-width: min(280px, 100%); padding: 6px var(--s3); border-radius: var(--radius-control); color: var(--label); font: var(--t-footnote); pointer-events: none; box-shadow: 0 6px 20px rgb(0 0 0 / .16); overflow-wrap: anywhere; }
+.tooltip-below { position: static; max-width: 100%; margin-top: var(--s2); box-shadow: none; }
 .tooltip strong { font-weight: 600; }
 .tooltip b { font-weight: 600; }
 .tooltip code { background: transparent; padding: 0; }

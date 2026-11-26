@@ -68,3 +68,23 @@ test("E4 file-size chart is plotted in MiB, matching its axis title", async () =
   const layout = barLayout(bytes.map((y, index) => ({ key: String(index), label: "x", y, short: y.toFixed(1) })), { width: 400 });
   assert.ok(layout.axis.max < 1000, `axis in MiB, not bytes (max ${layout.axis.max})`);
 });
+
+test("tooltip placement never covers the mark or any label; falls back to below the chart", async () => {
+  const { placeTooltip } = await import("../src/chart-math.js");
+  const overlap = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  const layout = barLayout(official.tables.E1.map((run) => ({ key: run.model, label: run.model, y: run["Recall@20"], short: run["Recall@20"].toFixed(4) })), { width: 520, height: 250 });
+  const labels = layout.bars.flatMap((bar) => [
+    { x0: bar.cx - textWidth(bar.valueLabel.text, 13) / 2, x1: bar.cx + textWidth(bar.valueLabel.text, 13) / 2, y0: bar.valueLabel.y - 13, y1: bar.valueLabel.y + 3 },
+    ...bar.lines.map((line) => ({ x0: line.x - textWidth(line.text, 13) / 2, x1: line.x + textWidth(line.text, 13) / 2, y0: line.y - 13, y1: line.y + 3 })),
+  ]);
+  for (const bar of layout.bars) {
+    const mark = { x0: bar.x, x1: bar.x + bar.width, y0: bar.valueLabel.y - 13, y1: layout.padding.bottom };
+    const size = { w: 200, h: 100 };
+    const place = placeTooltip({ size, frame: { w: 520, h: 250 }, mark, marks: [mark], labels });
+    if (!place) continue;
+    const box = { x0: place.left, x1: place.left + size.w, y0: place.top, y1: place.top + size.h };
+    assert.ok(box.x0 >= 0 && box.x1 <= 520 && box.y0 >= 0 && box.y1 <= 250, `${bar.key}: inside the frame`);
+    for (const other of [mark, ...labels]) assert.ok(!overlap(box, other), `${bar.key}: tooltip covers a mark or label`);
+  }
+  assert.equal(placeTooltip({ size: { w: 300, h: 200 }, frame: { w: 280, h: 250 }, mark: { x0: 10, x1: 50, y0: 10, y1: 240 } }), null, "too big: below the chart");
+});

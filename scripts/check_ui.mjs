@@ -127,6 +127,27 @@ try {
     await page.context().close();
   });
 
+  await check("tooltip covers neither the selected mark nor any value/category label (1280 and 375)", async () => {
+    for (const [hash, key] of [["#experiments/e1", "XLNet"], ["#experiments/e1", "Popularity"], ["#experiments/e5", "25"], ["#experiments/e5", "10"], ["#experiments/e3", null], ["#experiments/e2", "100"]]) {
+      for (const width of [1280, 375]) {
+        const page = await open(hash, { width, height: 900 });
+        const mark = key ? page.locator(`[data-mark='${key}']`).first() : page.locator("[data-mark]").first();
+        await mark.scrollIntoViewIfNeeded();
+        await mark.click();
+        await page.mouse.move(0, 0);
+        const hits = await page.evaluate(() => {
+          const chart = document.querySelector(".chart.has-selection");
+          const tip = chart.querySelector(".tooltip").getBoundingClientRect();
+          const overlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          const things = [...chart.querySelectorAll(".mark-group.is-selected .mark, .chart-value, .chart-category, .chart-tick")];
+          return things.filter((el) => { const r = el.getBoundingClientRect(); return r.width && overlap(tip, r); }).map((el) => el.textContent || el.tagName);
+        });
+        assert.deepEqual(hits, [], `${hash} ${key} @${width}`);
+        await page.context().close();
+      }
+    }
+  });
+
   await check("hit row and Actual-next-item panel highlight each other", async () => {
     const tip = await open("#recommendation");
     await tip.locator(".presenter-tip").click();
