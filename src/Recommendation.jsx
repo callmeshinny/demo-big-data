@@ -5,7 +5,7 @@ import { buildE1View } from "./e1.js";
 import { formatCount, formatScore } from "./format.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
-import { DataKindBadge, DataLoadFailure, Issues, Notice } from "./ui.jsx";
+import { DataKindBadge, DataLoadFailure, Issues, Notice, Select } from "./ui.jsx";
 import { experimentHref } from "./navigation.js";
 import { Glossary } from "./Glossary.jsx";
 import { useStickyBar } from "./sticky.js";
@@ -123,10 +123,10 @@ export default function Recommendation({ state, productInfo, protocol, official 
         </div>
         <label className="control-group">
           <span className="control-label">{t("session")} <Glossary term="session" /></span>
-          <select aria-label={t("session")} value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
+          <Select aria-label={t("session")} value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
             {unknownSession && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
-          </select>
+          </Select>
         </label>
         {presenterHit && <button type="button" className="presenter-tip" onClick={() => setSessionChoice(presenterHit)}
           aria-label={t("presenter_tip_aria", presenterHit, runs.length)}>

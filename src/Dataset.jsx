@@ -4,7 +4,7 @@ import { formatValue } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
 import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
-import { DataLoadFailure } from "./ui.jsx";
+import { DataLoadFailure, Select } from "./ui.jsx";
 import { DATASET_SECTIONS, datasetHref, experimentHref } from "./navigation.js";
 import { useStickyBar } from "./sticky.js";
 import { datasetFindings } from "./findings.js";
@@ -161,9 +161,9 @@ export default function Dataset({ state, e2Levels = [], section = null }) {
       </section>
       <section className="panel">
         <h2>{t("session_length")}</h2>
-        {subset && <label>{t("subset")} <select aria-label={t("subset")} value={subset.subset} onChange={(event) => setSelected(event.target.value)}>
+        {subset && <label>{t("subset")} <Select aria-label={t("subset")} value={subset.subset} onChange={(event) => setSelected(event.target.value)}>
           {overview.subsets.map((row) => <option key={row.subset} value={row.subset}>{row.subset}%</option>)}
-        </select></label>}
+        </Select></label>}
         <p className="definition">{t("single_event_sessions_are_dropped_because")}</p>
         {buckets.length ? <>
           <p className="definition">{buckets.at(-1).label} {t("is_the_sum_of_the_longer")}</p>

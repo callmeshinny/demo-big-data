@@ -73,6 +73,7 @@ const PAIRS = [
   ["chart-neutral", "surface", GRAPHIC, "neutral chart mark"],
   ["accent", "surface", GRAPHIC, "focus ring on card"],
   ["on-positive", "positive", GRAPHIC, "Hit ✓ glyph on its green badge"],
+  ["label-2", "surface", GRAPHIC, "select chevron on a select (graphic)"],
   ["label-2", "selected-bg", TEXT, "column sub-label (N events) in a selected column"],
   ["label", "selected-bg", TEXT, "cell text in a selected column"],
 ];

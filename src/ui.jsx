@@ -50,3 +50,15 @@ export function Issues({ issues }) {
     </details>
   );
 }
+
+/**
+ * Native <select> with a custom chevron: appearance none, --label-2 chevron 14 px from the right edge,
+ * 40 px right padding so text never runs under it. Keyboard and mobile pickers stay native; in forced
+ * colours the system arrow returns (CSS).
+ */
+export function Select({ className = "", children, ...props }) {
+  return <span className={`select-wrap ${className}`.trim()}>
+    <select {...props}>{children}</select>
+    <span className="select-chevron" aria-hidden="true" />
+  </span>;
+}

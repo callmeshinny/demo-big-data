@@ -296,7 +296,16 @@ details[open] > summary::before { transform: rotate(90deg); }
 
 /* Controls */
 label { display: grid; gap: var(--s2); color: var(--label-2); font: var(--t-footnote); font-weight: 600; min-width: 0; }
-select { width: 100%; height: var(--control-height); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); padding: 0 var(--s3); font: var(--t-body); }
+select { width: 100%; height: var(--control-height); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); padding: 0 40px 0 var(--s3); font: var(--t-body); -webkit-appearance: none; appearance: none; }
+/* Custom chevron (src/ui.jsx Select): --label-2 (>= 3:1 in every scheme), 14 px from the right edge. */
+.select-wrap { position: relative; display: block; min-width: 0; }
+.select-chevron { position: absolute; top: 50%; right: 14px; width: 12px; height: 8px; transform: translateY(-50%); pointer-events: none; background: var(--label-2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+@media (forced-colors: active) {
+  select { -webkit-appearance: auto; appearance: auto; padding-right: var(--s3); }
+  .select-chevron { display: none; }
+}
 .meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); margin-bottom: var(--s4); color: var(--label-2); font: var(--t-footnote); min-width: 0; overflow-wrap: anywhere; }
 .meta-row strong { color: var(--label); font-family: var(--mono); }
 .meta-row > span { min-width: 0; }
@@ -310,6 +319,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .control-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); padding: var(--s2) var(--s3); margin: 0 0 var(--s4); border-radius: var(--radius); }
 
 .control-group { display: flex; align-items: center; gap: var(--s2); color: var(--label); font: var(--t-table); font-weight: 600; min-width: 0; }
+.control-group .select-wrap { display: inline-block; }
 .control-group select { width: auto; min-width: 150px; font-weight: 400; }
 .control-label { display: inline-flex; align-items: center; gap: var(--s1); color: var(--label); }
 .model-picker > button { gap: var(--s2); }
@@ -334,7 +344,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
   .control-bar.is-stuck .control-group { flex-wrap: nowrap; min-width: 0; }
   .control-bar.is-stuck .model-picker > button { padding: 0 var(--s2); }
   .control-bar.is-stuck .model-dot { display: none; }
-  .control-bar.is-stuck select { min-width: 0; width: 104px; }
+  .control-bar.is-stuck select { min-width: 0; width: 108px; }
 }
 
 /* Panels */
