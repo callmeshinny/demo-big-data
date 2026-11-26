@@ -1,0 +1,73 @@
+// Data-driven wording for the E3/E4 takeaways: comparison words come from the JSON values.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { setLanguage } from "../src/i18n.js";
+import { compare, e3Hardware, e3Limitation, e3Subtitle, e3Takeaway, isSimilar, isSmallPart } from "../src/takeaways.js";
+
+const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
+const withE3 = (patch) => {
+  const copy = structuredClone(official);
+  copy.tables.E3 = copy.tables.E3.map((run) => ({ ...run, ...(patch[run.train_batch_size] ?? {}) }));
+  return copy;
+};
+
+test("compare: higher, lower, equal, missing", () => {
+  assert.equal(compare(2, 1), "higher");
+  assert.equal(compare(1, 2), "lower");
+  assert.equal(compare(1, 1), "equal");
+  assert.equal(compare(null, 1), null);
+  assert.equal(compare(1, Number.NaN), null);
+});
+
+test("E3 takeaway with the shipped data: words follow the values, numbers via format.js", () => {
+  setLanguage("en");
+  assert.equal(e3Takeaway(official),
+    "Train batch 128 trains faster (30.6 s vs 51.7 s) and uses more GPU memory (3.9 GiB vs 2.2 GiB), with lower validation Recall@20 (0.1299 vs 0.1964).");
+  setLanguage("vi");
+  assert.equal(e3Takeaway(official),
+    "Batch 128 huấn luyện nhanh hơn (30.6 s so với 51.7 s), dùng nhiều hơn bộ nhớ GPU (3.9 GiB so với 2.2 GiB), và Recall@20 trên validation thấp hơn (0.1299 so với 0.1964).");
+  setLanguage("en");
+});
+
+test("E3 takeaway flips every word when the values flip", () => {
+  setLanguage("en");
+  const flipped = withE3({
+    32: { train_seconds_including_sequence_io: 10, sampled_gpu_process_bytes: 4 * 1024 ** 3, "Recall@20": 0.1 },
+    128: { train_seconds_including_sequence_io: 20, sampled_gpu_process_bytes: 2 * 1024 ** 3, "Recall@20": 0.2 },
+  });
+  const text = e3Takeaway(flipped);
+  assert.match(text, /trains slower/);
+  assert.match(text, /uses less GPU memory/);
+  assert.match(text, /with higher validation Recall@20/);
+});
+
+test("E3 takeaway is neutral when a value is equal or missing", () => {
+  setLanguage("en");
+  const equal = withE3({ 32: { train_seconds_including_sequence_io: 30 }, 128: { train_seconds_including_sequence_io: 30 } });
+  const missing = withE3({ 128: { sampled_gpu_status: "unavailable", sampled_gpu_process_bytes: null } });
+  for (const results of [equal, missing]) {
+    const text = e3Takeaway(results);
+    assert.ok(!/faster|slower|\bmore\b|\bless\b|lower|higher/.test(text), text);
+    assert.match(text, /^Train batch 128: training time /);
+  }
+  assert.match(e3Takeaway(missing), /GPU memory Not available yet/);
+});
+
+test("E3 subtitle and limitation read batch sizes and hardware from JSON", () => {
+  setLanguage("en");
+  assert.equal(e3Subtitle(official), "Same VM and GPU; only the GRU training batch changes (32 vs 128) · validation partition");
+  assert.equal(e3Hardware(official), `${official.vm_environment.cloud} · ${official.vm_environment.gpu.split(" (")[0]}`);
+  assert.ok(e3Limitation(official).startsWith(`Hardware was fixed (${e3Hardware(official)}); CPU, RAM`));
+  const noHardware = { ...official, vm_environment: {} };
+  assert.ok(e3Limitation(noHardware).startsWith("Hardware was fixed; CPU, RAM"));
+});
+
+test("10% rules: similar and small part", () => {
+  assert.equal(isSimilar(100, 91), true);
+  assert.equal(isSimilar(100, 90), false, "exactly 10% is not similar");
+  assert.equal(isSimilar(null, 1), false);
+  assert.equal(isSmallPart(9, 100), true);
+  assert.equal(isSmallPart(10, 100), false);
+  assert.equal(isSmallPart(1, null), false);
+});

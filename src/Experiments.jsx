@@ -4,12 +4,13 @@ import { EXPERIMENTS, modelLabel } from "./data.js";
 import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, formatE3Context } from "./scaling.js";
-import { formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
+import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
 import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 import { experimentHref } from "./navigation.js";
 import { BarChart, LineChart, useSelection } from "./Chart.jsx";
 import { usePresenter } from "./presenter.js";
 import { Glossary } from "./Glossary.jsx";
+import { e3Limitation, e3Subtitle, e3Takeaway, e4Pair, e4Subtitle, e4Takeaway, formatLabel } from "./takeaways.js";
 import { modelColourKey } from "./Recommendation.jsx";
 
 const basename = (value) => (typeof value === "string" && value ? value.split("/").at(-1) : null);
@@ -25,11 +26,12 @@ function point({ key, label, value, formatter, unit, runId, source, colour, x, d
 }
 
 /** Panel shell: title + subtitle, one plain-language takeaway, charts, table, one shared note block. */
-function Panel({ id, title, subtitle, badge, takeaway, children }) {
+function Panel({ id, title, subtitle, course, badge, takeaway, children }) {
   return <section className="panel experiment-panel" id={`panel-${id.toLowerCase()}`} aria-labelledby={`title-${id}`}>
     <header className="experiment-head">
       <h2 id={`title-${id}`}>{title}{badge}</h2>
       {subtitle && <p className="experiment-subtitle">{subtitle}</p>}
+      {course && <p className="experiment-course">{course}</p>}
     </header>
     {takeaway && <p className="takeaway">{takeaway}</p>}
     {children}
@@ -171,24 +173,28 @@ function E3Panel({ results }) {
   const batchOf = (run) => results?.configs?.[run.run_id]?.actual?.batch_size ?? results?.configs?.[run.run_id]?.planned?.batch_size ?? run.train_batch_size;
   const header = (run) => t("e3_train_batch_header", batchOf(run) ?? missingText());
   const colour = modelColourKey(runs[0]?.model);
-  const chartPoints = (field, formatter) => runs.map((run) => point({
-    key: run.run_id, label: header(run), value: run[field], formatter, runId: run.run_id, source: basename(run.source_metrics), colour,
-    unit: formatter === formatSeconds ? "s" : undefined,
+  const gpuBytes = (run) => (run.sampled_gpu_status === "unavailable" ? null : run.sampled_gpu_process_bytes);
+  const gpuUnit = byteDisplayUnit(runs.map(gpuBytes));
+  const chartPoints = (read, formatter, unit, displayUnit) => runs.map((run) => point({
+    key: run.run_id, label: header(run), value: read(run), formatter, displayUnit, unit, runId: run.run_id, source: basename(run.source_metrics), colour,
   }));
-  const [a, b] = runs;
-  const takeaway = a && b ? t("e3_takeaway", batchOf(a), formatRatio(a["Recall@20"]).text, formatSeconds(a.process_wall_seconds).text, batchOf(b), formatRatio(b["Recall@20"]).text, formatSeconds(b.process_wall_seconds).text) : missingText();
-  return <Panel id="E3" title={`E3 · ${t("experiment_nav_e3")}`} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
-    subtitle={formatE3Context(e3.context)} takeaway={takeaway}>
+  return <Panel id="E3" title={t("e3_panel_title", modelLabel(runs[0]?.model))} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
+    subtitle={e3Subtitle(results)} course={t("e3_course_item")} takeaway={e3Takeaway(results)}>
     <p className="fair-note">{t("e3_not_beside_test")} <Glossary term="validation" /></p>
-    <div className="charts">
-      <BarChart title={t("e3_recall_20_validation")} metric={t("e3_recall_20_validation")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20", formatRatio)} selected={selected} onSelect={setSelected} />
-      <BarChart title={t("e1_process_wall_time_s")} metric={t("e1_process_wall_time_s")} yLabel={t("seconds_axis")} points={chartPoints("process_wall_seconds", formatSeconds)} selected={selected} onSelect={setSelected} />
+    <div className="charts charts-3">
+      <BarChart title={t("e3_chart_train_time")} metric={t("e1_train_time_s")} yLabel={t("seconds_axis")}
+        points={chartPoints((run) => run.train_seconds_including_sequence_io, formatSeconds, "s")} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e3_chart_gpu")} metric={t("e1_sampled_gpu_process_memory")} yLabel={t("memory_axis", gpuUnit)}
+        points={chartPoints(gpuBytes, formatBytes, gpuUnit, gpuUnit)} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e3_chart_recall")} metric={t("e3_recall_20_validation")} yLabel={t("e1_recall_20")}
+        points={chartPoints((run) => run["Recall@20"], formatRatio)} selected={selected} onSelect={setSelected} />
     </div>
     <SelectionBar label={runs.find((run) => run.run_id === selected) ? header(runs.find((run) => run.run_id === selected)) : null} onClear={() => setSelected(null)} />
-    <MetricTable caption={t("e3_effect_of_resources")} className="e3-table" selected={selected} onSelect={setSelected}
+    <MetricTable caption={t("e3_panel_title", modelLabel(runs[0]?.model))} className="e3-table" selected={selected} onSelect={setSelected}
       columns={runs.map((run) => ({ key: run.run_id, header: header(run), colour, title: run.run_id }))}
       rows={e3.rows.map((row, rowIndex) => ({ ...row, cells: e3.models.map((model) => model.cells[rowIndex]) }))} />
     <Notes>
+      <p className="interpretation-note">{e3Limitation(results)}</p>
       <p className="interpretation-note">{heldConstant(results, runs.map((run) => run.run_id))}</p>
       <InterpretationNote dictionaryKey="E3_accuracy" />
       <InterpretationNote dictionaryKey="inference_protocol" />
