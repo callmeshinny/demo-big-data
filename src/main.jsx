@@ -7,7 +7,7 @@ import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
 import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
-import { LanguageSwitch, MainNav } from "./Nav.jsx";
+import { AboutDemo, LanguageSwitch, MainNav } from "./Nav.jsx";
 import "./styles.css";
 
 const branding = import.meta.glob(["./branding/logo.png", "./branding/cover.jpg"], {
@@ -88,7 +88,7 @@ function App() {
     try { localStorage.setItem("tv4-language", next); } catch { /* Storage is optional. */ }
     updateLanguage(next);
   }
-  const [{ tab, experiment }, setRoute] = useState(currentRoute);
+  const [{ tab, experiment, select }, setRoute] = useState(currentRoute);
   const demo = useData(DEMO_URL, normalizeDemo, language);
   const productLookup = demo.provenance?.product_lookup;
   const productsUrl = typeof productLookup === "string" && productLookup.trim()
@@ -104,7 +104,7 @@ function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const state = { recommendation: demo, data: dataset, experiments: officialResults }[tab];
+  const state = { recommendation: demo, dataset, experiments: officialResults }[tab];
 
   return (
     <>
@@ -112,20 +112,22 @@ function App() {
         <div className="topbar-inner">
         <div className="brand">
           {logo && <img className="brand-logo" src={logo} alt="" />}
-          <h1>{siteName}</h1>
+          <span className="brand-name">{siteName}</span>
         </div>
         <MainNav tab={tab} />
         <div className="header-utility">
+          <AboutDemo />
           <LanguageSwitch language={language} onChoose={chooseLanguage} />
         </div>
         </div>
       </header>
       <main className="shell">
       {cover && <img className="brand-cover" src={cover} alt="" />}
-      {tab !== "recommendation" && <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>}
       <div className="view" id="view">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
-          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}
+          : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} />
+            : tab === "dataset" ? <Dataset state={state} />
+              : <Experiments key={`${experiment}/${select ?? ""}`} state={state} active={experiment} select={select} />}
       </div>
 
       <footer>

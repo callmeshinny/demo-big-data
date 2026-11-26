@@ -1,8 +1,6 @@
 export const messages = {
   "en": {
     "recommendation_tab_intro": "Explore saved next-item predictions for browsing sessions.",
-    "data_tab_intro": "This tab summarizes the source data, sampling, cleanup, and session splits.",
-    "experiments_tab_intro": "This tab presents official experiment results and their measurement limits.",
     "MISSING": "Not available yet",
     "not_measured": "Not measured",
     "e1_context": "{0}% subset · {1} partition {2} · {3} sessions · single run, single seed",
@@ -309,9 +307,9 @@ export const messages = {
     "pipeline_fit_workflow": "Fit workflow",
     "pipeline_model": "Model",
     "pipeline_top_20": "Top-20",
-    "experiment_nav_e1": "Models",
+    "experiment_nav_e1": "Model comparison",
     "experiment_nav_e2": "Data size",
-    "experiment_nav_e3": "Batch size",
+    "experiment_nav_e3": "Train batch (validation)",
     "experiment_nav_e4": "CSV vs Parquet",
     "experiment_nav_e5": "Scalability",
     "loading_data": "Loading data…",
@@ -402,12 +400,15 @@ export const messages = {
     "identical_split_membership": "Identical split membership",
     "yes": "Yes",
     "no": "No",
-    "models_export_ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported."
+    "models_export_ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported.",
+    "about_short": "About",
+    "about_demo_body": "This demo replays saved E1 test predictions and shows the confirmed TV2 result package for experiments E1–E5. It does not run live inference or training.",
+    "about_demo_tabs": "Recommendations shows single sessions; Dataset describes the source data, sampling and splits; Experiments shows official results and their measurement limits.",
+    "presenter_mode": "Presenter mode",
+    "experiment_subnav": "Experiments E1–E5"
   },
   "vi": {
     "recommendation_tab_intro": "Xem kết quả dự đoán sản phẩm tiếp theo đã lưu cho các phiên duyệt.",
-    "data_tab_intro": "Tab này tóm tắt dữ liệu nguồn, lấy mẫu, làm sạch và chia phiên.",
-    "experiments_tab_intro": "Tab này trình bày kết quả thí nghiệm chính thức và giới hạn đo lường.",
     "MISSING": "Chưa có",
     "not_measured": "Không đo",
     "e1_context": "Tập con {0}% · partition {1} {2} · {3} phiên · một lần chạy, một seed",
@@ -714,9 +715,9 @@ export const messages = {
     "pipeline_fit_workflow": "Fit workflow",
     "pipeline_model": "Mô hình",
     "pipeline_top_20": "Top-20",
-    "experiment_nav_e1": "Mô hình",
+    "experiment_nav_e1": "So sánh mô hình",
     "experiment_nav_e2": "Kích thước dữ liệu",
-    "experiment_nav_e3": "Kích thước batch",
+    "experiment_nav_e3": "Batch huấn luyện (validation)",
     "experiment_nav_e4": "CSV và Parquet",
     "experiment_nav_e5": "Khả năng mở rộng",
     "loading_data": "Đang tải dữ liệu…",
@@ -807,7 +808,12 @@ export const messages = {
     "identical_split_membership": "Thành viên các tập chia giống nhau",
     "yes": "Có",
     "no": "Không",
-    "models_export_ranked_ids_only": "Model chỉ xuất mã sản phẩm theo thứ hạng; điểm từng mục chưa được xuất."
+    "models_export_ranked_ids_only": "Model chỉ xuất mã sản phẩm theo thứ hạng; điểm từng mục chưa được xuất.",
+    "about_short": "Giới thiệu",
+    "about_demo_body": "Bản demo phát lại dự đoán test E1 đã lưu và hiển thị package kết quả TV2 đã xác nhận cho thí nghiệm E1–E5. Demo không chạy suy luận trực tiếp hay huấn luyện.",
+    "about_demo_tabs": "Gợi ý sản phẩm hiển thị từng phiên; Dữ liệu mô tả dữ liệu nguồn, lấy mẫu và chia tập; Thí nghiệm trình bày kết quả chính thức và giới hạn đo lường.",
+    "presenter_mode": "Chế độ trình chiếu",
+    "experiment_subnav": "Thí nghiệm E1–E5"
   }
 };
 

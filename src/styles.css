@@ -153,15 +153,14 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 /* Header: sticky, hairline separator, at most 56 px tall; anchors land below it. */
 .topbar { position: sticky; top: 0; z-index: 10; border-width: 0 0 1px; }
 [id] { scroll-margin-top: calc(var(--header-height) + var(--s4)); }
-.topbar-inner { display: flex; align-items: center; gap: var(--s4); max-width: 1200px; margin: 0 auto; padding: var(--s3) var(--s5); }
+.topbar-inner { display: flex; align-items: center; gap: var(--s3); max-width: 1200px; min-height: var(--header-height); margin: 0 auto; padding: 0 var(--s5); }
 .brand { display: flex; flex: 0 1 auto; align-items: center; gap: var(--s3); min-width: 0; }
-.brand h1 { font: var(--t-title); color: var(--label); }
+.brand-name { font: var(--t-lead); font-weight: 600; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-logo { display: block; max-width: 140px; max-height: 44px; object-fit: contain; }
-.header-utility { display: flex; align-items: center; margin-left: auto; }
+.header-utility { display: flex; align-items: center; gap: var(--s2); margin-left: auto; }
 
 .shell { max-width: 1200px; margin: 0 auto; padding: var(--s5) var(--s5) var(--s6); }
 .brand-cover { display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover; border-radius: var(--radius); margin-bottom: var(--s5); }
-.tab-intro { margin: 0 0 var(--s4); color: var(--label-2); max-width: 75ch; }
 
 /* Navigation: segmented controls (grey track, raised selected segment, 44 px targets) */
 /* The track carries a 1 px control border (>= 3:1 on page and card) so the control boundary is visible. */
@@ -182,9 +181,29 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .tabs > a[aria-current="page"] { font-weight: 600; }
 .language-switch { flex: 0 0 auto; }
 .language-switch > button { min-width: 48px; padding: 0 var(--s3); }
-.subtabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: var(--s4); }
-.subtabs > a { padding: 0 var(--s3); }
+.subtabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: var(--s4); }
+.subtabs.glass { border: 1px solid var(--control-border); }
+.subtabs > a { padding: var(--s1) var(--s2); }
+/* One centred label per segment; it may wrap as a whole but the ID never sits in its own column. */
+.subtabs .subtab-label { display: block; text-align: center; }
 .subtabs strong { font-weight: 600; }
+
+/* Popovers (About, glossary): small trigger, glass panel, Esc/outside click closes. */
+.popover-root { position: relative; display: inline-flex; vertical-align: middle; }
+.popover-button { min-height: var(--control-height); min-width: var(--control-height); padding: 0 var(--s3); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-table); font-weight: 500; cursor: pointer; }
+.popover { position: absolute; top: calc(100% + var(--s2)); z-index: 30; display: grid; gap: var(--s2); width: min(340px, calc(100vw - 2 * var(--s4))); padding: var(--s3) var(--s4); border-radius: var(--radius-control); color: var(--label); font: var(--t-body); font-weight: 400; text-align: left; white-space: normal; box-shadow: 0 8px 28px rgb(0 0 0 / .16); }
+.popover[hidden] { display: none; }
+.popover-start { left: 0; }
+.popover-end { right: 0; }
+.popover strong { font-weight: 600; }
+.popover-text { display: block; }
+
+/* Presenter toggle: a labelled switch button (aria-pressed). */
+.presenter-toggle { display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--control-height); padding: 0 var(--s3); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-table); font-weight: 500; cursor: pointer; white-space: nowrap; }
+.presenter-toggle .switch { position: relative; width: 32px; height: 20px; border-radius: 999px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--control-border); flex: 0 0 auto; }
+.presenter-toggle .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgb(0 0 0 / .3); transition: transform 120ms ease; }
+.presenter-toggle[aria-pressed="true"] .switch { background: var(--accent); box-shadow: none; }
+.presenter-toggle[aria-pressed="true"] .switch::after { transform: translateX(12px); }
 
 /* Badges and tags */
 .badge, .tag { display: inline-block; border-radius: 999px; padding: 2px var(--s2); font: var(--t-footnote); font-weight: 600; white-space: nowrap; background: var(--fill); color: var(--label); }
@@ -387,14 +406,20 @@ footer code { overflow-wrap: anywhere; }
   * { transition: none !important; animation: none !important; }
 }
 
-@media (max-width: 760px) {
-  /* On phones the tall header scrolls away instead of covering a sixth of the screen. */
+/* Below 1100 px the header wraps to two rows, so it scrolls away instead of covering the page. */
+@media (max-width: 1100px) {
   .topbar { position: static; }
-  .topbar-inner { flex-wrap: wrap; gap: var(--s2) var(--s3); padding: var(--s2) var(--s4); }
-  .brand { flex: 1 1 calc(100% - 120px); }
-  .brand h1 { font: var(--t-section); }
+  .topbar-inner { flex-wrap: wrap; row-gap: var(--s2); padding: var(--s2) var(--s4); }
   .tabs { order: 3; flex: 1 1 100%; }
-  .tabs > a { padding: 0 var(--s2); font: var(--t-table); font-weight: 500; white-space: normal; }
+  [id] { scroll-margin-top: var(--s4); }
+}
+
+@media (max-width: 760px) {
+  .brand { flex: 1 1 100%; }
+  .header-utility { margin-left: 0; flex-wrap: wrap; }
+  .tabs > a { padding: 0 var(--s2); white-space: normal; }
+  .subtabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .subtabs > a:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .shell { padding: var(--s4) var(--s4) var(--s6); }
   .scaling-charts { grid-template-columns: 1fr; }
   .grid { grid-template-columns: 1fr; }

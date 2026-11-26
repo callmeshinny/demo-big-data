@@ -115,7 +115,7 @@ test("navigation is links with exactly one aria-current page per nav, and no tab
   const count = (html, pattern) => (html.match(pattern) ?? []).length;
   for (const locale of ["en", "vi"]) {
     i18n.setLanguage(locale);
-    for (const tab of ["recommendation", "data", "experiments"]) {
+    for (const tab of ["recommendation", "dataset", "experiments"]) {
       const html = dom.renderToStaticMarkup(React.createElement(nav.MainNav, { tab }));
       assert.equal(count(html, /aria-current="page"/g), 1, `${locale}/${tab}`);
       assert.match(html, new RegExp(`<a href="#${tab}" aria-current="page"`));
@@ -125,8 +125,8 @@ test("navigation is links with exactly one aria-current page per nav, and no tab
       const html = dom.renderToStaticMarkup(React.createElement(exp.default, { state: { results: official }, active }));
       const subnav = html.slice(html.indexOf("<nav"), html.indexOf("</nav>"));
       assert.equal(count(subnav, /aria-current="page"/g), 1, `${locale}/${active}`);
-      assert.match(subnav, new RegExp(`href="#experiments-${active.toLowerCase()}" aria-current="page"`));
-      assert.ok(subnav.includes(`${active}</strong> · ${i18n.t(`experiment_nav_${active.toLowerCase()}`)}`));
+      assert.match(subnav, new RegExp(`href="#experiments/${active.toLowerCase()}" aria-current="page"`));
+      assert.ok(subnav.includes(`<span class="subtab-label"><strong>${active}</strong> · ${i18n.t(`experiment_nav_${active.toLowerCase()}`)}</span>`));
     }
   }
   const sources = ["main.jsx", "Nav.jsx", "Experiments.jsx", "Recommendation.jsx", "Dataset.jsx", "ui.jsx"]

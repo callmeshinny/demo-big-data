@@ -6,6 +6,7 @@ import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, chartLayout, formatE3Context } from "./scaling.js";
 import { formatCount, formatSeconds } from "./format.js";
 import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
+import { experimentHref } from "./navigation.js";
 
 function OfficialE1Panel({ results }) {
   const view = buildE1View(results);
@@ -160,16 +161,16 @@ function OfficialE4Panel({ results }) {
   </section>;
 }
 
-export default function Experiments({ state, active }) {
+export default function Experiments({ state, active, select = null }) {
   if (state.error) return <DataLoadFailure title={t("could_not_load_e1_e5_results")} detail={state.error} />;
   if (state.loading) return <p className="loading">{t("loading_data")}</p>;
   const results = state.results;
   if (!results) return <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{t("MISSING")}</Notice>;
   return <>
     <EnvironmentCard results={results} />
-    <nav className="segmented subtabs" aria-label={t("experiments")}>{EXPERIMENTS.map((id) => (
-      <a key={id} href={`#experiments-${id.toLowerCase()}`} aria-current={id === active ? "page" : undefined}>
-        <strong>{id}</strong> · {t(`experiment_nav_${id.toLowerCase()}`)}
+    <nav className="segmented subtabs glass" aria-label={t("experiment_subnav")}>{EXPERIMENTS.map((id) => (
+      <a key={id} href={experimentHref(id)} aria-current={id === active ? "page" : undefined}>
+        <span className="subtab-label"><strong>{id}</strong> · {t(`experiment_nav_${id.toLowerCase()}`)}</span>
       </a>
     ))}</nav>
     {active === "E1" ? <OfficialE1Panel results={results} />
