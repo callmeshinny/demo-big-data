@@ -243,8 +243,13 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .load-error-details { margin-top: var(--s2); }
 .load-error-details pre { margin: var(--s2) 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: var(--t-footnote); font-family: var(--mono); }
 .issues { margin-bottom: var(--s4); border: 1px dashed var(--caution); border-radius: var(--radius-control); padding: var(--s2) var(--s3); background: var(--caution-bg); color: var(--caution); font: var(--t-footnote); }
-details > summary { cursor: pointer; font-weight: 600; min-height: 28px; }
-.method-details, .toy-format-example, .config { margin: var(--s3) 0; border: 1px solid var(--separator); border-radius: var(--radius-control); padding: var(--s3) var(--s4); }
+/* Disclosure rows are full 44 px targets; flex removes the native marker, so draw one. */
+details > summary { cursor: pointer; font-weight: 600; min-height: var(--control-height); display: flex; align-items: center; gap: var(--s2); list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "▸"; flex: 0 0 auto; color: var(--label-2); transition: transform 120ms ease; }
+details[open] > summary::before { transform: rotate(90deg); }
+.method-details, .toy-format-example, .config { margin: var(--s3) 0; border: 1px solid var(--separator); border-radius: var(--radius-control); padding: var(--s1) var(--s4); }
+.method-details[open], .config[open] { padding-bottom: var(--s3); }
 .toy-format-example, .config { background: var(--surface); }
 
 /* Controls */
@@ -424,7 +429,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .tooltip b { font-weight: 600; }
 .tooltip code { background: transparent; padding: 0; }
 .selection-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); min-height: var(--control-height); margin: 0 0 var(--s3); }
-.selection-bar a { color: var(--accent); font-weight: 600; }
+.selection-bar a { color: var(--accent); font-weight: 600; min-height: var(--control-height); display: inline-flex; align-items: center; }
 .link-button { min-height: var(--control-height); padding: 0 var(--s3); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
 
 @media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
@@ -453,8 +458,6 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .environment-card .summary-title { font: var(--t-section); }
 .environment-card .summary-sub { color: var(--label-2); font-weight: 400; }
 .environment-card[open] > summary { margin-bottom: var(--s3); }
-.environment-card > summary { list-style: none; }
-.environment-card > summary::-webkit-details-marker { display: none; }
 .environment-card > summary::before { content: "▸"; color: var(--label-2); transition: transform 120ms ease; }
 .environment-card[open] > summary::before { transform: rotate(90deg); }
 

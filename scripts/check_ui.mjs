@@ -174,6 +174,19 @@ try {
     }
   });
 
+  await check("touch targets: summaries, links and buttons are >= 44 px tall (1280 and 375)", async () => {
+    for (const [hash, width] of [["#experiments/e5", 1280], ["#experiments/e5", 375], ["#recommendation", 1280], ["#experiments/e1", 375]]) {
+      const page = await open(hash, { width, height: 900 });
+      const mark = page.locator("[data-mark]").first();
+      if (await mark.count()) { await mark.scrollIntoViewIfNeeded(); await mark.click(); }
+      const small = await page.evaluate(() => [...document.querySelectorAll("summary, .selection-bar a, .e1-strip a, .column-link, button, select")]
+        .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.height < 43.5; })
+        .map((el) => `${el.tagName} "${(el.textContent || "").trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`));
+      assert.deepEqual(small, [], `${hash} @${width}`);
+      await page.context().close();
+    }
+  });
+
   await check("sticky header <= 56 px and anchors clear it", async () => {
     const page = await open("#experiments/e1", { width: 1440, height: 900 });
     const header = await page.locator(".topbar").boundingBox();
