@@ -8,27 +8,39 @@
 
   /* Light colours */
   --bg: #f5f5f7;
+  --bg-tint: #f0f6ff;
   --surface: #ffffff;
   --label: #1d1d1f;
   --label-2: #6e6e73;
-  --separator: #d2d2d7;
+  --separator: rgba(0, 0, 0, 0.1);
   --control-border: #86868b;
   --accent: #0066cc;
   --fill: #e8e8ed;
   --segment: #ffffff;
-  --positive: #1a7f37;
+  /* --positive is the Hit marker colour (bars, icons, outlines); --positive-text is the same meaning for text. */
+  --positive: #248a3d;
+  --positive-text: #1a7f37;
   --positive-bg: #edf8f0;
-  --negative: #c9302c;
-  --negative-bg: #fdeceb;
+  /* --danger is for problems only: load errors, failed checks, config "Differs". A miss is neutral. */
+  --danger: #d70015;
+  --danger-bg: #fdeceb;
   --caution: #a15c00;
   --caution-bg: #fdf2e0;
+  /* Three fixed model colours, used in charts, legends and badges; never green or red. */
+  --model-popularity: #5e7387;
+  --model-gru: #c4610a;
+  --model-xlnet: #8e44ad;
+  --chart-neutral: #6e6e73;
+  --glass: rgba(255, 255, 255, 0.72);
 
   /* Type: exactly five steps; nothing below 13 px */
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Inter, system-ui, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* System stack only; no bundled fonts. Numbers use tabular figures (see .num). */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
   --t-title: 600 28px/34px var(--font);
   --t-section: 600 22px/28px var(--font);
-  --t-body: 400 17px/25px var(--font);
+  --t-lead: 400 18px/26px var(--font);
+  --t-body: 400 16px/24px var(--font);
   --t-table: 400 16px/22px var(--font);
   --t-footnote: 400 13px/18px var(--font);
 
@@ -43,6 +55,7 @@
   --radius: 14px;
   --radius-control: 10px;
   --shadow: 0 1px 2px rgb(0 0 0 / .06);
+  --header-height: 56px;
   --control-height: 44px;
 
   font: var(--t-body);
@@ -55,33 +68,45 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #000000;
+    --bg-tint: #02090f;
     --surface: #1c1c1e;
     --label: #f5f5f7;
     --label-2: #a1a1a6;
-    --separator: #38383a;
+    --separator: rgba(255, 255, 255, 0.15);
     --control-border: #8e8e93;
     --accent: #2997ff;
     --fill: #2c2c2e;
     --segment: #636366;
     --positive: #30d158;
+    --positive-text: #30d158;
     --positive-bg: #0e2a16;
-    --negative: #ff453a;
-    --negative-bg: #3b1210;
+    --danger: #ff453a;
+    --danger-bg: #3b1210;
     --caution: #ffb340;
     --caution-bg: #33240c;
+    --model-popularity: #9fb4c7;
+    --model-gru: #ff9f0a;
+    --model-xlnet: #bf5af2;
+    --chart-neutral: #a1a1a6;
+    --glass: rgba(28, 28, 30, 0.72);
     --shadow: 0 0 0 0 transparent; /* "none" would void composed shadows such as the hit bar */
   }
 }
 
+/* High contrast: stronger borders, darker/lighter secondary text (>= 7:1), no translucency (see glass). */
 @media (prefers-contrast: more) {
   :root {
     --separator: var(--control-border);
     --label-2: #48484d;
+    --control-border: #6e6e73;
   }
 }
 
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root { --label-2: #d1d1d6; }
+  :root {
+    --label-2: #d1d1d6;
+    --control-border: #aeaeb2;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -90,7 +115,7 @@ h1, h2, h3, h4 { margin: 0; }
 p { margin: 0 0 var(--s3); }
 code { font-family: var(--mono); font-size: inherit; background: var(--fill); border-radius: 6px; padding: 0 var(--s1); overflow-wrap: anywhere; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.num, .metric-table td, .config-table td, .ranking .rank, .env dd { font-variant-numeric: tabular-nums; }
+.num, .metric-table td, .config-table td, .ranking .rank, .env dd, svg text, .tooltip { font-variant-numeric: tabular-nums; }
 
 a, button, select, summary, input { -webkit-tap-highlight-color: transparent; }
 a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible, input:focus-visible {
@@ -109,18 +134,19 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 @media (prefers-reduced-transparency: reduce) {
   .topbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
-.topbar-inner { display: flex; align-items: center; gap: var(--s4); max-width: 1180px; margin: 0 auto; padding: var(--s3) var(--s5); }
+.topbar-inner { display: flex; align-items: center; gap: var(--s4); max-width: 1200px; margin: 0 auto; padding: var(--s3) var(--s5); }
 .brand { display: flex; flex: 0 1 auto; align-items: center; gap: var(--s3); min-width: 0; }
 .brand h1 { font: var(--t-title); color: var(--label); }
 .brand-logo { display: block; max-width: 140px; max-height: 44px; object-fit: contain; }
 .header-utility { display: flex; align-items: center; margin-left: auto; }
 
-.shell { max-width: 1180px; margin: 0 auto; padding: var(--s5) var(--s5) var(--s6); }
+.shell { max-width: 1200px; margin: 0 auto; padding: var(--s5) var(--s5) var(--s6); }
 .brand-cover { display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover; border-radius: var(--radius); margin-bottom: var(--s5); }
 .tab-intro { margin: 0 0 var(--s4); color: var(--label-2); max-width: 75ch; }
 
 /* Navigation: segmented controls (grey track, raised selected segment, 44 px targets) */
-.segmented { display: flex; gap: 2px; padding: 2px; border-radius: 12px; background: var(--fill); }
+/* The track carries a 1 px control border (>= 3:1 on page and card) so the control boundary is visible. */
+.segmented { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--control-border); border-radius: 12px; background: var(--fill); }
 .segmented > a, .segmented > button {
   flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: var(--s1);
   min-height: var(--control-height); padding: 0 var(--s4); border: 0; border-radius: var(--radius-control);
@@ -147,18 +173,18 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .badge-toy, .badge-pending { background: var(--caution-bg); color: var(--caution); white-space: normal; max-width: 100%; }
 .badge-real { background: var(--fill); color: var(--label); }
 .badge-unknown { border: 1px dashed var(--control-border); background: transparent; color: var(--label-2); }
-.badge-status-passed { background: var(--positive-bg); color: var(--positive); }
-.badge-status-failed, .badge-status-excluded { background: var(--negative-bg); color: var(--negative); }
+.badge-status-passed { background: var(--positive-bg); color: var(--positive-text); }
+.badge-status-failed, .badge-status-excluded { background: var(--danger-bg); color: var(--danger); }
 .tag { margin-left: var(--s2); }
-.tag-hit { background: var(--positive-bg); color: var(--positive); }
-.tag-diff { background: var(--negative-bg); color: var(--negative); }
+.tag-hit { background: var(--positive-bg); color: var(--positive-text); box-shadow: inset 0 0 0 1px var(--positive); }
+.tag-diff { background: var(--danger-bg); color: var(--danger); }
 /* Being in the history is a neutral fact (AGENTS rule 6): neutral tag, no problem colour. */
 .tag-history { background: var(--fill); color: var(--label); }
 
 /* Notices and disclosures */
 .notice { border: 1px solid var(--separator); border-radius: var(--radius); background: var(--surface); padding: var(--s3) var(--s4); margin-bottom: var(--s4); }
 .notice strong { display: block; margin-bottom: var(--s1); }
-.notice-error { border-color: transparent; background: var(--negative-bg); color: var(--negative); }
+.notice-error { border-color: transparent; background: var(--danger-bg); color: var(--danger); }
 .notice-warn { border-color: transparent; background: var(--caution-bg); color: var(--caution); }
 .notice button { min-height: var(--control-height); padding: 0 var(--s4); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
 .load-error-details { margin-top: var(--s2); }
@@ -206,13 +232,15 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .actual-panel .product-card { margin: var(--s3) 0; }
 /*
  * Colour meanings: --accent = interactive/active only; --positive = hit/passed;
- * --negative = problems only (miss, failed/excluded run, config "Differs", load error);
+ * --danger = problems only (failed/excluded run, config "Differs", load error); a miss is neutral;
+ * --model-* = one fixed colour per model, always next to a text label;
  * --caution = waiting, pending or toy caveats. Text always accompanies colour.
  * .is-hit is shared by the target row and the Actual-next-item panel so the hit reads at a glance.
  */
 .match, .miss { margin: 0; font-weight: 600; }
-.match { color: var(--positive); }
-.miss { color: var(--negative); }
+.match { color: var(--positive-text); }
+/* A miss is an ordinary outcome, not a problem: neutral text plus the word "Miss" and a cross. */
+.miss { color: var(--label-2); }
 .actual-panel.is-hit { background: var(--positive-bg); box-shadow: inset 4px 0 0 var(--positive), var(--shadow); }
 
 .product-card { display: flex; align-items: flex-start; gap: var(--s2); min-width: 0; padding: var(--s2) var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--surface); text-align: left; overflow-wrap: anywhere; font: var(--t-table); }
@@ -235,7 +263,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .ranking th.score-col, .ranking td.score { width: 120px; padding-inline: var(--s2); white-space: nowrap; }
 .ranking tr.is-hit td { background: var(--positive-bg); }
 .ranking tr.is-hit td:first-child { box-shadow: inset 4px 0 0 var(--positive); }
-.ranking tr.is-hit .rank { color: var(--positive); }
+.ranking tr.is-hit .rank { color: var(--positive-text); }
 
 /* Metric and config tables */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -254,7 +282,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .run-head .badges { display: flex; flex-wrap: wrap; gap: var(--s1); }
 .run-head .note { color: var(--label-2); font: var(--t-footnote); }
 .config-table th { width: 32%; }
-.config-table tr.diff td { background: var(--negative-bg); }
+.config-table tr.diff td { background: var(--danger-bg); }
 .config-bundle { margin-top: var(--s5); }
 .config-run { margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--separator); }
 .config-run h3 { margin: 0 0 var(--s3); }

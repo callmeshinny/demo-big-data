@@ -141,16 +141,17 @@ test("one colour, one meaning: neutral history tag, accent chart, shared hit mar
     assert.ok(start > 0, `missing rule ${selector}`);
     return css.slice(start, css.indexOf("}", start));
   };
-  assert.ok(!/--negative|--caution|--positive/.test(rule(".tag-history")), "history tag must be neutral");
+  assert.ok(!/--danger|--caution|--positive/.test(rule(".tag-history")), "history tag must be neutral");
   assert.match(rule(".tag-history"), /var\(--fill\)/);
   for (const selector of [".chart-line", ".chart-point"]) {
     assert.match(rule(selector), /var\(--accent\)/, selector);
-    assert.ok(!/--negative/.test(rule(selector)), selector);
+    assert.ok(!/--danger/.test(rule(selector)), selector);
   }
   assert.match(rule(".ranking tr.is-hit td"), /var\(--positive-bg\)/);
   assert.match(rule(".ranking tr.is-hit td:first-child"), /inset 4px 0 0 var\(--positive\)/);
   assert.match(rule(".actual-panel.is-hit"), /inset 4px 0 0 var\(--positive\)/);
-  assert.match(rule(".miss"), /var\(--negative\)/);
+  assert.match(rule(".miss"), /var\(--label-2\)/, "a miss is neutral, not a problem colour");
+  assert.ok(!/--danger/.test(rule(".miss")));
 
   const i18n = await load("/src/i18n.js");
   const data = await load("/src/data.js");
