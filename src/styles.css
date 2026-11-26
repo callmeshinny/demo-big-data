@@ -507,6 +507,7 @@ footer code { overflow-wrap: anywhere; }
 }
 /* The header stays compact in presenter mode: same sizes as the default view. */
 .presenter .topbar {
+  --s5: 24px;
   --t-lead: 600 18px/26px var(--font);
   --t-body: 400 16px/24px var(--font);
   --t-table: 400 16px/22px var(--font);
