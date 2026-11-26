@@ -35,7 +35,7 @@ The team repo `tlmthuy/Big-Data` stays the **source of truth** for data, models,
 7. **Always show original product IDs** (`p3`), never encoded IDs (`3`), using the run's own catalog.
 8. **Always show the history and the actual next item**, even when a model has no prediction. Only the recommendation area shows "Chưa có".
 9. **No large data in Git.** Commit only small JSON files for the UI. Never commit CSV, Parquet, checkpoints, raw logs or secrets.
-   - Allowed exception: `public/sample-predictions.csv` — the TV2-confirmed prediction-format sample (added 21/11, < 300 KB, not used by the UI; see `docs/SAMPLE_PREDICTION.md`).
+   - Allowed exception: public/sample-predictions.csv — prediction format sample agreed with TV2 (written confirmation pending, see docs/SAMPLE_PREDICTION.md); regenerated from the real E1 sample; < 300 KB; not used by the UI.
 10. When the data contract and this repo disagree, the contract in the team repo wins. Report the mismatch; do not silently change the shape.
 
 ## 4. Layout
