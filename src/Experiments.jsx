@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
+import { isPastStickyLine, useStickyBar } from "./sticky.js";
 import { t } from "./i18n.js";
 import { EXPERIMENTS, modelLabel } from "./data.js";
 import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
@@ -270,6 +271,13 @@ function E5Panel({ results }) {
 }
 
 export default function Experiments({ state, active, select = null }) {
+  const sticky = useStickyBar();
+  // Switching E1–E5 while scrolled down: keep the sub-nav in view and bring the new panel's top just
+  // below it (scroll-padding-top accounts for header + sub-bar). Runs once per panel switch.
+  useLayoutEffect(() => {
+    if (!isPastStickyLine(sticky.sentinel.current)) return;
+    document.getElementById(`panel-${String(active).toLowerCase()}`)?.scrollIntoView({ block: "start" });
+  }, []);
   if (state.error) return <DataLoadFailure title={t("could_not_load_e1_e5_results")} detail={state.error} />;
   if (state.loading) return <p className="loading">{t("loading_data")}</p>;
   const results = state.results;
@@ -279,7 +287,8 @@ export default function Experiments({ state, active, select = null }) {
       <h1 className="page-title">{t("experiments_e1_e5")}</h1>
       <p className="page-intro">{t("experiments_intro")}</p>
     </div>
-    <nav className="segmented subtabs glass" aria-label={t("experiment_subnav")}>{EXPERIMENTS.map((id) => (
+    <div ref={sticky.sentinel} className="sticky-sentinel" aria-hidden="true" />
+    <nav ref={sticky.bar} className={`segmented subtabs glass subbar${sticky.stuck ? " is-stuck" : ""}`} aria-label={t("experiment_subnav")}>{EXPERIMENTS.map((id) => (
       <a key={id} href={experimentHref(id)} aria-current={id === active ? "page" : undefined}>
         <span className="subtab-label"><strong>{id}</strong> · {t(`experiment_nav_${id.toLowerCase()}`)}</span>
       </a>

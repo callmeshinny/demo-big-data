@@ -157,9 +157,28 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 }
 .presenter .glass { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
 
-/* Header: sticky, hairline separator, at most 56 px tall; anchors land below it. */
+/*
+ * Sticky layers. z-index order: header (10) > sub-bar (8) > page content. Popovers (30) and an open
+ * chart tooltip (its chart is raised to 9) appear above the sub-bar; native select menus are OS layers.
+ * --sticky-top is where sub-bars stick: under the 56 px header, or at 0 where the header scrolls away.
+ * --subbar-height is published by src/sticky.js; scroll-padding-top keeps anchor jumps and keyboard
+ * focus below header + sub-bar.
+ */
+:root { --sticky-top: var(--header-height); --subbar-height: 0px; }
+html { scroll-padding-top: calc(var(--sticky-top) + var(--subbar-height) + var(--s3)); }
+
+/* Header: sticky, hairline separator, at most 56 px tall. */
 .topbar { position: sticky; top: 0; z-index: 10; border-width: 0 0 1px; }
-[id] { scroll-margin-top: calc(var(--header-height) + var(--s4)); }
+
+/* Sticky sub-bars (Experiments sub-nav, Recommendations control bar, Dataset section nav). */
+.sticky-sentinel { height: 1px; margin-bottom: -1px; pointer-events: none; }
+.subbar { position: sticky; top: var(--sticky-top); z-index: 8; transition: box-shadow 120ms ease; }
+.subbar.is-stuck { box-shadow: 0 1px 0 var(--separator), 0 6px 16px rgb(0 0 0 / .08); }
+.chart:has(.tooltip) { position: relative; z-index: 9; }
+@media print {
+  .topbar, .subbar { position: static; box-shadow: none; }
+  html { scroll-padding-top: 0; }
+}
 .topbar-inner { display: flex; align-items: center; gap: var(--s3); max-width: 1200px; min-height: calc(var(--header-height) - 1px); margin: 0 auto; padding: 0 var(--s5); }
 .brand { display: flex; flex: 0 0 auto; align-items: center; gap: var(--s3); }
 /* The title never truncates: between 1101 and 1279 px (one-row header, tight) it switches to a shorter label. */
@@ -273,7 +292,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 
 /* Control bar (glass): model segmented control, session select, presenter tip. Only --label text on glass. */
 .control-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); padding: var(--s2) var(--s3); margin: 0 0 var(--s4); border-radius: var(--radius); }
-@media (min-width: 1101px) { .control-bar { position: sticky; top: calc(var(--header-height) + var(--s2)); z-index: 5; } }
+
 .control-group { display: flex; align-items: center; gap: var(--s2); color: var(--label); font: var(--t-table); font-weight: 600; min-width: 0; }
 .control-group select { width: auto; min-width: 150px; font-weight: 400; }
 .control-label { display: inline-flex; align-items: center; gap: var(--s1); color: var(--label); }
@@ -579,7 +598,7 @@ footer code { overflow-wrap: anywhere; }
   .topbar { position: static; }
   .topbar-inner { flex-wrap: wrap; row-gap: var(--s2); padding: var(--s2) var(--s4); }
   .tabs { order: 3; flex: 1 1 100%; }
-  [id] { scroll-margin-top: var(--s4); }
+  :root { --sticky-top: 0px; }
 }
 
 @media (max-width: 760px) {

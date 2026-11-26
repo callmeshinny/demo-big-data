@@ -325,8 +325,9 @@ try {
     const page = await open("#experiments/e1", { width: 1440, height: 900 });
     const header = await page.locator(".topbar").boundingBox();
     assert.ok(header.height <= 56, `header ${header.height}`);
-    const margin = await page.locator("#panel-e1").evaluate((el) => Number.parseFloat(getComputedStyle(el).scrollMarginTop));
-    assert.ok(margin >= header.height);
+    const padding = await page.evaluate(() => Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop));
+    const subbar = await page.locator(".subbar").boundingBox();
+    assert.ok(padding >= header.height + subbar.height, `scroll-padding-top ${padding} clears header + sub-bar`);
     await page.context().close();
   });
 } finally {
