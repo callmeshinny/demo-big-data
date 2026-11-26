@@ -7,7 +7,8 @@ import { usePresenter } from "./presenter.js";
 
 /*
  * Interactive hand-written SVG charts (no chart library).
- * - Hover/focus: preview highlight + glass tooltip. Click/tap or Enter/Space: select; other marks dim.
+ * - Hover/focus: preview highlight + glass tooltip above/beside the mark, or details in the fixed area
+ *   under the plot when it does not fit (and always below 900 px). Click/tap or Enter/Space: select; other marks dim.
  *   Click again or Esc clears. Arrow keys move between marks. Every mark has a >= 44 x 44 px hit area.
  * - Selection is owned by the experiment panel, so the matching table column highlights too.
  * - A point is { key, label, y, short, display, raw, runId, source, colour, x? }. Charts never add series
@@ -33,33 +34,73 @@ export function useWidth(fallback) {
   return [ref, width];
 }
 
-/**
- * Glass tooltip. Placed by placeTooltip() so it never covers the shown/selected mark or any value or
- * category label; when no free spot exists in the frame (e.g. 375 px phones) it is shown in the card,
- * directly below the chart.
- */
-function Tooltip({ point, metric, mark, marks, labels, frameWidth, frameHeight }) {
-  const ref = useRef(null);
-  // Measure every new mark/frame once (hidden, absolutely positioned), then place it.
-  const key = `${point?.key}|${mark ? [mark.x0, mark.y0, mark.x1, mark.y1].join(",") : ""}|${frameWidth}x${frameHeight}|${marks.length}`;
-  const [state, setState] = useState({ key: null, place: null });
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (!node || !mark || state.key === key) return;
-    const size = { w: node.offsetWidth, h: node.offsetHeight };
-    setState({ key, place: placeTooltip({ size, frame: { w: frameWidth, h: frameHeight }, mark, marks, labels }) ?? "below" });
-  });
-  if (!point) return null;
-  const place = state.key === key ? state.place : null;
-  const below = place === "below";
-  const style = below ? undefined : place ? { left: place.left, top: place.top } : { left: 0, top: 0, visibility: "hidden" };
-  return <div ref={ref} className={`tooltip glass${below ? " tooltip-below" : ""}`} role="status" style={style}>
+/** Tooltip text: display value, raw value, unit, run ID and source file. */
+function TooltipBody({ point, metric }) {
+  return <>
     <strong>{point.label}</strong>
     <span>{metric}: <b>{point.display}</b></span>
     <span>{t("tooltip_raw")}: <code>{point.raw}</code></span>
     {point.unit && <span>{t("tooltip_unit")}: {point.unit}</span>}
     {(point.runId || point.source) && <span>{point.runId && <>{t("tooltip_run")}: <code>{point.runId}</code></>}{point.runId && point.source && " · "}{point.source && <>{t("tooltip_source")}: <code>{point.source}</code></>}</span>}
+  </>;
+}
+
+/** True below 900 px: details always go in the reserved area under the chart, never float. */
+function useNarrow() {
+  const query = "(max-width: 899px)";
+  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia(query).matches);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return undefined;
+    const list = window.matchMedia(query);
+    const update = () => setNarrow(list.matches);
+    update();
+    list.addEventListener?.("change", update);
+    return () => list.removeEventListener?.("change", update);
+  }, []);
+  return narrow;
+}
+
+/**
+ * Floating glass tooltip, placed by placeTooltip() above or beside the mark so it never covers the
+ * shown/selected mark or any label. It is measured once per mark (hidden); if no free spot exists it
+ * reports "area" and the details are shown in the reserved area under the chart instead.
+ */
+function FloatingTooltip({ point, metric, mark, marks, labels, frameWidth, frameHeight, onPlace, place }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node || !mark || place) return;
+    const size = { w: node.offsetWidth, h: node.offsetHeight };
+    onPlace(placeTooltip({ size, frame: { w: frameWidth, h: frameHeight }, mark, marks, labels }) ?? "area");
+  });
+  if (!point || place === "area") return null;
+  const style = place ? { left: place.left, top: place.top } : { left: 0, top: 0, visibility: "hidden" };
+  return <div ref={ref} className="tooltip glass" role="status" aria-hidden={place ? undefined : true} style={style}>
+    <TooltipBody point={point} metric={metric} />
   </div>;
+}
+
+/**
+ * Reserved detail area under the plot. The hint and every mark's details share one grid cell, so the
+ * area is always as tall as the tallest content: hovering or selecting never changes the card height.
+ */
+function DetailArea({ points, metric, active }) {
+  return <div className="chart-detail" aria-live="polite">
+    <p className={`chart-detail-hint${active == null ? " is-active" : ""}`} aria-hidden={active == null ? undefined : true}>{t("chart_detail_hint")}</p>
+    {points.map((point) => <div key={point.key} className={`chart-detail-item${active === point.key ? " is-active tooltip-in-area" : ""}`}
+      aria-hidden={active === point.key ? undefined : true}>
+      <TooltipBody point={point} metric={metric} />
+    </div>)}
+  </div>;
+}
+
+/** Floating placement per shown mark; "area" when it does not fit (or always on narrow screens). */
+function useTooltipPlacement(shown, mark, frameWidth, frameHeight, markCount) {
+  const narrow = useNarrow();
+  const key = `${shown?.key}|${mark ? [mark.x0, mark.y0, mark.x1, mark.y1].join(",") : ""}|${frameWidth}x${frameHeight}|${markCount}`;
+  const [state, setState] = useState({ key: null, place: null });
+  const place = narrow ? "area" : state.key === key ? state.place : null;
+  return { place, onPlace: (next) => setState({ key, place: next }), inArea: Boolean(shown) && place === "area" };
 }
 
 function useMarks(points, selected, onSelect) {
@@ -130,6 +171,7 @@ export function BarChart({ title, metric, yLabel, points, selected, onSelect }) 
     ...bar.lines.map((line) => ({ x0: line.x - measureText(line.text, layout.categoryFont) / 2, x1: line.x + measureText(line.text, layout.categoryFont) / 2, y0: line.y - layout.categoryFont, y1: line.y + 3 })),
   ]).concat(layout.ticks.map((tick) => ({ x0: tick.x - textWidth(tick.text, fontSize), x1: tick.x, y0: tick.cy - fontSize, y1: tick.cy + 4 })));
   const barMarks = layout.bars.filter((bar) => bar.key === shown?.key || bar.key === selected).map(barBox);
+  const tip = useTooltipPlacement(shown, anchorBar ? barBox(anchorBar) : null, width, height, barMarks.length);
   return <figure className={`chart${selected != null ? " has-selection" : ""}`}>
     <figcaption>{title}</figcaption>
     <div ref={ref} className="chart-frame">
@@ -147,8 +189,10 @@ export function BarChart({ title, metric, yLabel, points, selected, onSelect }) 
           {bar.lines.map((line) => <text key={line.y} className="chart-category" x={line.x} y={line.y} textAnchor="middle" style={{ fontSize: layout.categoryFont }}>{line.text}</text>)}
         </g>)}
       </svg>
-      <Tooltip point={shown} metric={metric} mark={anchorBar ? barBox(anchorBar) : null} marks={barMarks} labels={barLabels} frameWidth={width} frameHeight={height} />
+      {shown && tip.place !== "area" && <FloatingTooltip point={shown} metric={metric} mark={anchorBar ? barBox(anchorBar) : null} marks={barMarks} labels={barLabels}
+        frameWidth={width} frameHeight={height} place={tip.place} onPlace={tip.onPlace} />}
     </div>
+    <DetailArea points={points} metric={metric} active={tip.inArea ? shown.key : null} />
   </figure>;
 }
 
@@ -171,6 +215,7 @@ export function LineChart({ title, metric, yLabel, xLabel, points, selected, onS
   };
   const lineLabels = [...layout.pointLabels, ...layout.xLabels, ...layout.ticks].filter((label) => label?.visible).map(labelBox);
   const lineMarks = placed.filter((point) => point.key === shown?.key || point.key === selected).map(pointBox);
+  const tip = useTooltipPlacement(shown, anchor ? pointBox(anchor) : null, width, height, lineMarks.length);
   const path = placed.map((point, index) => `${index ? "L" : "M"}${point.cx},${point.cy}`).join(" ");
   return <figure className={`chart${selected != null ? " has-selection" : ""}`}>
     <figcaption>{title}</figcaption>
@@ -192,8 +237,10 @@ export function LineChart({ title, metric, yLabel, xLabel, points, selected, onS
           {layout.pointLabels[index]?.visible && <text x={layout.pointLabels[index].x} y={layout.pointLabels[index].y} textAnchor={layout.pointLabels[index].anchor} className="chart-value">{layout.pointLabels[index].text}</text>}
         </g>)}
       </svg>
-      <Tooltip point={shown} metric={metric} mark={anchor ? pointBox(anchor) : null} marks={lineMarks} labels={lineLabels} frameWidth={width} frameHeight={height} />
+      {shown && tip.place !== "area" && <FloatingTooltip point={shown} metric={metric} mark={anchor ? pointBox(anchor) : null} marks={lineMarks} labels={lineLabels}
+        frameWidth={width} frameHeight={height} place={tip.place} onPlace={tip.onPlace} />}
     </div>
+    <DetailArea points={placed} metric={metric} active={tip.inArea ? shown.key : null} />
   </figure>;
 }
 

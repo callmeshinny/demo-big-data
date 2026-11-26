@@ -472,7 +472,8 @@ export const messages = {
     "bottleneck_raw_read": "Raw read",
     "bottleneck_preprocessing_excluding_raw_read_and_first_seen": "Preprocessing (excl. raw read and first-seen)",
     "bottleneck_train_including_sequence_io": "Training (incl. sequence I/O)",
-    "bottleneck_final_evaluation_including_io": "Final evaluation (incl. I/O)"
+    "bottleneck_final_evaluation_including_io": "Final evaluation (incl. I/O)",
+    "chart_detail_hint": "Select a bar or point for details"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -947,7 +948,8 @@ export const messages = {
     "bottleneck_raw_read": "Đọc dữ liệu thô",
     "bottleneck_preprocessing_excluding_raw_read_and_first_seen": "Tiền xử lý (không gồm đọc thô và first-seen)",
     "bottleneck_train_including_sequence_io": "Huấn luyện (gồm I/O sequence)",
-    "bottleneck_final_evaluation_including_io": "Đánh giá cuối (gồm I/O)"
+    "bottleneck_final_evaluation_including_io": "Đánh giá cuối (gồm I/O)",
+    "chart_detail_hint": "Chọn một cột hoặc điểm để xem chi tiết"
   }
 };
 

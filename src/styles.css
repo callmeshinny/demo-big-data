@@ -432,7 +432,15 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .mark,
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .chart-value { opacity: .35; }
 .tooltip { position: absolute; z-index: 20; display: grid; gap: 0; max-width: min(280px, 100%); padding: 6px var(--s3); border-radius: var(--radius-control); color: var(--label); font: var(--t-footnote); pointer-events: none; box-shadow: 0 6px 20px rgb(0 0 0 / .16); overflow-wrap: anywhere; }
-.tooltip-below { position: static; max-width: 100%; margin-top: var(--s2); box-shadow: none; }
+/* Fixed detail area under each plot: the hint and every mark's details share one grid cell, so the
+   area is as tall as the tallest content and hovering/selecting never shifts the layout. */
+.chart-detail { display: grid; margin-top: var(--s2); }
+.chart-detail > * { grid-area: 1 / 1; visibility: hidden; margin: 0; }
+.chart-detail > .is-active { visibility: visible; }
+.chart-detail-hint { align-self: center; color: var(--label-2); font: var(--t-footnote); padding: 6px var(--s3); }
+.chart-detail-item { display: grid; align-content: start; padding: 6px var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-footnote); overflow-wrap: anywhere; }
+.chart-detail-item strong, .chart-detail-item b { font-weight: 600; }
+.chart-detail-item code { background: transparent; padding: 0; }
 .tooltip strong { font-weight: 600; }
 .tooltip b { font-weight: 600; }
 .tooltip code { background: transparent; padding: 0; }

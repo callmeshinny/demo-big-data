@@ -91,7 +91,7 @@ try {
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute("data-mark")), await marks.nth(1).getAttribute("data-mark"));
     await page.keyboard.press("Enter");
     assert.equal(await marks.nth(1).getAttribute("aria-pressed"), "true");
-    assert.ok(await page.locator(".tooltip").first().isVisible(), "tooltip for the focused mark");
+    assert.ok(await page.locator(".tooltip, .chart-detail-item.is-active").first().isVisible(), "details for the focused mark");
     const ring = await marks.nth(1).locator(".hit").evaluate((el) => getComputedStyle(el).stroke);
     assert.notEqual(ring, "none");
     await page.keyboard.press("Escape");
@@ -120,7 +120,7 @@ try {
       const mark = page.locator(`[data-mark='${key}']`).first();
       await mark.scrollIntoViewIfNeeded();
       await mark.click();
-      const box = await page.locator(".tooltip").first().boundingBox();
+      const box = await page.locator(".tooltip, .chart-detail-item.is-active").first().boundingBox();
       assert.ok(box && box.x >= 0 && box.x + box.width <= 375, `${key}: ${JSON.stringify(box)}`);
       await page.keyboard.press("Escape");
     }
@@ -137,12 +137,39 @@ try {
         await page.mouse.move(0, 0);
         const hits = await page.evaluate(() => {
           const chart = document.querySelector(".chart.has-selection");
-          const tip = chart.querySelector(".tooltip").getBoundingClientRect();
+          const tip = chart.querySelector(".tooltip, .chart-detail-item.is-active").getBoundingClientRect();
           const overlap = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
           const things = [...chart.querySelectorAll(".mark-group.is-selected .mark, .chart-value, .chart-category, .chart-tick")];
           return things.filter((el) => { const r = el.getBoundingClientRect(); return r.width && overlap(tip, r); }).map((el) => el.textContent || el.tagName);
         });
         assert.deepEqual(hits, [], `${hash} ${key} @${width}`);
+        await page.context().close();
+      }
+    }
+  });
+
+  await check("chart card height is identical before hover, during hover and after selecting each mark (E1–E5, 1280 and 375)", async () => {
+    for (const width of [1280, 375]) {
+      for (const hash of ["#experiments/e1", "#experiments/e2", "#experiments/e3", "#experiments/e4", "#experiments/e5"]) {
+        const page = await open(hash, { width, height: 900 });
+        const heights = () => page.evaluate(() => [...document.querySelectorAll("figure.chart")].map((figure) => figure.getBoundingClientRect().height));
+        const base = await heights();
+        assert.ok(base.length >= 2, `${hash}: charts rendered`);
+        const marks = page.locator("[data-mark]");
+        const count = await marks.count();
+        for (let index = 0; index < count; index += 1) {
+          const mark = marks.nth(index);
+          await mark.scrollIntoViewIfNeeded();
+          await mark.hover();
+          assert.deepEqual(await heights(), base, `${hash} @${width}: hover mark ${index}`);
+          await mark.click();
+          assert.deepEqual(await heights(), base, `${hash} @${width}: select mark ${index}`);
+          await page.mouse.move(0, 0);
+          assert.deepEqual(await heights(), base, `${hash} @${width}: selected, pointer away, mark ${index}`);
+          await page.keyboard.press("Escape");
+        }
+        const hint = await page.locator(".chart-detail-hint.is-active").first().innerText();
+        assert.equal(hint, "Select a bar or point for details");
         await page.context().close();
       }
     }
