@@ -148,15 +148,12 @@ try {
         ]) {
           await session.selectOption(id);
           await page.locator(".actual-panel").getByText(result, { exact: true }).waitFor();
-          const score = page.locator(".ranking td.score").first();
-          assert.equal(await score.innerText(), t("not_available_yet"));
-          assert.ok(await score.evaluate((cell) => {
-            const text = document.createRange();
-            text.selectNodeContents(cell);
-            return text.getBoundingClientRect().width <= cell.clientWidth && getComputedStyle(cell).whiteSpace === "nowrap";
-          }));
+          // The shipped predictions carry no scores: no Score column, one note under the table.
+          assert.equal(await page.locator(".ranking th.score-col, .ranking td.score").count(), 0);
+          const rankedNote = page.locator(".ranked-ids-note");
+          assert.equal(await rankedNote.innerText(), t("models_export_ranked_ids_only"));
           assert.equal(await page.locator(".product-icon").count(), 0);
-          assert.ok(await contrast(score) >= 4.5);
+          assert.ok(await contrast(rankedNote) >= 4.5);
           for (const className of ["tag-history", "tag-hit"]) {
             for (const tag of await page.locator(`.${className}`).all()) {
               assert.ok(await contrast(tag) >= 4.5, `${className} text contrast`);

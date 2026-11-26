@@ -80,7 +80,7 @@ function OfficialE5Panel({ results }) {
   const { e5Table, charts, registrySummary } = buildScalingView(results);
   return <section className="panel scaling-panel">
     <div className="panel-heading"><h2>{t("e5_scalability")}</h2></div>
-    <InterpretationNote dictionaryKey="E5_derived_from_E2" />
+    {results.E5_aggregation_only === true && <InterpretationNote dictionaryKey="E5_derived_from_E2" source={t("source_metrics_flag", "E5_aggregation_only")} />}
     {registrySummary && <p className="registry-summary">{t(
       "run_registry_summary",
       registrySummary.passed,

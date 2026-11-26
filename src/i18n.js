@@ -3,7 +3,7 @@ export const messages = {
     "recommendation_tab_intro": "Explore saved next-item predictions for browsing sessions.",
     "data_tab_intro": "This tab summarizes the source data, sampling, cleanup, and session splits.",
     "experiments_tab_intro": "This tab presents official experiment results and their measurement limits.",
-    "MISSING": "Not available",
+    "MISSING": "Not available yet",
     "not_measured": "Not measured",
     "e1_context": "{0}% subset · {1} partition {2} · {3} sessions · single run, single seed",
     "e1_recall_20": "Recall@20",
@@ -21,6 +21,7 @@ export const messages = {
     "e1_sampled_rss_scope": "Sampled RSS scope",
     "e1_sampled_gpu_scope": "Sampled GPU process memory scope",
     "source_dictionary": "Source: data_dictionary.json → {0}",
+    "source_metrics_flag": "Source: metrics.json → {0}",
     "note_inference_protocol": "Evaluation time uses full_evaluation_wall_v1 and includes I/O and metrics.",
     "note_train_seconds_including_sequence_io": "Training time includes sequence I/O and excludes daily validation.",
     "note_sampled_rss_bytes_descriptive_only": "Sampled RSS may double-count shared pages or miss short peaks, so it does not support RAM comparisons across configurations.",
@@ -44,7 +45,7 @@ export const messages = {
     "e5_normalized_seconds_chart": "Seconds per million events vs events",
     "e5_normalized_seconds_axis": "Seconds per million events (s)",
     "e5_x_axis_events": "Events (count)",
-    "E5_derived_from_E2": "These E5 rows are derived from verified E2 runs, not additional independent runs.",
+    "note_E5_derived_from_E2": "These E5 rows are derived from verified E2 runs, not additional independent runs.",
     "run_registry_summary": "Run registry: {0} passed · {1} derived from verified E2 · {2} excluded.",
     "e3_train_batch_header": "Train batch {0}",
     "e3_context": "{0} · {1}% subset · {2} partition {3} · {4} sessions · eval batch {5} · only {6} changes",
@@ -391,7 +392,7 @@ export const messages = {
     "identical_split_membership": "Identical split membership",
     "yes": "Yes",
     "no": "No",
-    "ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported (TV2 run_neural.py)."
+    "models_export_ranked_ids_only": "Models export ranked product IDs only; per-item scores are not exported."
   },
   "vi": {
     "recommendation_tab_intro": "Xem kết quả dự đoán sản phẩm tiếp theo đã lưu cho các phiên duyệt.",
@@ -415,6 +416,7 @@ export const messages = {
     "e1_sampled_rss_scope": "Phạm vi RSS được lấy mẫu",
     "e1_sampled_gpu_scope": "Phạm vi bộ nhớ GPU tiến trình được lấy mẫu",
     "source_dictionary": "Nguồn: data_dictionary.json → {0}",
+    "source_metrics_flag": "Nguồn: metrics.json → {0}",
     "note_inference_protocol": "Thời gian đánh giá dùng full_evaluation_wall_v1 và bao gồm I/O cùng các metric.",
     "note_train_seconds_including_sequence_io": "Thời gian huấn luyện bao gồm I/O của sequence và không gồm validation hằng ngày.",
     "note_sampled_rss_bytes_descriptive_only": "RSS lấy mẫu có thể đếm trùng trang dùng chung hoặc bỏ lỡ đỉnh ngắn, nên không dùng để so sánh RAM giữa các cấu hình.",
@@ -438,7 +440,7 @@ export const messages = {
     "e5_normalized_seconds_chart": "Giây trên một triệu sự kiện theo số sự kiện",
     "e5_normalized_seconds_axis": "Giây trên một triệu sự kiện (s)",
     "e5_x_axis_events": "Số sự kiện",
-    "E5_derived_from_E2": "Các dòng E5 này được suy ra từ những lượt E2 đã xác minh, không phải các lượt chạy độc lập bổ sung.",
+    "note_E5_derived_from_E2": "Các dòng E5 này được suy ra từ những lượt E2 đã xác minh, không phải các lượt chạy độc lập bổ sung.",
     "run_registry_summary": "Run registry: {0} thành công · {1} suy ra từ E2 đã xác minh · {2} lượt bị loại.",
     "e3_train_batch_header": "Batch huấn luyện {0}",
     "e3_context": "{0} · tập con {1}% · partition {2} {3} · {4} phiên · eval batch {5} · chỉ thay đổi {6}",
@@ -785,7 +787,7 @@ export const messages = {
     "identical_split_membership": "Thành viên các tập chia giống nhau",
     "yes": "Có",
     "no": "Không",
-    "ranked_ids_only": "Model chỉ xuất mã sản phẩm theo thứ hạng; điểm từng mục chưa được xuất (TV2 run_neural.py)."
+    "models_export_ranked_ids_only": "Model chỉ xuất mã sản phẩm theo thứ hạng; điểm từng mục chưa được xuất."
   }
 };
 
@@ -803,7 +805,11 @@ export function setLanguage(next) {
   language = next === "vi" ? "vi" : "en";
 }
 
+/** Keys looked up but not defined; tests assert this stays empty. */
+export const missingKeys = new Set();
+
 export function t(key, ...values) {
+  if (messages[language][key] === undefined && messages.en[key] === undefined) missingKeys.add(key);
   return (messages[language][key] ?? messages.en[key] ?? key)
     .replace(/\{(\d+)\}/g, (_, index) => String(values[index] ?? ""));
 }

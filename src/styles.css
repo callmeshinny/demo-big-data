@@ -221,7 +221,7 @@ footer { border-top: 1px solid var(--line); margin-top: 16px; padding: 16px 4px 
 .ranking th:first-child, .ranking td:first-child { width: 52px; }
 .ranking th:first-child { padding-inline: 4px; text-align: center; }
 .ranking th:first-child { white-space: nowrap; overflow-wrap: normal; }
-.ranking th:last-child, .ranking td:last-child { width: 106px; padding-inline: 6px; }
+.ranking th.score-col, .ranking td.score { width: 106px; padding-inline: 6px; }
 .ranking th { overflow-wrap: anywhere; }
 .tag-history { background: var(--rose-bg); color: var(--burgundy); }
 .meta-row { min-width: 0; overflow-wrap: anywhere; }

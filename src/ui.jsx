@@ -21,10 +21,10 @@ export function DataLoadFailure({ title, detail }) {
   </Notice>;
 }
 
-export function InterpretationNote({ dictionaryKey }) {
+export function InterpretationNote({ dictionaryKey, source }) {
   return <p className="interpretation-note">
     <span>{interpretationNoteText(dictionaryKey)}</span>
-    <small>{t("source_dictionary", dictionaryKey)}</small>
+    <small>{source ?? t("source_dictionary", dictionaryKey)}</small>
   </p>;
 }
 

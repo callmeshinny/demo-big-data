@@ -37,6 +37,7 @@ class OfficialResultsExportTest(unittest.TestCase):
         e4 = next(row for row in data["tables"]["E4"] if row["run_id"] == "e4-full-010-csv")
         self.assertEqual(e4["bytes"], 134004153)
         self.assertEqual(len(data["tables"]["E5"]), 4)
+        self.assertIs(data["E5_aggregation_only"], True)
         self.assertEqual(data["run_registry_summary"], {
             "passed": 11,
             "derived_from_verified_E2": 4,

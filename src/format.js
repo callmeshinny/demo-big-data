@@ -71,6 +71,11 @@ export function formatNumberOnly(formatter, value, displayUnit) {
   return { ...formatted, text: formatted.text.replace(/\s*(?:s\/million events|ms\/session|s|MiB|GiB|%)$/, "") };
 }
 
+export function formatScore(value) {
+  if (missing(value)) return { text: MISSING(), raw: String(value) };
+  return result(value, formatGeneralNumber(value));
+}
+
 export function formatCount(value) {
   if (missing(value)) return { text: MISSING(), raw: String(value) };
   return result(value, Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 }));

@@ -1,6 +1,8 @@
 import { t } from "./i18n.js";
 import React, { useState } from "react";
 import { formatValue, INVALID_PRODUCT_ID, modelLabel, sessionContext } from "./data.js";
+import { buildE1View } from "./e1.js";
+import { formatScore } from "./format.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 import { DataLoadFailure, Issues, Notice } from "./ui.jsx";
@@ -12,6 +14,15 @@ function runOptions(group) {
     label: modelLabel(run.model),
     run,
   }));
+}
+
+/** Same cells as the E1 table, so the strip and the table always agree. */
+export function e1StripRows(official) {
+  if (!official?.tables?.E1?.length) return [];
+  const view = buildE1View(official);
+  const recall = view.rows.find((row) => row.field === "Recall@20");
+  const ndcg = view.rows.find((row) => row.field === "NDCG@20");
+  return view.models.map(({ label }, index) => ({ label, recall: recall.cells[index], ndcg: ndcg.cells[index] }));
 }
 
 export default function Recommendation({ state, productInfo, protocol, official }) {
@@ -42,7 +53,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
   const run = option?.run ?? null;
   const context = sessionContext(group, sessionId);
   const session = run?.sessions.find((s) => s.user_session === sessionId) ?? null;
-  const officialE1 = official?.tables?.E1 ?? [];
+  const e1Strip = e1StripRows(official);
   const sample = run?.sample;
   const count = sample?.n_selected ?? sessionIds.length;
   const total = sample?.n_total ?? sessionIds.length;
@@ -76,9 +87,9 @@ export default function Recommendation({ state, productInfo, protocol, official 
       </section>
       <section className="e1-accuracy" aria-label={t("official_e1_metrics")}>
         <strong className="e1-accuracy-title">{t("official_e1_metrics")}</strong>
-        {officialE1.map((row) => <div key={row.run_id}><strong>{modelLabel(row.model)}</strong>
-          <span>{t("e1_recall_20")}: {Number(row["Recall@20"]).toFixed(4)}</span>
-          <span>{t("e1_ndcg_20")}: {Number(row["NDCG@20"]).toFixed(4)}</span>
+        {e1Strip.map(({ label, recall, ndcg }) => <div key={label}><strong>{label}</strong>
+          <span title={recall.raw}>{t("e1_recall_20")}: {recall.text}</span>
+          <span title={ndcg.raw}>{t("e1_ndcg_20")}: {ndcg.text}</span>
         </div>)}
       </section>
 
@@ -138,7 +149,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
             ) : (
               <>
                 <table className="ranking">
-                  <thead><tr><th scope="col">{t("rank")}</th><th scope="col">{t("products")}</th><th scope="col">{t("score")}</th></tr></thead>
+                  <thead><tr><th scope="col">{t("rank")}</th><th scope="col">{t("products")}</th>{run.scoreAvailable && <th scope="col" className="score-col">{t("score")}</th>}</tr></thead>
                   <tbody>
                     {session.recommendations.map((r) => {
                       const isTarget = r.product_id === session.target;
@@ -151,13 +162,15 @@ export default function Recommendation({ state, productInfo, protocol, official 
                             {isTarget && <span className="tag tag-hit">{t("actual_item")}</span>}
                             {inHistory && <span className="tag tag-history">{t("in_history")}</span>}
                           </td>
-                          <td className="missing score"><small>{t("not_available_yet")}</small></td>
+                          {run.scoreAvailable && (r.score === null
+                            ? <td className="missing score">{t("not_available_yet")}</td>
+                            : <td className="score num" title={formatScore(r.score).raw}>{formatScore(r.score).text}</td>)}
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
-                {!run.scoreAvailable && <p className="definition">{t("ranked_ids_only")}</p>}
+                {!run.scoreAvailable && <p className="definition ranked-ids-note">{t("models_export_ranked_ids_only")}</p>}
               </>
             )}
           </section>

@@ -109,6 +109,7 @@ def export(package_root):
         "dictionary": dictionary,
         "excluded": registry["excluded"],
         "tables": metrics["tables"],
+        "E5_aggregation_only": metrics.get("E5_aggregation_only"),
         "configs": configs,
         "vm_environment": vm_environment,
     }

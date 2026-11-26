@@ -21,9 +21,9 @@ test("configuration details keep planned and actual values distinct and localize
   assert.equal(gru.batch_size.planned, "256");
   assert.equal(gru.batch_size.actual, "256");
   assert.equal(gru.batch_size.differs, false);
-  assert.equal(gru.eval_batch_size.planned, "Not available");
+  assert.equal(gru.eval_batch_size.planned, "Not available yet");
   assert.equal(gru.eval_batch_size.actual, "32");
-  assert.equal(gru.sequence_length.actual, "Not available");
+  assert.equal(gru.sequence_length.actual, "Not available yet");
   assert.equal(gru.learning_rate.differs, false);
 });
 

@@ -32,6 +32,6 @@ test("number-only formatting preserves the raw value and accepts a shared byte u
 });
 
 test("missing values use localized MISSING text and retain raw tooltip values", () => {
-  assert.deepEqual(formatRatio(null), { text: "Not available", raw: "null" });
-  assert.equal(formatRatio(undefined).text, "Not available");
+  assert.deepEqual(formatRatio(null), { text: "Not available yet", raw: "null" });
+  assert.equal(formatRatio(undefined).text, "Not available yet");
 });
