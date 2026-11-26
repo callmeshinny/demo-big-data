@@ -67,7 +67,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
         <span className="badge badge-real">{t("real_e1_predictions_partition", group.evalPartition ?? "—")}</span>
         <span>{t("showing_fixed_hash_sample", formatValue(count), formatValue(total), sample?.seed ?? "—")}</span>
       </div>
-      <details className="method-details">
+      <details className="method-details glass">
         <summary>{t("method_details_and_sources")}</summary>
         <p>{t("recommendation_tab_intro")}</p>
         <p>{t("recall_20_measures_how_often_the")}</p>

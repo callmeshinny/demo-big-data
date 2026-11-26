@@ -183,7 +183,7 @@ test("Recommendation: intro folded into method details, presenter tip computed, 
   for (const locale of ["en", "vi"]) {
     i18n.setLanguage(locale);
     const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
-    const details = html.slice(html.indexOf('<details class="method-details"'), html.indexOf("</details>"));
+    const details = html.slice(html.indexOf('<details class="method-details glass"'), html.indexOf("</details>"));
     assert.ok(details.includes(i18n.t("recommendation_tab_intro")), locale);
     assert.ok(details.includes(i18n.t("presenter_hit_tip", "21546", 3)), locale);
     assert.ok(html.indexOf('class="controls"') < html.indexOf('class="e1-accuracy"'), locale);

@@ -110,7 +110,14 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); }
+/* A very soft tint behind the page so glass reads as glass. --bg-tint is lighter than --bg in light
+   mode and near-black in dark mode, so it never lowers text contrast (tested). */
+body {
+  margin: 0; min-width: 320px; min-height: 100vh;
+  background: radial-gradient(1100px 520px at 12% -8%, var(--bg-tint), transparent 70%), var(--bg);
+  background-attachment: fixed;
+}
+@media (prefers-contrast: more), (forced-colors: active) { body { background: var(--bg); } }
 h1, h2, h3, h4 { margin: 0; }
 p { margin: 0 0 var(--s3); }
 code { font-family: var(--mono); font-size: inherit; background: var(--fill); border-radius: 6px; padding: 0 var(--s1); overflow-wrap: anywhere; }
@@ -123,17 +130,29 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   outline-offset: 2px;
 }
 
-/* Header: sticky, translucent, hairline separator */
-.topbar {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
+/*
+ * Glass (selective translucency). Used ONLY for: the sticky header, the control bars
+ * (model/session, segmented controls), chart tooltips and glossary popovers, and the
+ * "Method details & sources" panel. Never on data cards, tables or chart plot areas.
+ * Only --label text sits directly on glass (tests/contrast.test.js checks the worst case).
+ */
+.glass {
+  background: var(--glass);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--separator);
+  border: 1px solid var(--separator);
 }
-@media (prefers-reduced-transparency: reduce) {
-  .topbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--surface); }
 }
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more), (forced-colors: active) {
+  .glass { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.presenter .glass { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* Header: sticky, hairline separator, at most 56 px tall; anchors land below it. */
+.topbar { position: sticky; top: 0; z-index: 10; border-width: 0 0 1px; }
+[id] { scroll-margin-top: calc(var(--header-height) + var(--s4)); }
 .topbar-inner { display: flex; align-items: center; gap: var(--s4); max-width: 1200px; margin: 0 auto; padding: var(--s3) var(--s5); }
 .brand { display: flex; flex: 0 1 auto; align-items: center; gap: var(--s3); min-width: 0; }
 .brand h1 { font: var(--t-title); color: var(--label); }
@@ -191,7 +210,8 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .load-error-details pre { margin: var(--s2) 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: var(--t-footnote); font-family: var(--mono); }
 .issues { margin-bottom: var(--s4); border: 1px dashed var(--caution); border-radius: var(--radius-control); padding: var(--s2) var(--s3); background: var(--caution-bg); color: var(--caution); font: var(--t-footnote); }
 details > summary { cursor: pointer; font-weight: 600; min-height: 28px; }
-.method-details, .toy-format-example, .config { margin: var(--s3) 0; border: 1px solid var(--separator); border-radius: var(--radius-control); padding: var(--s3) var(--s4); background: var(--surface); }
+.method-details, .toy-format-example, .config { margin: var(--s3) 0; border: 1px solid var(--separator); border-radius: var(--radius-control); padding: var(--s3) var(--s4); }
+.toy-format-example, .config { background: var(--surface); }
 
 /* Controls */
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); margin-bottom: var(--s3); }

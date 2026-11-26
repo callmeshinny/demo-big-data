@@ -108,7 +108,7 @@ function App() {
 
   return (
     <>
-      <header className="topbar">
+      <header className="topbar glass">
         <div className="topbar-inner">
         <div className="brand">
           {logo && <img className="brand-logo" src={logo} alt="" />}
