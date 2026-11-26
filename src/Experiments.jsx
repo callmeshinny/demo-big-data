@@ -19,7 +19,9 @@ const missingText = () => t("MISSING");
 function point({ key, label, value, formatter, unit, runId, source, colour, x, displayUnit }) {
   const full = formatter(value, displayUnit);
   const short = formatNumberOnly(formatter, value, displayUnit).text;
-  return { key, label, y: isMissing(value) ? null : value, short, display: full.text, raw: full.raw, unit, runId, source, colour, x };
+  // Bytes are plotted in the displayed unit (MiB/GiB) so the axis matches its title; the raw byte count stays in the tooltip.
+  const scale = displayUnit === "GiB" ? 1024 ** 3 : displayUnit === "MiB" ? 1024 ** 2 : 1;
+  return { key, label, y: isMissing(value) ? null : value / scale, short, display: full.text, raw: full.raw, unit, runId, source, colour, x };
 }
 
 /** Panel shell: title + subtitle, one plain-language takeaway, charts, table, one shared note block. */
@@ -201,7 +203,7 @@ function E4Panel({ results }) {
   const runs = results?.tables?.E4 ?? [];
   const label = (run) => String(run.format ?? missingText()).toUpperCase();
   const chartPoints = (field, formatter, unit) => runs.map((run) => point({
-    key: run.run_id, label: label(run), value: run[field], formatter, displayUnit: unit, unit, runId: run.run_id, source: basename(run.source_metrics),
+    key: run.run_id, label: label(run), value: run[field], formatter, displayUnit: formatter === formatBytes ? unit : undefined, unit, runId: run.run_id, source: basename(run.source_metrics),
   }));
   const [a, b] = runs;
   const takeaway = a && b ? t("e4_takeaway", label(a), formatBytes(a.bytes, "MiB").text, formatSeconds(a.read_seconds).text, label(b), formatBytes(b.bytes, "MiB").text, formatSeconds(b.read_seconds).text) : missingText();

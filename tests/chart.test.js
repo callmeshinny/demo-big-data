@@ -60,3 +60,11 @@ test("labels wrap to at most two lines", () => {
   assert.equal(wrapLabel("Train batch 128", 70, 13).length, 2);
   assert.ok(wrapLabel("Popularity", 30, 13)[0].endsWith("…"));
 });
+
+test("E4 file-size chart is plotted in MiB, matching its axis title", async () => {
+  const source = readFileSync(new URL("../src/Experiments.jsx", import.meta.url), "utf8");
+  assert.match(source, /displayUnit === "MiB" \? 1024 \*\* 2/);
+  const bytes = official.tables.E4.map((run) => run.bytes / 1024 ** 2);
+  const layout = barLayout(bytes.map((y, index) => ({ key: String(index), label: "x", y, short: y.toFixed(1) })), { width: 400 });
+  assert.ok(layout.axis.max < 1000, `axis in MiB, not bytes (max ${layout.axis.max})`);
+});

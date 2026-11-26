@@ -421,6 +421,8 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .selection-bar a { color: var(--accent); font-weight: 600; }
 .link-button { min-height: var(--control-height); padding: 0 var(--s3); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; }
 
+@media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+
 /* Experiment panels */
 .experiment-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-bottom: var(--s1); }
 .experiment-subtitle { color: var(--label-2); margin: 0 0 var(--s3); }
