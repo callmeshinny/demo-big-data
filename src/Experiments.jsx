@@ -9,6 +9,7 @@ import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 import { experimentHref } from "./navigation.js";
 import { BarChart, LineChart, useSelection } from "./Chart.jsx";
 import { usePresenter } from "./presenter.js";
+import { Glossary } from "./Glossary.jsx";
 import { modelColourKey } from "./Recommendation.jsx";
 
 const basename = (value) => (typeof value === "string" && value ? value.split("/").at(-1) : null);
@@ -106,7 +107,7 @@ function E1Panel({ results }) {
     : missingText();
   const rows = view.rows.map((row, index) => ({ ...row, primary: index < 2, group: index === 2 ? t("time_and_memory_secondary") : null }));
   return <Panel id="E1" title={`E1 · ${t("experiment_nav_e1")}`} subtitle={formatE1Context(view.context)} takeaway={takeaway}>
-    <p className="fair-note">{t("e1_fair_note")}</p>
+    <p className="fair-note">{t("e1_fair_note")} <span className="terms">{t("terms_label")} {t("e1_recall_20")} <Glossary term="recall" /> {t("e1_ndcg_20")} <Glossary term="ndcg" /></span></p>
     <div className="charts">
       <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={recall} selected={selected} onSelect={setSelected} />
       <BarChart title={`${t("e1_ndcg_20")} (${t("test_split")})`} metric={t("e1_ndcg_20")} yLabel={t("e1_ndcg_20")} points={ndcg} selected={selected} onSelect={setSelected} />
@@ -176,7 +177,7 @@ function E3Panel({ results }) {
   const takeaway = a && b ? t("e3_takeaway", batchOf(a), formatRatio(a["Recall@20"]).text, formatSeconds(a.process_wall_seconds).text, batchOf(b), formatRatio(b["Recall@20"]).text, formatSeconds(b.process_wall_seconds).text) : missingText();
   return <Panel id="E3" title={`E3 · ${t("experiment_nav_e3")}`} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
     subtitle={formatE3Context(e3.context)} takeaway={takeaway}>
-    <p className="fair-note">{t("e3_not_beside_test")}</p>
+    <p className="fair-note">{t("e3_not_beside_test")} <Glossary term="validation" /></p>
     <div className="charts">
       <BarChart title={t("e3_recall_20_validation")} metric={t("e3_recall_20_validation")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20", formatRatio)} selected={selected} onSelect={setSelected} />
       <BarChart title={t("e1_process_wall_time_s")} metric={t("e1_process_wall_time_s")} yLabel={t("seconds_axis")} points={chartPoints("process_wall_seconds", formatSeconds)} selected={selected} onSelect={setSelected} />

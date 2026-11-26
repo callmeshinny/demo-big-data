@@ -7,6 +7,7 @@ import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 import { DataKindBadge, DataLoadFailure, Issues, Notice } from "./ui.jsx";
 import { experimentHref } from "./navigation.js";
+import { Glossary } from "./Glossary.jsx";
 
 /** Same cells as the E1 table, so the strip and the table always agree. */
 export function e1StripRows(official) {
@@ -29,8 +30,8 @@ function HitSentence({ session }) {
   if (!session?.recommendations || !session.target || session.target === INVALID_PRODUCT_ID) return null;
   const size = session.recommendations.length;
   return session.targetRank
-    ? <p className="hit-sentence match"><span className="outcome-icon" aria-hidden="true">✓</span>{t("hit_sentence", session.targetRank, size)}</p>
-    : <p className="hit-sentence miss"><span className="outcome-icon" aria-hidden="true">✕</span>{t("miss_sentence", size)}</p>;
+    ? <p className="hit-sentence match"><span className="outcome-icon" aria-hidden="true">✓</span><span>{t("hit_sentence", session.targetRank, size)}</span><Glossary term="hit" align="end" /></p>
+    : <p className="hit-sentence miss"><span className="outcome-icon" aria-hidden="true">✕</span><span>{t("miss_sentence", size)}</span><Glossary term="hit" align="end" /></p>;
 }
 
 function MethodDetails({ run, group, protocol, sample, count }) {
@@ -118,7 +119,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
           </div>
         </div>
         <label className="control-group">
-          <span className="control-label">{t("session")}</span>
+          <span className="control-label">{t("session")} <Glossary term="session" /></span>
           <select value={sessionIds.includes(sessionId) ? sessionId : ""} onChange={(e) => setSessionChoice(e.target.value)}>
             {unknownSession && <option value="" disabled>{t("choose_a_session")}</option>}
             {sessionIds.map((id) => <option key={id} value={id}>{id}</option>)}
@@ -140,7 +141,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
           <section className="result-row">
             <article className="panel history-panel">
               <div className="panel-heading">
-                <h2>{t("history")}</h2>
+                <h2>{t("history")} <Glossary term="history" /></h2>
                 <span>{context.prefix ? t("0_interactions", context.prefix.length) : ""}</span>
               </div>
               {context.prefix ? (
@@ -165,7 +166,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
 
           <section className="panel recommendations">
             <div className="panel-heading">
-              <h2>{t("top_20_recommendations")}</h2>
+              <h2>{t("top_20_recommendations")} <Glossary term="top20" /></h2>
               {run && <span className={`model-badge model-${modelColourKey(run.model)}`}><span className="model-dot" aria-hidden="true" />{modelLabel(run.model)}</span>}
             </div>
 
@@ -217,8 +218,8 @@ export default function Recommendation({ state, productInfo, protocol, official 
       {strip && <section className={`e1-strip model-${modelColourKey(run?.model)}`} aria-label={t("official_e1_metrics")}>
         <span className="model-dot" aria-hidden="true" />
         <strong>{t("e1_strip_title", strip.label, formatValue(count))}</strong>
-        <span title={strip.recall.raw}>{t("e1_recall_20")} <b className="num">{strip.recall.text}</b></span>
-        <span title={strip.ndcg.raw}>{t("e1_ndcg_20")} <b className="num">{strip.ndcg.text}</b></span>
+        <span title={strip.recall.raw}>{t("e1_recall_20")} <b className="num">{strip.recall.text}</b></span><Glossary term="recall" />
+        <span title={strip.ndcg.raw}>{t("e1_ndcg_20")} <b className="num">{strip.ndcg.text}</b></span><Glossary term="ndcg" />
         <a href={experimentHref("E1")}>{t("open_e1")}</a>
       </section>}
 

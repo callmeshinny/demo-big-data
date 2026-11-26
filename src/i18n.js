@@ -448,7 +448,23 @@ export const messages = {
     "e5_takeaway": "Composed time is {0} at {1}% ({2} events) and {3} at {4}% ({5} events); per million events that is {6} and {7}.",
     "e5_first_seen_once": "The shared first-seen time ({0}) is not in these composed values; add it once per complete scenario, not once per level.",
     "open_in_e2": "Open the {0}% run in E2 →",
-    "environment_summary": "VM, GPU, drivers and packages"
+    "environment_summary": "VM, GPU, drivers and packages",
+    "glossary_label": "What is {0}?",
+    "glossary_session_term": "Session",
+    "glossary_session": "One shopping visit (user_session): the ordered products a shopper interacted with — viewed, added to cart or purchased.",
+    "glossary_history_term": "Interaction history (prefix)",
+    "glossary_history": "The items in the session before its final item. The model sees only these; the final item is held out as the answer.",
+    "glossary_top20_term": "Top-20",
+    "glossary_top20": "The model's ordered list of up to 20 distinct real product IDs. Items already in the history may be recommended again.",
+    "glossary_hit_term": "Hit",
+    "glossary_hit": "The actual next item (the session's final item) appears in the Top-20. Otherwise the session is a miss.",
+    "glossary_recall_term": "Recall@20",
+    "glossary_recall": "Per session: 1 if the actual next item is in the Top-20, otherwise 0. The reported value is the average over all evaluated sessions.",
+    "glossary_ndcg_term": "NDCG@20",
+    "glossary_ndcg": "Per session: 1/log2(r+1) if the actual next item is at rank r ≤ 20, otherwise 0, averaged over sessions. A hit near the top counts more.",
+    "glossary_validation_term": "Validation vs test",
+    "glossary_validation": "Validation (the next day) is used to choose settings. Test (the last day) is evaluated once, after settings are fixed. E3 reports validation; E1 and E2 report test, so they are not compared directly.",
+    "terms_label": "Terms:"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -899,7 +915,23 @@ export const messages = {
     "e5_takeaway": "Thời gian ghép là {0} ở {1}% ({2} sự kiện) và {3} ở {4}% ({5} sự kiện); tính trên một triệu sự kiện là {6} và {7}.",
     "e5_first_seen_once": "Thời gian first-seen dùng chung ({0}) không nằm trong các giá trị ghép này; chỉ cộng một lần cho mỗi kịch bản đầy đủ, không cộng cho từng mức.",
     "open_in_e2": "Mở lượt chạy {0}% trong E2 →",
-    "environment_summary": "VM, GPU, driver và thư viện"
+    "environment_summary": "VM, GPU, driver và thư viện",
+    "glossary_label": "{0} là gì?",
+    "glossary_session_term": "Phiên (session)",
+    "glossary_session": "Một lượt mua sắm (user_session): chuỗi sản phẩm có thứ tự mà người dùng đã tương tác — xem, thêm vào giỏ hoặc mua.",
+    "glossary_history_term": "Lịch sử tương tác (prefix)",
+    "glossary_history": "Các sản phẩm trong phiên trước sản phẩm cuối. Mô hình chỉ thấy phần này; sản phẩm cuối được giữ lại làm đáp án.",
+    "glossary_top20_term": "Top-20",
+    "glossary_top20": "Danh sách có thứ tự gồm tối đa 20 mã sản phẩm thật khác nhau của mô hình. Sản phẩm đã có trong lịch sử vẫn có thể được gợi ý lại.",
+    "glossary_hit_term": "Trúng (hit)",
+    "glossary_hit": "Sản phẩm tiếp theo thực tế (sản phẩm cuối của phiên) nằm trong Top-20. Nếu không, phiên đó là trượt.",
+    "glossary_recall_term": "Recall@20",
+    "glossary_recall": "Mỗi phiên: 1 nếu sản phẩm tiếp theo thực tế nằm trong Top-20, ngược lại 0. Giá trị báo cáo là trung bình trên mọi phiên được đánh giá.",
+    "glossary_ndcg_term": "NDCG@20",
+    "glossary_ndcg": "Mỗi phiên: 1/log2(r+1) nếu sản phẩm tiếp theo thực tế ở hạng r ≤ 20, ngược lại 0, rồi lấy trung bình. Trúng càng gần đầu danh sách càng được tính cao.",
+    "glossary_validation_term": "Validation và test",
+    "glossary_validation": "Validation (ngày kế tiếp) dùng để chọn cấu hình. Test (ngày cuối) chỉ đánh giá một lần sau khi đã cố định cấu hình. E3 báo cáo validation; E1 và E2 báo cáo test, nên không so sánh trực tiếp.",
+    "terms_label": "Thuật ngữ:"
   }
 };
 

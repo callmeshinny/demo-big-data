@@ -247,3 +247,31 @@ test("main result area: no category matching, interactions wording, history and 
     assert.ok(main.includes(i18n.t("history")) && main.includes(i18n.t("actual_next_item")), locale);
   }
 });
+
+test("glossary: every term is defined in EN and VI and appears as an accessible ⓘ button", async () => {
+  const i18n = await load("/src/i18n.js");
+  const data = await load("/src/data.js");
+  const glossary = await load("/src/Glossary.jsx");
+  const { default: Recommendation } = await load("/src/Recommendation.jsx");
+  const { default: Experiments } = await load("/src/Experiments.jsx");
+  for (const term of glossary.GLOSSARY_TERMS) {
+    for (const locale of ["en", "vi"]) {
+      assert.ok(i18n.messages[locale][`glossary_${term}`], `${locale}: glossary_${term}`);
+      assert.ok(i18n.messages[locale][`glossary_${term}_term`], `${locale}: glossary_${term}_term`);
+    }
+  }
+  i18n.setLanguage("en");
+  globalThis.window.location.search = "?session=21546";
+  const html = [
+    dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official })),
+    dom.renderToStaticMarkup(React.createElement(Experiments, { state: { results: official }, active: "E1" })),
+    dom.renderToStaticMarkup(React.createElement(Experiments, { state: { results: official }, active: "E3" })),
+  ].join("");
+  globalThis.window.location.search = "";
+  for (const term of glossary.GLOSSARY_TERMS) {
+    const label = i18n.t("glossary_label", i18n.t(`glossary_${term}_term`)).replace(/&/g, "&amp;");
+    assert.ok(html.includes(`aria-label="${label}"`), `ⓘ for ${term}`);
+  }
+  assert.match(html, /class="popover-button" aria-expanded="false"/);
+  assert.match(html, /role="dialog"[^>]*hidden=""/, "popovers start closed");
+});

@@ -198,6 +198,14 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .popover strong { font-weight: 600; }
 .popover-text { display: block; }
 
+/* Glossary ⓘ: a 22 px visible dot inside a 44 x 44 px target. */
+.glossary { vertical-align: middle; margin: -10px -6px; }
+.glossary .popover-button { min-width: var(--control-height); min-height: var(--control-height); padding: 0; border: 0; background: transparent; display: inline-grid; place-items: center; }
+.info-dot { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--control-border); color: var(--label); font: var(--t-footnote); font-weight: 700; font-style: normal; }
+.glossary .popover-button:hover .info-dot, .glossary .popover-button[aria-expanded="true"] .info-dot { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+.glossary .popover { font: var(--t-body); }
+.terms { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--s1); font-weight: 400; color: var(--label); }
+
 /* Presenter toggle: a labelled switch button (aria-pressed). */
 .presenter-toggle { display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--control-height); padding: 0 var(--s3); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-table); font-weight: 500; cursor: pointer; white-space: nowrap; }
 .presenter-toggle .switch { position: relative; width: 32px; height: 20px; border-radius: 999px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--control-border); flex: 0 0 auto; }
@@ -268,7 +276,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .panel h4 { margin: var(--s4) 0 var(--s2); font: var(--t-footnote); font-weight: 600; color: var(--label-2); }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s3); }
 .panel-heading h2 { margin-bottom: 0; }
-.panel-heading > span { border-radius: 999px; background: var(--fill); color: var(--label); padding: 2px var(--s2); font: var(--t-footnote); font-weight: 600; }
+.panel-heading > span { white-space: nowrap; border-radius: 999px; background: var(--fill); color: var(--label); padding: 2px var(--s2); font: var(--t-footnote); font-weight: 600; }
 .definition { color: var(--label-2); margin: var(--s2) 0 var(--s3); }
 .muted { color: var(--label-2); font: var(--t-footnote); margin: 0; }
 .missing { color: var(--label-2); }
@@ -289,7 +297,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .arrow { color: var(--label-2); }
 .actual-panel h2 { margin-bottom: var(--s3); }
 .actual-panel .product-card { display: inline-flex; margin: 0 0 var(--s3); }
-.hit-sentence { display: flex; align-items: baseline; gap: var(--s2); font: var(--t-lead); font-weight: 600; }
+.hit-sentence { display: flex; align-items: center; gap: var(--s2); font: var(--t-lead); font-weight: 600; }
 .outcome-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: var(--t-table); font-weight: 700; flex: 0 0 auto; align-self: center; }
 .match .outcome-icon { background: var(--positive); color: #ffffff; }
 .miss .outcome-icon { box-shadow: inset 0 0 0 1.5px var(--label-2); color: var(--label-2); }

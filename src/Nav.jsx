@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { t } from "./i18n.js";
 
 export const VIEWS = () => [
@@ -38,6 +38,16 @@ export function Popover({ label, buttonText, className = "", children, align = "
   const id = useId();
   const root = useRef(null);
   const button = useRef(null);
+  const panel = useRef(null);
+  const [shift, setShift] = useState(0);
+  // Keep the open popover inside the viewport (e.g. 375 px phones): shift it sideways if needed.
+  useLayoutEffect(() => {
+    if (!open || !panel.current) { setShift(0); return; }
+    panel.current.style.transform = "";
+    const rect = panel.current.getBoundingClientRect();
+    const margin = 8, right = document.documentElement.clientWidth - margin;
+    setShift(rect.right > right ? right - rect.right : rect.left < margin ? margin - rect.left : 0);
+  }, [open]);
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (event) => {
@@ -58,7 +68,8 @@ export function Popover({ label, buttonText, className = "", children, align = "
   return <span className={`popover-root ${className}`} ref={root}>
     <button type="button" ref={button} className="popover-button" aria-expanded={open} aria-controls={id}
       aria-label={label} onClick={() => setOpen((value) => !value)}>{buttonText}</button>
-    <span id={id} role="dialog" aria-label={label} className={`popover glass popover-${align}`} hidden={!open}>{children}</span>
+    <span id={id} ref={panel} role="dialog" aria-label={label} className={`popover glass popover-${align}`} hidden={!open}
+      style={shift ? { transform: `translateX(${shift}px)` } : undefined}>{children}</span>
   </span>;
 }
 
