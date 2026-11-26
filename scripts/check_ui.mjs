@@ -215,6 +215,26 @@ try {
     }
   });
 
+  await check("E3/E4 charts: at most two per row, every card >= 440 px at 1280, equal one-line titles per row", async () => {
+    for (const lang of ["en", "vi"]) for (const hash of ["#experiments/e3", "#experiments/e4"]) {
+      const page = await open(hash, { width: 1280, lang });
+      const cards = await page.evaluate(() => [...document.querySelectorAll("figure.chart")].map((figure) => {
+        const box = figure.getBoundingClientRect();
+        const caption = figure.querySelector("figcaption").getBoundingClientRect();
+        const line = parseFloat(getComputedStyle(figure.querySelector("figcaption")).lineHeight);
+        return { top: Math.round(box.top), left: Math.round(box.left), width: box.width, captionHeight: caption.height, lines: Math.round(caption.height / line) };
+      }));
+      assert.equal(cards.length, 3, `${lang} ${hash}`);
+      for (const card of cards) assert.ok(card.width >= 440, `${lang} ${hash}: card ${Math.round(card.width)} px`);
+      const rows = [...new Set(cards.map((card) => card.top))];
+      assert.equal(rows.length, 2, `${lang} ${hash}: two rows`);
+      assert.equal(cards[2].left, cards[0].left, `${lang} ${hash}: third chart left-aligned`);
+      assert.equal(Math.round(cards[2].width), Math.round(cards[0].width), `${lang} ${hash}: same width`);
+      for (const card of cards) assert.equal(card.lines, 1, `${lang} ${hash}: one-line title`);
+      await page.context().close();
+    }
+  });
+
   await check("hit row and Actual-next-item panel highlight each other", async () => {
     const tip = await open("#recommendation");
     await tip.locator(".presenter-tip").click();
