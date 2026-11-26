@@ -7,7 +7,8 @@ import { routeFromHash } from "./navigation.js";
 import Dataset from "./Dataset.jsx";
 import { normalizeDataset } from "./dataset.js";
 import Experiments from "./Experiments.jsx";
-import { AboutDemo, LanguageSwitch, MainNav } from "./Nav.jsx";
+import { AboutDemo, LanguageSwitch, MainNav, PresenterToggle } from "./Nav.jsx";
+import { PresenterContext, readPresenter, savePresenter } from "./presenter.js";
 import "./styles.css";
 
 const branding = import.meta.glob(["./branding/logo.png", "./branding/cover.jpg"], {
@@ -89,6 +90,14 @@ function App() {
     updateLanguage(next);
   }
   const [{ tab, experiment, select }, setRoute] = useState(currentRoute);
+  const [presenter, setPresenter] = useState(() => readPresenter());
+  useEffect(() => {
+    document.documentElement.classList.toggle("presenter", presenter);
+  }, [presenter]);
+  function choosePresenter(on) {
+    savePresenter(on);
+    setPresenter(on);
+  }
   const demo = useData(DEMO_URL, normalizeDemo, language);
   const productLookup = demo.provenance?.product_lookup;
   const productsUrl = typeof productLookup === "string" && productLookup.trim()
@@ -107,7 +116,7 @@ function App() {
   const state = { recommendation: demo, dataset, experiments: officialResults }[tab];
 
   return (
-    <>
+    <PresenterContext.Provider value={presenter}>
       <header className="topbar glass">
         <div className="topbar-inner">
         <div className="brand">
@@ -117,6 +126,7 @@ function App() {
         <MainNav tab={tab} />
         <div className="header-utility">
           <AboutDemo />
+          <PresenterToggle on={presenter} onToggle={choosePresenter} />
           <LanguageSwitch language={language} onChoose={chooseLanguage} />
         </div>
         </div>
@@ -140,7 +150,7 @@ function App() {
         </li>)}</ul>
       </footer>
       </main>
-    </>
+    </PresenterContext.Provider>
   );
 }
 

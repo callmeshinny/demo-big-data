@@ -431,6 +431,33 @@ footer { border-top: 1px solid var(--separator); margin-top: var(--s4); padding:
 footer code { overflow-wrap: anywhere; }
 .loading { margin: var(--s6) 0; text-align: center; color: var(--label-2); }
 
+/*
+ * Presenter mode (html.presenter): larger text for a projector, solid header (no glass),
+ * more whitespace. Text never shrinks to fit; the page scrolls instead. Uses only the
+ * scale's own steps (16/18/22/28), so chart labels are >= 16 px.
+ */
+.presenter {
+  --t-section: 600 28px/34px var(--font);
+  --t-lead: 600 22px/28px var(--font);
+  --t-body: 400 18px/27px var(--font);
+  --t-table: 400 18px/26px var(--font);
+  --t-footnote: 400 16px/22px var(--font);
+  --s5: 32px;
+  --header-height: 56px;
+}
+/* The header stays compact in presenter mode: same sizes as the default view. */
+.presenter .topbar {
+  --t-lead: 600 18px/26px var(--font);
+  --t-body: 400 16px/24px var(--font);
+  --t-table: 400 16px/22px var(--font);
+}
+.popover-button, .presenter-toggle { white-space: nowrap; }
+.presenter .shell { padding-top: var(--s6); }
+.presenter .panel { padding: var(--s6); }
+.presenter .metric-table td.num, .presenter .e1-strip b, .presenter .hit-sentence { font: var(--t-lead); font-family: inherit; }
+.presenter .metric-table td.num { font-family: var(--mono); }
+.presenter .page-intro { max-width: 60ch; }
+
 /* Motion: none required; anything that moves is short and optional. */
 .segmented > a, .segmented > button { transition: background-color 120ms ease, color 120ms ease; }
 @media (prefers-reduced-motion: reduce) {
