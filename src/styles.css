@@ -69,7 +69,7 @@
     --negative-bg: #3b1210;
     --caution: #ffb340;
     --caution-bg: #33240c;
-    --shadow: none;
+    --shadow: 0 0 0 0 transparent; /* "none" would void composed shadows such as the hit bar */
   }
 }
 
@@ -145,14 +145,15 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .badge, .tag { display: inline-block; border-radius: 999px; padding: 2px var(--s2); font: var(--t-footnote); font-weight: 600; white-space: nowrap; background: var(--fill); color: var(--label); }
 .badge { border: 1px solid transparent; }
 .badge-toy, .badge-pending { background: var(--caution-bg); color: var(--caution); white-space: normal; max-width: 100%; }
-.badge-real { background: var(--positive-bg); color: var(--positive); }
+.badge-real { background: var(--fill); color: var(--label); }
 .badge-unknown { border: 1px dashed var(--control-border); background: transparent; color: var(--label-2); }
 .badge-status-passed { background: var(--positive-bg); color: var(--positive); }
 .badge-status-failed, .badge-status-excluded { background: var(--negative-bg); color: var(--negative); }
 .tag { margin-left: var(--s2); }
 .tag-hit { background: var(--positive-bg); color: var(--positive); }
 .tag-diff { background: var(--negative-bg); color: var(--negative); }
-.tag-history { background: var(--negative-bg); color: var(--negative); }
+/* Being in the history is a neutral fact (AGENTS rule 6): neutral tag, no problem colour. */
+.tag-history { background: var(--fill); color: var(--label); }
 
 /* Notices and disclosures */
 .notice { border: 1px solid var(--separator); border-radius: var(--radius); background: var(--surface); padding: var(--s3) var(--s4); margin-bottom: var(--s4); }
@@ -203,9 +204,16 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .actual-panel { text-align: center; }
 .actual-panel h2 { margin-bottom: 0; }
 .actual-panel .product-card { margin: var(--s3) 0; }
+/*
+ * Colour meanings: --accent = interactive/active only; --positive = hit/passed;
+ * --negative = problems only (miss, failed/excluded run, config "Differs", load error);
+ * --caution = waiting, pending or toy caveats. Text always accompanies colour.
+ * .is-hit is shared by the target row and the Actual-next-item panel so the hit reads at a glance.
+ */
 .match, .miss { margin: 0; font-weight: 600; }
 .match { color: var(--positive); }
 .miss { color: var(--negative); }
+.actual-panel.is-hit { background: var(--positive-bg); box-shadow: inset 4px 0 0 var(--positive), var(--shadow); }
 
 .product-card { display: flex; align-items: flex-start; gap: var(--s2); min-width: 0; padding: var(--s2) var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--surface); text-align: left; overflow-wrap: anywhere; font: var(--t-table); }
 .product-card > div { display: grid; gap: 2px; min-width: 0; }
@@ -225,8 +233,9 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .ranking th:first-child, .ranking td:first-child { width: 52px; text-align: center; padding-inline: var(--s1); white-space: nowrap; }
 .ranking .rank { color: var(--label-2); font-weight: 600; }
 .ranking th.score-col, .ranking td.score { width: 120px; padding-inline: var(--s2); white-space: nowrap; }
-.ranking tr.hit td { background: var(--positive-bg); }
-.ranking tr.hit .rank { color: var(--positive); }
+.ranking tr.is-hit td { background: var(--positive-bg); }
+.ranking tr.is-hit td:first-child { box-shadow: inset 4px 0 0 var(--positive); }
+.ranking tr.is-hit .rank { color: var(--positive); }
 
 /* Metric and config tables */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -243,7 +252,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .column-subtitle { display: block; margin-top: var(--s1); font: var(--t-footnote); color: var(--label-2); }
 .run-head { display: grid; gap: var(--s1); font-weight: 400; }
 .run-head .badges { display: flex; flex-wrap: wrap; gap: var(--s1); }
-.run-head .note { color: var(--negative); font: var(--t-footnote); }
+.run-head .note { color: var(--label-2); font: var(--t-footnote); }
 .config-table th { width: 32%; }
 .config-table tr.diff td { background: var(--negative-bg); }
 .config-bundle { margin-top: var(--s5); }
@@ -285,7 +294,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .chart-axis-label { fill: var(--label-2); font: var(--t-footnote); }
 .chart-tick { fill: var(--label-2); font: var(--t-footnote); font-family: var(--mono); }
 .chart-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-.chart-point { fill: var(--negative); stroke: var(--surface); stroke-width: 2; }
+.chart-point { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
 .chart-value { fill: var(--label); font: var(--t-footnote); font-family: var(--mono); }
 
 /* Environment and sources */
@@ -304,7 +313,12 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .bars li { display: flex; align-items: center; gap: var(--s3); margin-block: var(--s2); }
 .bars li > span:first-child { min-width: 2rem; }
 .bars meter { flex: 1; min-width: 0; height: 12px; }
-.highlight-bar::-webkit-meter-optimum-value { background: var(--caution); }
+/* Histogram bars carry no semantic colour; the highlighted bucket is a darker neutral. */
+.bars meter::-webkit-meter-bar { background: var(--fill); border: 0; border-radius: 6px; }
+.bars meter::-webkit-meter-optimum-value { background: var(--control-border); border-radius: 6px; }
+.bars meter.highlight-bar::-webkit-meter-optimum-value { background: var(--label); }
+.bars meter::-moz-meter-bar { background: var(--control-border); }
+.bars meter.highlight-bar::-moz-meter-bar { background: var(--label); }
 .pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--s4); }
 .pipeline p { margin: var(--s1) 0; }
 .metric-chart { margin: var(--s4) 0; padding-block: var(--s3); border-bottom: 1px solid var(--separator); overflow-wrap: anywhere; }

@@ -119,7 +119,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
               ) : <p className="missing">{t("not_available_yet")}</p>}
             </article>
 
-            <article className="panel actual-panel">
+            <article className={`panel actual-panel${session?.targetRank ? " is-hit" : ""}`}>
               <h2>{t("actual_next_item")}</h2>
               {context.target ? <ProductCard id={context.target} products={context.targetCatalog?.has(context.target) ? products : undefined} /> : <p className="missing">{t("not_available_yet")}</p>}
               {session?.target && session.target !== INVALID_PRODUCT_ID && <p className={session.targetRank ? "match" : "miss"}>{session.targetRank ? t("hit_at_rank_0", session.targetRank) : t("not_in_top_20")}</p>}
@@ -155,7 +155,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
                       const isTarget = r.product_id === session.target;
                       const inHistory = session.prefix?.includes(r.product_id);
                       return (
-                        <tr className={isTarget ? "hit" : ""} key={`${r.rank}-${r.product_id}`}>
+                        <tr className={isTarget ? "hit is-hit" : ""} key={`${r.rank}-${r.product_id}`}>
                           <td className="rank">{r.rank}</td>
                           <td>
                             <ProductCard id={r.product_id} products={products} />

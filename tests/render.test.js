@@ -133,3 +133,42 @@ test("navigation is links with exactly one aria-current page per nav, and no tab
     .map((file) => readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8")).join("\n");
   assert.ok(!/role="tab(list|panel)?"/.test(sources), "no role=tab, tablist or tabpanel in src/");
 });
+
+test("one colour, one meaning: neutral history tag, accent chart, shared hit marker", async () => {
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  const rule = (selector) => {
+    const start = css.indexOf(`\n${selector} {`) + 1;
+    assert.ok(start > 0, `missing rule ${selector}`);
+    return css.slice(start, css.indexOf("}", start));
+  };
+  assert.ok(!/--negative|--caution|--positive/.test(rule(".tag-history")), "history tag must be neutral");
+  assert.match(rule(".tag-history"), /var\(--fill\)/);
+  for (const selector of [".chart-line", ".chart-point"]) {
+    assert.match(rule(selector), /var\(--accent\)/, selector);
+    assert.ok(!/--negative/.test(rule(selector)), selector);
+  }
+  assert.match(rule(".ranking tr.is-hit td"), /var\(--positive-bg\)/);
+  assert.match(rule(".ranking tr.is-hit td:first-child"), /inset 4px 0 0 var\(--positive\)/);
+  assert.match(rule(".actual-panel.is-hit"), /inset 4px 0 0 var\(--positive\)/);
+  assert.match(rule(".miss"), /var\(--negative\)/);
+
+  const i18n = await load("/src/i18n.js");
+  const data = await load("/src/data.js");
+  const { default: Recommendation } = await load("/src/Recommendation.jsx");
+  i18n.setLanguage("en");
+  const render = (session) => {
+    globalThis.window.location.search = `?session=${session}`;
+    try {
+      return dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
+    } finally {
+      globalThis.window.location.search = "";
+    }
+  };
+  const hit = render("21546");
+  assert.match(hit, /<article class="panel actual-panel is-hit">/);
+  assert.equal((hit.match(/<tr class="hit is-hit"/g) ?? []).length, 1);
+  assert.ok(hit.includes(`<p class="match">${i18n.t("hit_at_rank_0", 7)}</p>`));
+  const miss = render("46465");
+  assert.ok(!miss.includes("is-hit"));
+  assert.ok(miss.includes(`<p class="miss">${i18n.t("not_in_top_20")}</p>`));
+});

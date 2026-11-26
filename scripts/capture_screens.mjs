@@ -176,6 +176,17 @@ try {
               assert.ok(await contrast(tag) >= 4.5, `${className} text contrast`);
             }
           }
+          if (id === "21546") {
+            // The hit link: target row and Actual-next-item panel share the positive bar (computed, both schemes).
+            for (const selector of [".actual-panel.is-hit", ".ranking tr.is-hit td:first-child"]) {
+              const shadow = await page.locator(selector).evaluate((node) => getComputedStyle(node).boxShadow);
+              assert.match(shadow, /inset/, `${selector} should show the positive bar (${shadow})`);
+            }
+            assert.equal(await page.locator(".tag-history").evaluate((node) => getComputedStyle(node).color)
+              === await page.locator(".miss, .match").first().evaluate((node) => getComputedStyle(node).color), false);
+          } else {
+            assert.equal(await page.locator(".is-hit").count(), 0);
+          }
           await capture(id === "21546" ? "recommendation-hit" : "recommendation-miss");
         }
         assert.equal(await page.getByText(t("price_unavailable"), { exact: true }).count(), 0);
