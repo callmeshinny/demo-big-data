@@ -77,7 +77,7 @@ try {
     const page = await open("#experiments/e4");
     await page.locator(".column-select").nth(1).click();
     const pressed = await page.locator("[data-mark][aria-pressed='true']").count();
-    assert.equal(pressed, 2, "the matching mark is selected in both E4 charts");
+    assert.equal(pressed, await page.locator("figure.chart").count(), "the matching mark is selected in every E4 chart");
     await page.locator(".metric-table tbody td").first().click();
     assert.equal(await page.locator("th.is-selected").count(), 1, "clicking a cell selects its column");
     await page.context().close();

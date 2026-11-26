@@ -437,8 +437,15 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .chart-detail { display: grid; margin-top: var(--s2); }
 .chart-detail > * { grid-area: 1 / 1; visibility: hidden; margin: 0; }
 .chart-detail > .is-active { visibility: visible; }
-.chart-detail-hint { align-self: center; color: var(--label-2); font: var(--t-footnote); padding: 6px var(--s3); }
-.chart-detail-item { display: grid; align-content: start; padding: 6px var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-footnote); overflow-wrap: anywhere; }
+.chart-detail-hint { align-self: center; color: var(--label-2); font: var(--t-footnote); padding: 0 var(--s3); }
+.chart-detail-item { display: grid; align-content: start; gap: 0 var(--s4); padding: 6px var(--s3); border: 1px solid var(--separator); border-radius: var(--radius-control); background: var(--surface); color: var(--label); font: var(--t-footnote); overflow-wrap: break-word; }
+.detail-cell { min-width: 0; }
+/* Two columns of label: value pairs when the chart card is wide enough (>= 440 px, i.e. screens >= 600 px
+   with one or two charts per row), so the reserved area is about two lines tall. */
+.chart { container-type: inline-size; }
+@container (min-width: 440px) {
+  .chart-detail-item { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .chart-detail-item strong, .chart-detail-item b { font-weight: 600; }
 .chart-detail-item code { background: transparent; padding: 0; }
 .tooltip strong { font-weight: 600; }

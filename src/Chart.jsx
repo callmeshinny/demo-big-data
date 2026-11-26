@@ -45,6 +45,16 @@ function TooltipBody({ point, metric }) {
   </>;
 }
 
+/** Compact details for the reserved area: label/value pairs laid out in two columns on wider screens. */
+function DetailBody({ point, metric }) {
+  return <>
+    <span className="detail-cell"><strong>{point.label}</strong> · {metric}: <b>{point.display}</b></span>
+    <span className="detail-cell">{t("tooltip_raw")}: <code>{point.raw}</code></span>
+    {point.runId && <span className="detail-cell">{t("tooltip_run")}: <code>{point.runId}</code></span>}
+    {(point.source || point.unit) && <span className="detail-cell">{point.source && <>{t("tooltip_source")}: <code>{point.source}</code></>}{point.source && point.unit && " · "}{point.unit && <>{t("tooltip_unit")}: {point.unit}</>}</span>}
+  </>;
+}
+
 /** True below 900 px: details always go in the reserved area under the chart, never float. */
 function useNarrow() {
   const query = "(max-width: 899px)";
@@ -89,7 +99,7 @@ function DetailArea({ points, metric, active }) {
     <p className={`chart-detail-hint${active == null ? " is-active" : ""}`} aria-hidden={active == null ? undefined : true}>{t("chart_detail_hint")}</p>
     {points.map((point) => <div key={point.key} className={`chart-detail-item${active === point.key ? " is-active tooltip-in-area" : ""}`}
       aria-hidden={active === point.key ? undefined : true}>
-      <TooltipBody point={point} metric={metric} />
+      <DetailBody point={point} metric={metric} />
     </div>)}
   </div>;
 }
