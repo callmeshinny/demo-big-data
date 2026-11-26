@@ -142,3 +142,17 @@ test("planned vs actual comparison flags differences only when both exist", () =
   assert.equal(compareConfig("sequence_length", 20, null), null);
   assert.equal(compareConfig("train_partitions", "1..D-1", [1, 2]), null);
 });
+
+test("presenter hit tip comes from the data: first sample session every model ranks", async () => {
+  const { firstAllModelHitSession } = await import("../src/data.js");
+  const { groups } = normalizeDemo(json("../public/demo-data.json"));
+  const group = groups[0];
+  const id = firstAllModelHitSession(group);
+  assert.equal(id, "21546");
+  for (const run of group.runs) assert.notEqual(run.sessions.find((s) => s.user_session === id).targetRank, null);
+  const before = group.sessionIds.slice(0, group.sessionIds.indexOf(id));
+  assert.ok(before.every((sid) => group.runs.some((run) => run.sessions.find((s) => s.user_session === sid)?.targetRank == null)));
+  const noHits = { ...group, runs: group.runs.map((run) => ({ ...run, sessions: run.sessions.map((s) => ({ ...s, targetRank: null })) })) };
+  assert.equal(firstAllModelHitSession(noHits), null);
+  assert.equal(group.sessionIds[0], "46465", "default session keeps hash-sample order");
+});

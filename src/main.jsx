@@ -122,7 +122,7 @@ function App() {
       </header>
       <main className="shell">
       {cover && <img className="brand-cover" src={cover} alt="" />}
-      <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
+      {tab !== "recommendation" && <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>}
       <div className="view" id="view">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
           : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} /> : tab === "data" ? <Dataset state={state} /> : <Experiments state={state} active={experiment} />}

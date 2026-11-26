@@ -121,6 +121,13 @@ try {
         assert.equal(/toy|format example/i.test(await page.locator("body").innerText()), false, "real Recommendation view should not show toy examples");
         await methodDetails.locator("summary").click();
         assert.ok((await methodDetails.innerText()).includes("SHA-256"), "method details should explain the hash sample");
+        assert.ok((await methodDetails.innerText()).includes(t("presenter_hit_tip", "21546", 3)), "presenter tip");
+        assert.equal(await page.locator(".tab-intro").count(), 0, "Recommendation intro lives in method details");
+        if (width === 1280) {
+          const [modelBox, sessionBox] = await Promise.all([page.getByLabel(t("model"), { exact: true }).boundingBox(), page.getByLabel(t("session"), { exact: true }).boundingBox()]);
+          assert.equal(Math.round(modelBox.y), Math.round(sessionBox.y), "model and session selects share a row");
+          assert.ok(sessionBox.x + sessionBox.width > 1000, "no empty third column");
+        }
         await methodDetails.locator("summary").click();
         await capture("recommendation");
         const alternate = locale === "en" ? "vi" : "en";
@@ -208,7 +215,7 @@ try {
         for (const key of ["missing_brand", "missing_category"]) {
           assert.equal(await weekly.getByRole("rowheader", { name: t(key), exact: true }).count(), 0);
         }
-        assert.equal(await weekly.getByRole("rowheader", { name: "categories (category_id)", exact: true }).count(), 1);
+        assert.equal(await weekly.getByRole("rowheader", { name: t("product_categories_by_category_id"), exact: true }).count(), 1);
         assert.equal(await weekly.getByRole("rowheader", { name: t("actual_raw_event_pct"), exact: true }).count(), 1);
         await page.getByRole("heading", { name: t("data_caveats") }).waitFor();
         assert.equal(await page.locator("#view meter").count(), 21);

@@ -172,3 +172,29 @@ test("one colour, one meaning: neutral history tag, accent chart, shared hit mar
   assert.ok(!miss.includes("is-hit"));
   assert.ok(miss.includes(`<p class="miss">${i18n.t("not_in_top_20")}</p>`));
 });
+
+test("Recommendation: intro folded into method details, presenter tip computed, readable labels", async () => {
+  const i18n = await load("/src/i18n.js");
+  const data = await load("/src/data.js");
+  const ds = await load("/src/dataset.js");
+  const { default: Recommendation } = await load("/src/Recommendation.jsx");
+  const { default: Dataset } = await load("/src/Dataset.jsx");
+  for (const locale of ["en", "vi"]) {
+    i18n.setLanguage(locale);
+    const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(demo), productInfo: {}, official }));
+    const details = html.slice(html.indexOf('<details class="method-details"'), html.indexOf("</details>"));
+    assert.ok(details.includes(i18n.t("recommendation_tab_intro")), locale);
+    assert.ok(details.includes(i18n.t("presenter_hit_tip", "21546", 3)), locale);
+    assert.ok(html.indexOf('class="controls"') < html.indexOf('class="e1-accuracy"'), locale);
+    const dataset = text(dom.renderToStaticMarkup(React.createElement(Dataset, { state: ds.normalizeDataset(overview) })));
+    for (const key of ["product_categories_by_category_id", "pipeline_fit_workflow", "pipeline_model", "pipeline_top_20"]) {
+      assert.ok(dataset.includes(i18n.t(key)), `${locale}: ${key}`);
+    }
+    assert.ok(!dataset.includes("categories (category_id)"), locale);
+  }
+  const noHit = structuredClone(demo);
+  for (const run of noHit.runs) for (const session of run.sessions) session.top20 = session.top20.filter((id) => id !== session.target);
+  for (const run of noHit.runs) for (const session of run.sessions) delete session.target_rank;
+  const html = dom.renderToStaticMarkup(React.createElement(Recommendation, { state: data.normalizeDemo(noHit), productInfo: {}, official }));
+  assert.ok(!html.includes("presenter-tip"), "no tip when no session is a hit for every model");
+});

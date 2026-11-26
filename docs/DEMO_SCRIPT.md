@@ -18,9 +18,9 @@
 
 *Tiếng Việt. Tab Recommendation phát lại dự đoán test E1 chính thức của Popularity, GRU và XLNet. Tab hiển thị 30 trong 1.337 phiên, chọn theo cùng quy tắc SHA-256 với seed 1 cho cả ba mô hình. Quy tắc băm mã phiên nên việc chọn không phụ thuộc mô hình có dự đoán trúng hay không. Chọn phiên để xem lịch sử tương tác, sản phẩm tiếp theo thực tế và Top-20 theo thứ tự mô hình.*
 
-**English.** A hit means the actual product ID appears in Top-20; otherwise it is a miss. Recall@20 and NDCG@20 beside the selector are official full-test E1 metrics, not recomputed from these 30 sessions. Individual scores and product names are unavailable, so cards show original IDs. This is saved-output replay, not live inference or retraining.
+**English.** A hit means the actual product ID appears in Top-20; otherwise it is a miss. Recall@20 and NDCG@20 beside the selector are official full-test E1 metrics, not recomputed from these 30 sessions. Models export ranked IDs only, so there is no Score column and cards show original IDs. This is saved-output replay, not live inference or retraining.
 
-*Tiếng Việt. Target được tô sáng là dự đoán trúng nếu mã sản phẩm gốc xuất hiện trong danh sách; nếu không, đó là phiên trượt. Recall@20 và NDCG@20 cạnh bộ chọn mô hình là metric chính thức trên toàn bộ test E1, không phải điểm tính lại trên 30 phiên đang hiển thị. Không có điểm dự đoán riêng hay tên sản phẩm, nên thẻ hiển thị mã sản phẩm gốc. Đây là phát lại output đã lưu, không phải suy luận trực tiếp hay chạy huấn luyện mới.*
+*Tiếng Việt. Target được tô sáng là dự đoán trúng nếu mã sản phẩm gốc xuất hiện trong danh sách; nếu không, đó là phiên trượt. Recall@20 và NDCG@20 cạnh bộ chọn mô hình là metric chính thức trên toàn bộ test E1, không phải điểm tính lại trên 30 phiên đang hiển thị. Model chỉ xuất mã sản phẩm theo thứ hạng, nên không có cột Điểm và thẻ hiển thị mã sản phẩm gốc. Đây là phát lại output đã lưu, không phải suy luận trực tiếp hay chạy huấn luyện mới.*
 
 ### Experiments
 

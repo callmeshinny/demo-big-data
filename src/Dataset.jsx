@@ -11,7 +11,7 @@ const SUBSET_FIELDS = () => [
   [t("raw_events"), "raw_events"], [t("actual_raw_event_pct"), "actual_raw_event_pct"],
   [t("cleaned_events"), "cleaned_events"], [t("cleaned_users"), "cleaned_users"],
   [t("model_sequences"), "model_sequences"], [t("catalog_items"), "catalog_items"],
-  ["categories (category_id)", "cleaned_categories"], [t("cleaned_brands"), "cleaned_brands"],
+  [t("product_categories_by_category_id"), "cleaned_categories"], [t("cleaned_brands"), "cleaned_brands"],
   [t("catalog_coverage_of_100_pct"), "catalog_coverage_of_100_pct"],
 ];
 
@@ -19,11 +19,11 @@ const PIPELINE = () => [
   [t("raw_csv"), t("read_the_store_events"), "TV1"],
   [t("clean_data"), t("normalize_timestamps_drop_null_sessions_and"), "TV1"],
   [t("monthly_first_seen"), t("record_when_each_product_first_appeared"), "TV1"],
-  ["Fit workflow", t("build_the_mapping_and_catalog"), "TV1"],
+  [t("pipeline_fit_workflow"), t("build_the_mapping_and_catalog"), "TV1"],
   [t("build_sequences"), t("keep_up_to_20_products_per"), "TV1"],
   [t("split_sessions"), t("split_training_validation_and_test_by"), "TV1"],
-  ["Model", t("train_and_evaluate_the_models"), "TV2 / TV3"],
-  ["Top-20", t("export_a_ranked_list_for_each"), "TV2"],
+  [t("pipeline_model"), t("train_and_evaluate_the_models"), "TV2 / TV3"],
+  [t("pipeline_top_20"), t("export_a_ranked_list_for_each"), "TV2"],
 ];
 
 export default function Dataset({ state }) {

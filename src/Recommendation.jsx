@@ -1,6 +1,6 @@
 import { t } from "./i18n.js";
 import React, { useState } from "react";
-import { formatValue, INVALID_PRODUCT_ID, modelLabel, sessionContext } from "./data.js";
+import { firstAllModelHitSession, formatValue, INVALID_PRODUCT_ID, modelLabel, sessionContext } from "./data.js";
 import { buildE1View } from "./e1.js";
 import { formatScore } from "./format.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
@@ -59,6 +59,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
   const total = sample?.n_total ?? sessionIds.length;
 
   const products = productInfo?.dataKind === "real" ? productInfo.products : undefined;
+  const presenterHit = firstAllModelHitSession(group);
 
   return (
     <>
@@ -68,10 +69,12 @@ export default function Recommendation({ state, productInfo, protocol, official 
       </div>
       <details className="method-details">
         <summary>{t("method_details_and_sources")}</summary>
+        <p>{t("recommendation_tab_intro")}</p>
         <p>{t("recall_20_measures_how_often_the")}</p>
         <EvaluationProtocol protocol={protocol} />
         <p>{t("optional_product_lookup_missing")}</p>
         <p>{t("sample_hash_explanation", sample?.seed ?? "—", formatValue(count))}</p>
+        {presenterHit && <p className="presenter-tip">{t("presenter_hit_tip", presenterHit, group.runs.length)}</p>}
       </details>
       <Issues issues={issues} />
       <section className="controls" aria-label={t("choose_data")}>

@@ -11,16 +11,16 @@
    ```
 
 3. For the hosted demo, open [https://demo-big-data.onrender.com/](https://demo-big-data.onrender.com/) and confirm the page loads. For a local demo, start Vite with `npm run dev`.
-4. Open the Recommendation, Dataset and Experiments tabs once. Confirm the real E1 badge, 30/1,337 hash-sample note, and three enabled model choices.
+4. Open Recommendations, Dataset and Experiments E1–E5 once from the segmented control at the top. Confirm the real E1 badge, 30/1,337 hash-sample note, and three enabled model choices. The page follows the system light or dark appearance.
 
 ## Live three-minute walkthrough
 
 1. **Dataset:** explain session-based next-item prediction and the weekly cuDF subsets. Point out the official population, cleaning and split tables.
-2. **Experiments E1:** show Recall@20 and NDCG@20 across Popularity, GRU and XLNet. Say that this is one run and seed.
-3. **E3:** explain the validation batch-size tradeoff. Point out the validation note and avoid comparing it directly with E1/E2 test.
-4. **E4:** compare file size and read time, then preprocessing wall time. Mention warm-cache conditions and that preprocessing already includes reading.
-5. **E5:** show composed time and seconds per million events against event count. State that the composed metric excludes shared first-seen and is not observed end-to-end wall time.
-6. **Recommendations:** choose a real session, show its interactions, actual next item, hit rank or miss, and the model’s ordered Top-20. Explain that the fixed seed-1 sample is outcome-independent and that official E1 scores are not recomputed on this sample. Per-item scores and product names are unavailable; the page replays saved outputs and never retrains or runs live inference.
+2. **Experiments → E1 · Models:** show Recall@20 and NDCG@20 across Popularity, GRU and XLNet. Say that this is one run and seed.
+3. **E3 · Batch size:** explain the validation batch-size tradeoff. Point out the validation note and avoid comparing it directly with E1/E2 test.
+4. **E4 · CSV vs Parquet:** compare file size and read time, then preprocessing wall time. Mention warm-cache conditions and that preprocessing already includes reading.
+5. **E5 · Scalability:** show composed time and seconds per million events against event count; units are in the axis titles. State that the composed metric excludes shared first-seen and is not observed end-to-end wall time.
+6. **Recommendations:** choose a real session, show its interactions, actual next item, hit rank or miss, and the model’s ordered Top-20. On a hit, the target row and the Actual next item panel share a green bar and read “Hit at rank N”. For a hit with every model, use the session named in the presenter tip inside “Method details & sources” (computed from the data). Explain that the fixed seed-1 sample is outcome-independent and that official E1 scores are not recomputed on this sample. Models export ranked IDs only, so the Top-20 has no Score column; the page replays saved outputs and never retrains or runs live inference.
 
 Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the bilingual talk track and Q&A. Read detailed values from the screen so labels, units and source IDs remain visible.
 

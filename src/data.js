@@ -232,6 +232,17 @@ export function usersBySession(group) {
   return users;
 }
 
+/**
+ * First session, in the delivered hash-sample order, that every model in the group ranks in its
+ * Top-20. Used only for a presenter tip; the default session stays the first in sample order.
+ */
+export function firstAllModelHitSession(group) {
+  const runs = group?.runs ?? [];
+  if (!runs.length) return null;
+  const byRun = runs.map((run) => new Map(run.sessions.map((session) => [session.user_session, session])));
+  return (group.sessionIds ?? []).find((id) => byRun.every((sessions) => sessions.get(id)?.targetRank != null)) ?? null;
+}
+
 /** History and target for a session, taken from the first run in the group that has them. */
 export function sessionContext(group, sessionId) {
   let prefix = null;

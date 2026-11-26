@@ -168,7 +168,7 @@ details > summary { cursor: pointer; font-weight: 600; min-height: 28px; }
 .method-details, .toy-format-example, .config { margin: var(--s3) 0; border: 1px solid var(--separator); border-radius: var(--radius-control); padding: var(--s3) var(--s4); background: var(--surface); }
 
 /* Controls */
-.controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); margin-bottom: var(--s3); }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s3); margin-bottom: var(--s3); }
 .controls label, label { display: grid; gap: var(--s2); color: var(--label-2); font: var(--t-footnote); font-weight: 600; min-width: 0; }
 select { width: 100%; height: var(--control-height); border: 1px solid var(--control-border); border-radius: var(--radius-control); background: var(--surface); color: var(--label); padding: 0 var(--s3); font: var(--t-body); }
 .toggle { margin-left: auto; display: flex; align-items: center; gap: var(--s2); font: var(--t-footnote); color: var(--label-2); }
@@ -348,7 +348,6 @@ footer code { overflow-wrap: anywhere; }
   .tabs { order: 3; flex: 1 1 100%; }
   .tabs > a { padding: 0 var(--s2); font: var(--t-table); font-weight: 500; white-space: normal; }
   .shell { padding: var(--s4) var(--s4) var(--s6); }
-  .controls { grid-template-columns: 1fr; }
   .scaling-charts { grid-template-columns: 1fr; }
   .grid { grid-template-columns: 1fr; }
   .panel { padding: var(--s4); }
