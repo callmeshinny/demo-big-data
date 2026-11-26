@@ -28,23 +28,48 @@ export function textWidth(text, fontSize) {
   return String(text).length * fontSize * GLYPH;
 }
 
-/** Split a label into at most two lines that fit `maxWidth`; the last line is ellipsized if needed. */
-export function wrapLabel(text, maxWidth, fontSize) {
+/**
+ * Split a label into at most two lines that fit `maxWidth`. Never truncates: a single word wider than
+ * `maxWidth` stays whole (the caller decides whether it may overflow its band). `measure(text, size)`
+ * returns a width in px; the default is the conservative glyph estimate.
+ */
+export function wrapLabel(text, maxWidth, fontSize, measure = textWidth) {
   const label = String(text);
-  if (textWidth(label, fontSize) <= maxWidth) return [label];
-  const words = label.split(/\s+/);
+  if (measure(label, fontSize) <= maxWidth) return [label];
   const lines = [""];
-  for (const word of words) {
+  for (const word of label.split(/\s+/)) {
     const candidate = lines.at(-1) ? `${lines.at(-1)} ${word}` : word;
-    if (textWidth(candidate, fontSize) <= maxWidth || !lines.at(-1)) lines[lines.length - 1] = candidate;
+    if (measure(candidate, fontSize) <= maxWidth || !lines.at(-1)) lines[lines.length - 1] = candidate;
     else lines.push(word);
   }
-  const two = lines.length > 2 ? [lines[0], lines.slice(1).join(" ")] : lines;
-  return two.map((line) => {
-    if (textWidth(line, fontSize) <= maxWidth) return line;
-    const keep = Math.max(1, Math.floor(maxWidth / (fontSize * GLYPH)) - 1);
-    return `${line.slice(0, keep)}…`;
-  });
+  return lines.length > 2 ? [lines[0], lines.slice(1).join(" ")] : lines;
+}
+
+/**
+ * Category labels under the bars, never truncated. Tries the chart font, then the 13 px caption size;
+ * a label may run past its own band only while it stays clear of its neighbours. If neighbours still
+ * collide, every other label drops one row (stagger). Returns { font, rows, labels: [[lines]], stagger }.
+ */
+export function categoryLabels(texts, { band, fontSize, measure = textWidth, gap = 6 }) {
+  const attempt = (font, stagger) => {
+    const labels = texts.map((text) => wrapLabel(text, band - 4, font, measure));
+    const widths = labels.map((lines) => Math.max(...lines.map((line) => measure(line, font))));
+    const rowsOf = (index) => labels[index].length + (stagger && index % 2 ? 1 : 0);
+    const clash = widths.some((width, index) => {
+      if (index === 0) return false;
+      if (stagger) return false;
+      return (widths[index - 1] + width) / 2 + gap > band;
+    });
+    // The first label may not reach the y-axis tick column, the last one not the frame edge.
+    const edges = (widths[0] ?? 0) / 2 > band / 2 + 6 || (widths.at(-1) ?? 0) / 2 > band / 2 + 10;
+    return { font, stagger, labels, clash: clash || edges, rows: Math.max(1, ...labels.map((_, index) => rowsOf(index))) };
+  };
+  const fonts = [...new Set([fontSize, 13])];
+  for (const font of fonts) {
+    const result = attempt(font, false);
+    if (!result.clash) return result;
+  }
+  return attempt(13, true);
 }
 
 /** Selection: clicking the selected mark again clears it. */
@@ -64,24 +89,27 @@ export function nextMarkIndex(index, key, length) {
 
 /**
  * Bar chart geometry at the real pixel width. Bars start at zero; the left margin follows the longest
- * tick so labels like "327.5" are never clipped. Category labels wrap to two lines; value labels that
- * do not fit their band are hidden (the value stays in the tooltip and the table).
+ * tick so labels like "327.5" are never clipped. Category labels are never truncated (categoryLabels);
+ * value labels that do not fit their band are hidden (the value stays in the tooltip and the table).
  */
-export function barLayout(points, { width = 480, height = 240, fontSize = 13 } = {}) {
+export function barLayout(points, { width = 480, height = 240, fontSize = 13, measure = textWidth } = {}) {
   const values = points.map((point) => point.y).filter((value) => Number.isFinite(value));
   const axis = niceTicks(Math.max(0, ...values));
   const tickTexts = axis.ticks.map((value) => formatTick(value, axis.step));
   const longestTick = Math.max(...tickTexts.map((text) => textWidth(text, fontSize)));
   const titleBand = fontSize * 1.6;
-  const lineHeight = Math.round(fontSize * 1.25);
+  const left = Math.ceil(titleBand + longestTick + 10);
+  const right = width - 12;
+  const band = (right - left) / Math.max(1, points.length);
+  const categories = categoryLabels(points.map((point) => point.label), { band, fontSize, measure });
+  const lineHeight = Math.round(categories.font * 1.25);
   const padding = {
-    left: Math.ceil(titleBand + longestTick + 10),
-    right: width - 12,
+    left,
+    right,
     top: Math.ceil(fontSize * 2 + 4),
-    bottom: height - Math.ceil(lineHeight * 2 + 14),
+    bottom: height - Math.ceil(lineHeight * Math.max(2, categories.rows) + 14),
   };
   const plot = padding.bottom - padding.top;
-  const band = (padding.right - padding.left) / Math.max(1, points.length);
   const barWidth = Math.max(16, Math.min(64, band * 0.56));
   const y = (value) => padding.bottom - (value / axis.max) * plot;
   const bars = points.map((point, index) => {
@@ -102,12 +130,14 @@ export function barLayout(points, { width = 480, height = 240, fontSize = 13 } =
       height: padding.bottom - top,
       has,
       valueLabel: { x: cx, y: top - 6, text: valueText, visible: valueFits },
-      lines: wrapLabel(point.label, band - 4, fontSize).map((text, line) => ({ text, x: cx, y: padding.bottom + lineHeight * (line + 1) })),
+      lines: categories.labels[index].map((text, line) => ({
+        text, x: cx, y: padding.bottom + lineHeight * (line + 1 + (categories.stagger && index % 2 ? 1 : 0)),
+      })),
       hit: { x: cx - hitWidth / 2, y: hitTop, width: hitWidth, height: padding.bottom - hitTop + 4 },
     };
   });
   const ticks = axis.ticks.map((value, index) => ({ value, cy: y(value), text: tickTexts[index], x: padding.left - 8 }));
-  return { width, height, fontSize, padding, axis, ticks, bars, yTitle: { x: fontSize + 2, y: (padding.top + padding.bottom) / 2 } };
+  return { width, height, fontSize, categoryFont: categories.font, padding, axis, ticks, bars, yTitle: { x: fontSize + 2, y: (padding.top + padding.bottom) / 2 } };
 }
 
 const intersects = (a, b, pad = 4) => a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.y0 < b.y1 + pad && b.y0 < a.y1 + pad;

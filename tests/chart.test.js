@@ -42,14 +42,23 @@ test("bar layout: zero baseline, ticks never clipped, 44 px hit areas, labels fi
         const layout = barLayout(points, { width, height: 250, fontSize });
         assert.equal(layout.ticks[0].value, 0);
         for (const tick of layout.ticks) assert.ok(tick.x - textWidth(tick.text, fontSize) >= fontSize, `tick "${tick.text}" fits at ${width}`);
-        const band = (layout.padding.right - layout.padding.left) / points.length;
+        const boxes = [];
         for (const bar of layout.bars) {
           assert.ok(bar.hit.width >= 44 && bar.hit.height >= 44, "hit area >= 44 x 44");
           assert.ok(bar.lines.length <= 2);
-          for (const line of bar.lines) assert.ok(textWidth(line.text, fontSize) <= band, `"${line.text}" fits ${band}`);
+          assert.equal(bar.lines.map((line) => line.text).join(" "), bar.label, "category label is complete (no ellipsis, nothing dropped)");
+          for (const line of bar.lines) {
+            const w = textWidth(line.text, layout.categoryFont);
+            boxes.push({ x0: line.x - w / 2, x1: line.x + w / 2, y: line.y });
+            assert.ok(line.x + w / 2 <= width, `"${line.text}" inside the frame at ${width}`);
+          }
           if (bar.valueLabel.visible) assert.ok(bar.valueLabel.y >= fontSize, "value label inside the chart");
           assert.ok(bar.top >= layout.padding.top - 0.5);
         }
+        for (const a of boxes) for (const b of boxes) {
+          if (a !== b && a.y === b.y) assert.ok(a.x1 <= b.x0 || b.x1 <= a.x0, `labels collide at ${width}/${fontSize}`);
+        }
+        assert.ok(layout.categoryFont === fontSize || layout.categoryFont === 13);
       }
     }
   }
@@ -58,7 +67,8 @@ test("bar layout: zero baseline, ticks never clipped, 44 px hit areas, labels fi
 test("labels wrap to at most two lines", () => {
   assert.deepEqual(wrapLabel("Train batch 128", 1000, 13), ["Train batch 128"]);
   assert.equal(wrapLabel("Train batch 128", 70, 13).length, 2);
-  assert.ok(wrapLabel("Popularity", 30, 13)[0].endsWith("…"));
+  assert.deepEqual(wrapLabel("Popularity", 30, 13), ["Popularity"], "a long single word is never truncated");
+  assert.ok(!wrapLabel("Train batch 128 extra words here", 40, 13).join(" ").includes("…"));
 });
 
 test("E4 file-size chart is plotted in MiB, matching its axis title", async () => {
@@ -87,4 +97,16 @@ test("tooltip placement never covers the mark or any label; falls back to below 
     for (const other of [mark, ...labels]) assert.ok(!overlap(box, other), `${bar.key}: tooltip covers a mark or label`);
   }
   assert.equal(placeTooltip({ size: { w: 300, h: 200 }, frame: { w: 280, h: 250 }, mark: { x0: 10, x1: 50, y0: 10, y1: 240 } }), null, "too big: below the chart");
+});
+
+test("category labels: wide labels shrink to 13 px, then stagger; never an ellipsis", async () => {
+  const { categoryLabels } = await import("../src/chart-math.js");
+  const normal = categoryLabels(["Popularity", "GRU", "XLNet"], { band: 120, fontSize: 16 });
+  assert.equal(normal.font, 16);
+  assert.equal(normal.stagger, false);
+  const shrunk = categoryLabels(["Popularity", "GRU", "XLNet"], { band: 70, fontSize: 16 });
+  assert.equal(shrunk.font, 13);
+  const tight = categoryLabels(["Popularity", "Popularity", "Popularity"], { band: 50, fontSize: 13 });
+  assert.equal(tight.stagger, true);
+  for (const result of [normal, shrunk, tight]) assert.ok(!result.labels.flat().join(" ").includes("…"));
 });

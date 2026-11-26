@@ -223,6 +223,17 @@ try {
     }
   });
 
+  await check("chart labels are never truncated (no ellipsis) at 1440/1280/768/375, EN and VI, default and presenter", async () => {
+    for (const lang of ["en", "vi"]) for (const search of ["", "?present=1"]) for (const width of [1440, 1280, 768, 375]) {
+      for (const hash of ["#experiments/e1", "#experiments/e2", "#experiments/e3", "#experiments/e4", "#experiments/e5"]) {
+        const page = await open(hash, { width, lang, search });
+        const cut = await page.evaluate(() => [...document.querySelectorAll("figure.chart svg text")].map((t) => t.textContent).filter((text) => text.includes("…") || text.includes("...")));
+        assert.deepEqual(cut, [], `${lang} ${search || "default"} ${width} ${hash}`);
+        await page.context().close();
+      }
+    }
+  });
+
   await check("sticky header <= 56 px and anchors clear it", async () => {
     const page = await open("#experiments/e1", { width: 1440, height: 900 });
     const header = await page.locator(".topbar").boundingBox();

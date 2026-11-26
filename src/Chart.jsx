@@ -103,20 +103,31 @@ function markClass(point, selected, hover) {
 
 const describe = (metric, point) => `${point.label}, ${metric}: ${point.display}`;
 
+// Real text width in the page font (canvas), so labels are only wrapped or shrunk when they truly do not fit.
+let canvas;
+export function measureText(text, size) {
+  if (typeof document === "undefined") return textWidth(text, size);
+  canvas ??= document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  if (!context) return textWidth(text, size);
+  context.font = `400 ${size}px ${getComputedStyle(document.body).fontFamily}`;
+  return context.measureText(String(text)).width;
+}
+
 export function BarChart({ title, metric, yLabel, points, selected, onSelect }) {
   const presenter = usePresenter();
   const [ref, width] = useWidth(480);
   const fontSize = presenter ? 16 : 13;
   // Tall enough on desktop that the tooltip fits beside/above any bar without covering labels.
   const height = presenter ? 340 : width >= 420 ? 290 : 250;
-  const layout = barLayout(points, { width, height, fontSize });
+  const layout = barLayout(points, { width, height, fontSize, measure: measureText });
   const { padding } = layout;
   const { handlers, hover, shown } = useMarks(points, selected, onSelect);
   const anchorBar = layout.bars.find((bar) => bar.key === shown?.key);
   const barBox = (bar) => ({ x0: bar.x, x1: bar.x + bar.width, y0: bar.valueLabel.visible ? bar.valueLabel.y - fontSize : bar.top, y1: layout.padding.bottom });
   const barLabels = layout.bars.flatMap((bar) => [
     ...(bar.valueLabel.visible ? [{ x0: bar.cx - textWidth(bar.valueLabel.text, fontSize) / 2, x1: bar.cx + textWidth(bar.valueLabel.text, fontSize) / 2, y0: bar.valueLabel.y - fontSize, y1: bar.valueLabel.y + 3 }] : []),
-    ...bar.lines.map((line) => ({ x0: line.x - textWidth(line.text, fontSize) / 2, x1: line.x + textWidth(line.text, fontSize) / 2, y0: line.y - fontSize, y1: line.y + 3 })),
+    ...bar.lines.map((line) => ({ x0: line.x - measureText(line.text, layout.categoryFont) / 2, x1: line.x + measureText(line.text, layout.categoryFont) / 2, y0: line.y - layout.categoryFont, y1: line.y + 3 })),
   ]).concat(layout.ticks.map((tick) => ({ x0: tick.x - textWidth(tick.text, fontSize), x1: tick.x, y0: tick.cy - fontSize, y1: tick.cy + 4 })));
   const barMarks = layout.bars.filter((bar) => bar.key === shown?.key || bar.key === selected).map(barBox);
   return <figure className={`chart${selected != null ? " has-selection" : ""}`}>
@@ -133,7 +144,7 @@ export function BarChart({ title, metric, yLabel, points, selected, onSelect }) 
           <rect className="hit" x={bar.hit.x} y={bar.hit.y} width={bar.hit.width} height={bar.hit.height} rx="8" />
           {bar.has && <rect className={`mark bar model-${bar.colour ?? "neutral"}`} x={bar.x} y={bar.top} width={bar.width} height={Math.max(1, bar.height)} rx="4" />}
           {bar.valueLabel.visible && <text className="chart-value" x={bar.valueLabel.x} y={bar.valueLabel.y} textAnchor="middle">{bar.valueLabel.text}</text>}
-          {bar.lines.map((line) => <text key={line.y} className="chart-category" x={line.x} y={line.y} textAnchor="middle">{line.text}</text>)}
+          {bar.lines.map((line) => <text key={line.y} className="chart-category" x={line.x} y={line.y} textAnchor="middle" style={{ fontSize: layout.categoryFont }}>{line.text}</text>)}
         </g>)}
       </svg>
       <Tooltip point={shown} metric={metric} mark={anchorBar ? barBox(anchorBar) : null} marks={barMarks} labels={barLabels} frameWidth={width} frameHeight={height} />
