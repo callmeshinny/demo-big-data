@@ -1,6 +1,6 @@
 # UI context: TV4 demo web
 
-Snapshot: 26/11/2026, 13:40 (+07). Based on `main` @ `aca6f99`, plus local fix commits not yet pushed (marked **[local]**). Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
+Snapshot: 26/11/2026. Describes local `main` after the E3/E4 rewording and the compact chart detail area. `origin/main` is at `5ecc80b`; later commits are local until the user pushes them. Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
 
 ## 1. What the site is
 
@@ -26,7 +26,7 @@ Snapshot: 26/11/2026, 13:40 (+07). Based on `main` @ `aca6f99`, plus local fix c
 | Presenter mode | `src/presenter.js` (`readPresenter`, `savePresenter`, `PresenterContext`) |
 | Tabs | `src/Recommendation.jsx`, `src/Dataset.jsx` (+ `DatasetContext.jsx`), `src/Experiments.jsx` |
 | Charts | `src/Chart.jsx` (`BarChart`, `LineChart`, `useSelection`, `useWidth`), `src/chart-math.js` |
-| Experiment views | `src/e1.js`, `src/scaling.js` (E2–E5), `src/run-config.js`, `src/RunConfigDetails.jsx`, `src/interpretation-notes.js` |
+| Experiment views | `src/e1.js`, `src/scaling.js` (E2–E5), `src/takeaways.js` (E3/E4 takeaway wording chosen from the JSON values), `src/run-config.js`, `src/RunConfigDetails.jsx`, `src/interpretation-notes.js` |
 | Shared UI | `src/ui.jsx` (`Notice`, `DataLoadFailure`, `InterpretationNote`, `DataKindBadge`, `StatusBadge`, `Issues`), `src/ProductCard.jsx`, `src/Glossary.jsx`, `src/EvaluationProtocol.jsx` |
 | Data helpers | `src/data.js` (`normalizeDemo`, `firstAllModelHitSession`, `sessionContext`, `modelLabel`, `EXPERIMENTS`) |
 | Formatting | `src/format.js` (the only formatter) |
@@ -44,6 +44,8 @@ Snapshot: 26/11/2026, 13:40 (+07). Based on `main` @ `aca6f99`, plus local fix c
 | `--accent` | `#0066cc` | `#2997ff` | interactive only |
 | `--control-border` | `#86868b` | `#8e8e93` | control borders (≥ 3:1) |
 | `--positive`, `--positive-text`, `--positive-bg` | `#248a3d`, `#1a7f37`, `#edf8f0` | `#30d158`, `#30d158`, `#0e2a16` | Hit only |
+| `--on-positive` | `#ffffff` | `#000000` | ✓ glyph on the green Hit badge (≥ 3:1) |
+| `--selected-bg` | `#eef5fc` | `#1d2835` | selected table column (`--label-2` on it ≥ 4.5:1) |
 | `--danger`, `--danger-bg` | `#d70015`, `#fdeceb` | `#ff453a`, `#3b1210` | problems only |
 | `--caution` | `#a15c00` | `#ffb340` | warnings |
 | `--model-popularity/-gru/-xlnet` | `#5e7387` / `#c4610a` / `#8e44ad` | `#9fb4c7` / `#ff9f0a` / `#bf5af2` | fixed model colours |
@@ -55,7 +57,7 @@ Snapshot: 26/11/2026, 13:40 (+07). Based on `main` @ `aca6f99`, plus local fix c
 
 **Colour rules (one colour, one meaning).**
 - Accent blue is for interactive elements only.
-- Green means Hit. Hit text uses `--positive-text`. The ✓ glyph is white in light mode and black in dark mode **[local]**.
+- Green means Hit. Hit text uses `--positive-text`. The ✓ glyph uses `--on-positive` (white in light mode, black in dark mode).
 - A miss is neutral: grey text, ✕, and the word "Miss". Never red.
 - Red is for load errors, failed or excluded runs, and config "Differs".
 - "In history" is a neutral grey outline.
@@ -66,7 +68,7 @@ Snapshot: 26/11/2026, 13:40 (+07). Based on `main` @ `aca6f99`, plus local fix c
 ## 4. Screens and behaviour
 
 **Header (glass).**
-- Title. It never truncates. Between 1101 and 1279 px it shows the short label "Next-Item Demo" / "Demo gợi ý" **[local]**.
+- Title. It never truncates (no ellipsis). Between 1101 and 1279 px it shows the short label "Next-Item Demo" / "Demo gợi ý".
 - `<nav>` links with `aria-current`.
 - An About popover, the Presenter mode switch, and the EN/VI segmented switch (remembered in `localStorage`).
 
@@ -85,20 +87,24 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 **Dataset tab.** Raw month facts, why this subset, 5V summary, weekly cuDF subsets (N% links to E2), caveats, representativeness limits, split population, session length, processing pipeline. Never claim that hash sampling guarantees representativeness.
 
 **Experiments tab.**
-- A segmented sub-nav with subtitles: E1 Model comparison, E2 Data size, E3 Train batch (validation), E4 CSV vs Parquet, E5 Scalability.
-- Each panel contains: title, subtitle, one takeaway sentence (an i18n template filled from JSON, with no numeric literals), charts, a metric × run table whose columns link to the chart marks, one notes block, and a closed "Configuration & sources".
+- A segmented sub-nav with subtitles: E1 Model comparison, E2 Data size, E3 Compute resources (validation), E4 Storage format, E5 Scalability.
+- Each panel contains: title, subtitle, (E3/E4) a course-item line in `--label-2`, one takeaway sentence (an i18n template filled from JSON, with no numeric literals), charts, a metric × run table whose columns link to the chart marks, one notes block, and a closed "Configuration & sources".
 - The Environment card is at the bottom and collapsed.
 - Per-experiment rules:
-  - E3 has a Validation badge, train-batch headers read from configs and a held-constant note. It shows no throughput (the package has no throughput field).
-  - E5 Bottleneck values are mapped to readable i18n labels, with the raw value in the title attribute **[local]**.
+  - **E3 · Compute resources: GRU training batch size.** Course item 3 asks to vary compute resources; the hardware was fixed (one AWS VM, one Tesla T4) and only the GRU training batch changed (32 vs 128, read from JSON), on validation. Never claim CPU, RAM or workers were varied. Validation badge, train-batch headers read from configs, a hardware/limitation note (hardware names read from `vm_environment`), the held-constant note. Charts: training time, sampled GPU process memory, validation Recall@20. No throughput (the package has no throughput field) and no "peak" CUDA memory (it is sampled).
+  - **E4 · Storage and retrieval: CSV vs Parquet.** Course item 4. The same events stored both ways: file size (MiB, raw bytes in the tooltip), read time, and preprocessing time (which already includes the read). One chart for each.
+  - **Takeaway wording (E3/E4).** `src/takeaways.js` picks every comparison word (faster/slower, more/less, lower/higher, smaller/larger and the VI equivalents) by comparing the JSON values; equal or missing values give a neutral sentence that only lists the values. E4 says "similar" only if the preprocessing times differ by < 10% of the larger, and adds "because reading is only a small part of it" only if each read is < 10% of its preprocessing time.
+  - E5 Bottleneck values are mapped to readable i18n labels, with the raw value in the title attribute.
   - E5 links only to the same E2 level. Nothing links E3 beside E1/E2.
 
 **Charts** (hand-written SVG; no chart library).
 - Hover previews a mark. Click, Enter or Space selects it and dims the others. Esc or "Clear selection" clears it. Arrow keys move between marks.
 - Hit areas are ≥ 44 px, baselines are at zero, and `prefers-reduced-motion` is respected.
 - The tooltip shows the display value, raw value, unit, run ID and source file.
-- Tooltip placement **[local]**: above or beside the mark. When there is no room (the middle bar, or on phones), the tooltip shows in an area under the chart. It never covers the selected mark or any label.
-- Desktop bar charts are 290 px tall.
+- Category labels are never truncated (no ellipsis): measured in the page font, wrapped to two lines, then reduced to the 13 px caption size, then staggered.
+- **Fixed detail area under every chart.** The hint ("Select a bar or point for details" / "Chọn một cột hoặc điểm để xem chi tiết", `--label-2`, vertically centred) and every mark's details share one grid cell, so the area is always as tall as the tallest content and hovering or selecting never changes the card height. When the chart card is ≥ 440 px the details are two columns of label: value pairs (about two lines).
+- Tooltip placement: on screens ≥ 900 px a floating glass tooltip sits above or beside the mark when it fits without covering the selected mark or any value, category or axis label; otherwise (middle bars, and always below 900 px) the details show in the fixed area.
+- Desktop bar charts are 290 px tall; E3 and E4 show three charts per row from 1100 px.
 - Never plot a series that is not in the JSON.
 
 **Glossary ⓘ.** Session, History (prefix), Top-20, Hit, Recall@20, NDCG@20, Validation vs test. Keyboard and touch accessible; Esc closes the popover and returns focus. Definitions follow `docs/data_contract.md` and the team's model protocol. Never invent a definition.
@@ -124,7 +130,7 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 3. Contrast: text ≥ 4.5:1, large text and control borders ≥ 3:1, the high-contrast set ≥ 7:1 where feasible, and text on glass checked against the worst case. Add every new colour pair to `tests/contrast.test.js`.
 4. Keep the Recommendation order and the fold acceptance from section 4.
 5. Never put E3 next to E1/E2. Keep planned and actual configuration separate. Keep the interpretation notes.
-6. No new dependency unless it is justified in the report. The JS bundle is about 277 kB.
+6. No new dependency unless it is justified in the report. The JS bundle is about 290 kB.
 7. Every `public/*.json` stays under 300 KB. Never commit the bundle, the catalog, Parquet or checkpoints.
 
 ## 7. Checks (run from `tv4-demo-web/`)
@@ -135,18 +141,23 @@ npm run build
 npm run test:e2e         # scripts/check_ui.mjs on the production build: text scan, overflow,
                          # chart select/keyboard/table link, tooltip in 375 px, hit link,
                          # glossary, presenter, fold at 1280x800, header <= 56 px,
-                         # header title, 44 px targets, tooltip overlap [local]
+                         # header title, 44 px targets, tooltip overlap, no ellipsis in
+                         # chart labels, chart card height stable on hover/select
 PYTHONPATH=../Big-Data:scripts python3 -m unittest discover -s tests -p "test_*.py"
-                         # BIG_DATA_ROOT overrides ../Big-Data [local]
+                         # BIG_DATA_ROOT overrides ../Big-Data
+python3 scripts/check_demo_script.py
+                         # talk-track length, required Q&A, every decimal = a displayed JSON value
 git diff --check
 ```
+
+Counts at this snapshot: `npm test` 85/85, `npm run test:e2e` 43/43, Python 25/25 (official values 262/262), demo script 402 English walkthrough words. JS bundle 290 kB (gzip 90 kB).
 
 After these pass, look at the screenshots yourself (`scripts/capture_screens.mjs`; save outside the repo, e.g. `/tmp/...`). Automated checks have missed overlap, clipped labels and raw i18n keys before. Check widths 1440, 1280×800, 768 and 375, in EN and VI, in light, dark and high contrast, with presenter mode on and off.
 
 ## 8. Known gaps and open decisions
 
-- **[local]** Fix commits (contrast ✓, 44 px disclosures, header title, tooltip placement, E5 first tick, Bottleneck labels, `BIG_DATA_ROOT`, AGENTS.md rule 9 line) are not on GitHub until the user pushes.
-- Follow-up prompt sent: soften the AGENTS.md line to "agreed with TV2 (written confirmation pending)", no ellipsis in chart category labels ("Popular…" at 375 px), and a fixed tooltip area so the layout does not shift.
+- Commits after `5ecc80b` (this file, the fixed chart detail area, the E3/E4 rewording, stale-label cleanup, the compact detail area, the E3/E4 talk lines) are local until the user pushes `main`.
 - Forced-colors mode is not verifiable in headless Chrome. Check it manually on the presentation laptop.
-- TV1 product metadata (brand/category/price) is pending, so cards show original product IDs only.
+- Product metadata (brand/category/price) is pending from TV3/TV1, so cards show original product IDs only.
+- E3 does not vary CPU, RAM or workers (one VM, one GPU); varying them is listed as future work in `docs/DEMO_SCRIPT.md`.
 - Still open for the user to decide ("the site feels too academic"): an Overview tab (problem → what we did → what we found), a Simple/Detailed switch merged with presenter mode, plain-language headings such as "E2 · Does more data help?", and Recall shown as "% of sessions" (the raw value stays in the tooltip; confirm with TV2).
