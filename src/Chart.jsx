@@ -147,7 +147,7 @@ export function LineChart({ title, metric, yLabel, xLabel, points, selected, onS
   const fontSize = presenter ? 16 : 13;
   const height = presenter ? 320 : width < 420 ? 260 : 290;
   const series = points.map((point) => ({ ...point, runId: point.key }));
-  const layout = chartLayout(series, { width, height, fontSize, formatValue: (value) => ({ text: points.find((p) => p.y === value)?.short ?? String(value) }), formatX: (value) => formatCount(value).text });
+  const layout = chartLayout(series, { width, height, fontSize, formatValue: (value) => ({ text: points.find((p) => p.y === value)?.short ?? String(value) }), formatX: (value) => formatCount(value).text, yLabel });
   const { padding } = layout;
   const placed = layout.points.map((point) => ({ ...points.find((p) => p.key === point.runId), cx: point.cx, cy: point.cy }));
   const { handlers, hover, shown } = useMarks(placed, selected, onSelect);

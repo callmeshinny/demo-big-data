@@ -82,3 +82,19 @@ test("E5 chart labels are numbers only, padded from the longest tick, and never 
     assert.ok(!view.charts.some((chart) => chart.yLabel.includes("million events (s)")));
   }
 });
+
+test("E5 charts always show the first and last event-count ticks, without overlap", () => {
+  for (const locale of ["en", "vi"]) {
+    setLanguage(locale);
+    const view = buildScalingView(official);
+    for (const chart of view.charts) {
+      for (const width of [600, 520, 420, 300, 260]) {
+        const height = width < 420 ? 260 : 290;
+        const layout = chartLayout(chart.series, { width, height, formatValue: chart.formatValue, yLabel: chart.yLabel });
+        assert.ok(layout.xLabels[0].visible, `${locale} ${chart.id}@${width}: first x tick (${layout.xLabels[0].text})`);
+        assert.ok(layout.xLabels.at(-1).visible, `${locale} ${chart.id}@${width}: last x tick`);
+        assert.equal(layout.xLabels[0].text, new Intl.NumberFormat("en-US").format(official.tables.E2.toSorted((a, b) => a.subset - b.subset)[0].n_events));
+      }
+    }
+  }
+});

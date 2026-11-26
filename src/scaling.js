@@ -221,7 +221,7 @@ function crossesLine(box, points) {
  * A label that would collide with one already placed is hidden; its value stays in the
  * table above the chart and in the point tooltip.
  */
-export function chartLayout(series, { width = 600, height = 300, fontSize = 13, formatValue, formatX = (value) => formatCount(value).text } = {}) {
+export function chartLayout(series, { width = 600, height = 300, fontSize = 13, formatValue, formatX = (value) => formatCount(value).text, yLabel = null } = {}) {
   const valid = series.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
   const axis = niceTicks(Math.max(0, ...valid.map((point) => point.y)));
   const tickValues = axis.ticks;
@@ -237,8 +237,11 @@ export function chartLayout(series, { width = 600, height = 300, fontSize = 13, 
     bottom: height - Math.ceil(fontSize * 3 + 18),
   };
   const { points, yTicks } = chartCoordinates(valid, width, height, padding);
-  // The rotated y-axis title owns the left band; no label may sit on it.
-  const placed = [{ x0: 0, x1: fontSize + 5, y0: 0, y1: height }];
+  // The rotated y-axis title owns a left band, only as tall as the title itself (when its text is known).
+  const titleMid = (padding.top + padding.bottom) / 2;
+  const titleHalf = yLabel ? textWidth(yLabel, fontSize) / 2 + 2 : height;
+  const titleBox = { x0: 0, x1: fontSize + 5, y0: Math.max(0, titleMid - titleHalf), y1: Math.min(height, titleMid + titleHalf) };
+  const placed = [titleBox];
   const fits = (label, avoidLine) => {
     const box = textBox({ ...label, fontSize });
     const inside = box.x0 >= 0 && box.x1 <= width && box.y0 >= 0 && box.y1 <= height;
@@ -280,7 +283,10 @@ export function chartLayout(series, { width = 600, height = 300, fontSize = 13, 
     const point = points[index];
     const text = formatX(point.x);
     const half = textWidth(text, fontSize) / 2;
-    const x = Math.min(Math.max(point.cx, half + 1), width - half - 1);
+    let x = Math.min(Math.max(point.cx, half + 1), width - half - 1);
+    // If the label would touch the y-axis title, slide it right just enough (the first tick stays visible).
+    const box = textBox({ x, y: xLabelY, text, anchor: "middle", fontSize });
+    if (overlaps(box, titleBox)) x = titleBox.x1 + GAP + half + 1;
     xLabels[index] = place({ key: `x${point.runId ?? index}`, x, y: xLabelY, text, anchor: "middle" });
   }
   const pointLabels = [];
