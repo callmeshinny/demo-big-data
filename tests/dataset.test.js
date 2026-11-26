@@ -53,3 +53,12 @@ test("real E1 sample contains three runs, identical fixed sample and catalog pro
     }
   }
 });
+
+test("public JSON carries repo-relative sources, never a local absolute path", async () => {
+  const { readdirSync, readFileSync: read } = await import("node:fs");
+  const folder = new URL("../public/", import.meta.url);
+  for (const file of readdirSync(folder).filter((name) => name.endsWith(".json"))) {
+    const text = read(new URL(file, folder), "utf8");
+    assert.doesNotMatch(text, /"(?:\/Users\/|\/home\/|[A-Za-z]:\\\\)/, `${file} contains an absolute local path`);
+  }
+});

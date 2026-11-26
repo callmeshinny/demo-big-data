@@ -711,7 +711,7 @@ export const messages = {
     "views_2": "Màn hình",
     "presenter_hit_tip": "Gợi ý cho người trình bày: session {0} trúng ở cả {1} model.",
     "product_categories_by_category_id": "Danh mục sản phẩm (theo category ID)",
-    "pipeline_fit_workflow": "Khớp workflow",
+    "pipeline_fit_workflow": "Fit workflow",
     "pipeline_model": "Mô hình",
     "pipeline_top_20": "Top-20",
     "experiment_nav_e1": "Mô hình",

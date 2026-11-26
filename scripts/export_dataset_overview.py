@@ -21,6 +21,13 @@ SUPPLEMENTARY_FILES = (
     "sampling_population.csv", "subset_distribution.csv", "event_mix_before_after.csv",
     "preprocessing_retention.csv", "split_population.csv",
 )
+
+
+def team_path(path):
+    """Path relative to the team repo root, so exports never carry a local home directory."""
+    return Path(path).resolve().relative_to(TEAM_ROOT.resolve()).as_posix()
+
+
 FIELDS = ("n_events", "events_after_repeat_removal", "sequence_count", "vocabulary_size")
 PROFILE_FIELDS = ("distinct", "missing", "event_types", "session_length_histogram")
 
@@ -35,7 +42,7 @@ def raw_audit():
         "missing": {column: int(rows["missing_count", column]["count"]) for column in ("brand", "category_code")},
         "invalid_timestamps": int(rows["invalid_timestamp_count", "event_time"]["count"]),
         "distinct": {column: int(rows["distinct_count", column]["count"]) for column in ("event_type", "category_code", "brand")},
-        "source": str(AUDIT),
+        "source": team_path(AUDIT),
     }
 
 
@@ -51,16 +58,16 @@ def data_context():
         "sampling": {
             **{key: sampling.get(key) for key in ("scope", "seed", "input_bytes", "population_sessions", "hash_rule", "event_retention", "checks")},
             "outputs": [{key: row.get(key) for key in ("percent", "session_count", "actual_session_ratio")} for row in sampling["outputs"]],
-            "source": str(SAMPLING),
+            "source": team_path(SAMPLING),
         },
         "cleanup_reference": {
             **{key: cleanup.get(key) for key in ("engine", "timestamp_parse_failures", "consecutive_repeat_rows_removed")},
-            "source": str(CLEANUP),
+            "source": team_path(CLEANUP),
         },
-        "raw_schema": {"columns": int(columns[1]) if columns else None, "source": str(DICTIONARY)},
+        "raw_schema": {"columns": int(columns[1]) if columns else None, "source": team_path(DICTIONARY)},
         "evaluation_protocol": {
             "split_ratio": split[1] if split else None, "seed": int(seed[1]) if seed else None,
-            "top_k": int(top_k[1]) if top_k else None, "source": str(PROTOCOL),
+            "top_k": int(top_k[1]) if top_k else None, "source": team_path(PROTOCOL),
         },
     }
 
@@ -125,10 +132,10 @@ def export(raw_only=False):
              **distribution_by_subset.get(subset, {}),
              **retention_by_subset.get(subset, {}),
              **split_by_subset.get(subset, {}),
-             "source": str(VERIFIED) if subset in index else None}
+             "source": team_path(VERIFIED) if subset in index else None}
             for subset in SUBSETS
         ],
-        "supplementary_sources": {name: f"{TABLES / (name + '.csv')}" for name in supplementary},
+        "supplementary_sources": {name: team_path(TABLES / (name + ".csv")) for name in supplementary},
         "event_mix_before_after": supplementary.get("event_mix_before_after", []),
     }
 

@@ -29,27 +29,27 @@
         "actual_session_ratio": 1.0
       }
     ],
-    "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/session_sampling_manifest.json"
+    "source": "data/manifests/session_sampling_manifest.json"
   },
   "cleanup_reference": {
     "engine": "DuckDB CPU",
     "timestamp_parse_failures": 0,
     "consecutive_repeat_rows_removed": 11715474,
-    "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/timestamp_session_cleanup.json"
+    "source": "data/manifests/timestamp_session_cleanup.json"
   },
   "raw_schema": {
     "columns": 9,
-    "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/docs/data_dictionary.md"
+    "source": "docs/data_dictionary.md"
   },
   "evaluation_protocol": {
     "split_ratio": "80/10/10",
     "seed": 1,
     "top_k": 20,
-    "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/docs/modeling/model_protocol.md"
+    "source": "docs/modeling/model_protocol.md"
   },
   "schema": "tv4-dataset-overview/v1",
   "team_commit": "88f7e02",
-  "generated_at": "2026-11-25",
+  "generated_at": "2026-11-26",
   "data_kind": "real",
   "source_confirmed_by": "TV2 package tv2-20261124 supplementary tables",
   "source_package": "tv2-20261124",
@@ -67,7 +67,7 @@
       "category_code": 126,
       "brand": 3445
     },
-    "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/raw_audit.csv"
+    "source": "data/raw_audit.csv"
   },
   "subsets": [
     {
@@ -230,7 +230,7 @@
       "validation_used_2_to_D": 8267,
       "final_test_D": 1337,
       "train_D_not_used": 10597,
-      "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/e2_preprocessing_verified.json"
+      "source": "data/manifests/e2_preprocessing_verified.json"
     },
     {
       "subset": 25,
@@ -415,7 +415,7 @@
       "validation_used_2_to_D": 20933,
       "final_test_D": 3266,
       "train_D_not_used": 26633,
-      "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/e2_preprocessing_verified.json"
+      "source": "data/manifests/e2_preprocessing_verified.json"
     },
     {
       "subset": 50,
@@ -614,7 +614,7 @@
       "validation_used_2_to_D": 41570,
       "final_test_D": 6427,
       "train_D_not_used": 52806,
-      "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/e2_preprocessing_verified.json"
+      "source": "data/manifests/e2_preprocessing_verified.json"
     },
     {
       "subset": 100,
@@ -839,15 +839,15 @@
       "validation_used_2_to_D": 82670,
       "final_test_D": 13052,
       "train_D_not_used": 105647,
-      "source": "/Users/nngoc/Documents/Big data/Project/Big-Data/data/manifests/e2_preprocessing_verified.json"
+      "source": "data/manifests/e2_preprocessing_verified.json"
     }
   ],
   "supplementary_sources": {
-    "sampling_population": "/Users/nngoc/Documents/Big data/Project/Big-Data/reports/tables/tv2-20261124/sampling_population.csv",
-    "subset_distribution": "/Users/nngoc/Documents/Big data/Project/Big-Data/reports/tables/tv2-20261124/subset_distribution.csv",
-    "event_mix_before_after": "/Users/nngoc/Documents/Big data/Project/Big-Data/reports/tables/tv2-20261124/event_mix_before_after.csv",
-    "preprocessing_retention": "/Users/nngoc/Documents/Big data/Project/Big-Data/reports/tables/tv2-20261124/preprocessing_retention.csv",
-    "split_population": "/Users/nngoc/Documents/Big data/Project/Big-Data/reports/tables/tv2-20261124/split_population.csv"
+    "sampling_population": "reports/tables/tv2-20261124/sampling_population.csv",
+    "subset_distribution": "reports/tables/tv2-20261124/subset_distribution.csv",
+    "event_mix_before_after": "reports/tables/tv2-20261124/event_mix_before_after.csv",
+    "preprocessing_retention": "reports/tables/tv2-20261124/preprocessing_retention.csv",
+    "split_population": "reports/tables/tv2-20261124/split_population.csv"
   },
   "event_mix_before_after": [
     {
