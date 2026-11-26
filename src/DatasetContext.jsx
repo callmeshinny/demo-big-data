@@ -1,6 +1,7 @@
 import React from "react";
 import { formatValue } from "./data.js";
 import { t } from "./i18n.js";
+import { formatDistance } from "./format.js";
 
 function Evidence({ source }) {
   return source ? <p className="definition">{t("source")} <code>{source}</code></p> : null;
@@ -28,7 +29,7 @@ export function SubsetSelection({ sampling, subsets, source, distributionSource 
     <div className="table-scroll dataset-tv-table"><table className="config-table">
       <thead><tr>{[t("subset"), t("length_tv_vs_100"), t("event_tv_vs_100")].map((label) => <th scope="col" key={label}>{label}</th>)}</tr></thead>
       <tbody>{subsets.map((row) => <tr key={row.subset}><th scope="row">{formatValue(row.subset)}%</th>
-        {["length_TV_vs_100", "event_TV_vs_100"].map((field) => <td key={field}>{Number.isFinite(row[field]) ? row[field].toFixed(4) : t("not_available_yet")}</td>)}
+        {["length_TV_vs_100", "event_TV_vs_100"].map((field) => { const cell = formatDistance(row[field]); return <td key={field} className="num" title={cell.raw}>{cell.text}</td>; })}
       </tr>)}</tbody>
     </table></div>
     <p>{t("tv_distance_explanation")}</p>
