@@ -98,3 +98,18 @@ test("E5 charts always show the first and last event-count ticks, without overla
     }
   }
 });
+
+test("E5 bottleneck values are translated labels with the raw stage name kept for the tooltip", async () => {
+  const { bottleneckLabel } = await import("../src/scaling.js");
+  for (const locale of ["en", "vi"]) {
+    setLanguage(locale);
+    const row = buildScalingView(official).e5Table.rows.find((r) => r.field === "bottleneck");
+    official.tables.E5.toSorted((a, b) => a.subset - b.subset).forEach((run, index) => {
+      assert.equal(row.cells[index].raw, run.bottleneck, "raw stage name in the title attribute");
+      assert.ok(!row.cells[index].text.includes("_"), `${locale}: "${row.cells[index].text}" is a label, not a raw key`);
+    });
+  }
+  setLanguage("en");
+  assert.equal(bottleneckLabel("train_including_sequence_io"), "Training (incl. sequence I/O)");
+  assert.equal(bottleneckLabel("some_new_stage"), "some new stage", "unknown values fall back to the raw text");
+});

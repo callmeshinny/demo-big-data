@@ -1,4 +1,4 @@
-import { t } from "./i18n.js";
+import { messages, t } from "./i18n.js";
 import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds, formatSecondsPerMillionEvents } from "./format.js";
 import { modelLabel } from "./data.js";
 import { formatTick, niceTicks, textWidth } from "./chart-math.js";
@@ -21,8 +21,14 @@ const E5_FIELDS = [
   ["final_evaluation_including_io", "e1_final_evaluation_s", formatSeconds],
   ["composed_seconds_excluding_first_seen", "e5_composed_time_s", formatSeconds],
   ["seconds_per_million_events", "e5_seconds_per_million_events", formatSeconds],
-  ["bottleneck", "e5_bottleneck", (value) => ({ text: value == null ? t("MISSING") : value.replaceAll("_", " "), raw: value == null ? String(value) : String(value) })],
+  ["bottleneck", "e5_bottleneck", (value) => ({ text: value == null ? t("MISSING") : bottleneckLabel(value), raw: String(value) })],
 ];
+
+/** Package stage name -> translated label; an unknown stage falls back to its raw text (underscores as spaces). */
+export function bottleneckLabel(value) {
+  const key = `bottleneck_${value}`;
+  return Object.hasOwn(messages.en, key) ? t(key) : String(value).replaceAll("_", " ");
+}
 
 function rowCell(row, field, formatter) {
   return formatNumberOnly(formatter, row?.[field]);
@@ -52,7 +58,7 @@ export function buildScalingView(results) {
     rows: E5_FIELDS.map(([field, label, formatter]) => ({
       field,
       label: t(label),
-      cells: e5.map((run) => rowCell(run, field, formatter)),
+      cells: e5.map((run) => (field === "bottleneck" ? formatter(run[field]) : rowCell(run, field, formatter))),
     })),
   };
   const charts = [

@@ -468,7 +468,11 @@ export const messages = {
     "dataset_intro": "Source data, sampling, cleanup and session splits behind every result.",
     "open_e2_level": "E2 result →",
     "unit_s_per_million_events": "seconds per million events",
-    "site_name_short": "Next-Item Demo"
+    "site_name_short": "Next-Item Demo",
+    "bottleneck_raw_read": "Raw read",
+    "bottleneck_preprocessing_excluding_raw_read_and_first_seen": "Preprocessing (excl. raw read and first-seen)",
+    "bottleneck_train_including_sequence_io": "Training (incl. sequence I/O)",
+    "bottleneck_final_evaluation_including_io": "Final evaluation (incl. I/O)"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -939,7 +943,11 @@ export const messages = {
     "dataset_intro": "Dữ liệu nguồn, lấy mẫu, làm sạch và chia phiên đứng sau mọi kết quả.",
     "open_e2_level": "Kết quả E2 →",
     "unit_s_per_million_events": "giây trên một triệu sự kiện",
-    "site_name_short": "Demo gợi ý"
+    "site_name_short": "Demo gợi ý",
+    "bottleneck_raw_read": "Đọc dữ liệu thô",
+    "bottleneck_preprocessing_excluding_raw_read_and_first_seen": "Tiền xử lý (không gồm đọc thô và first-seen)",
+    "bottleneck_train_including_sequence_io": "Huấn luyện (gồm I/O sequence)",
+    "bottleneck_final_evaluation_including_io": "Đánh giá cuối (gồm I/O)"
   }
 };
 
