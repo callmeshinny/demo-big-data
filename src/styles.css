@@ -158,8 +158,9 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .presenter .glass { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /*
- * Sticky layers. z-index order: header (10) > sub-bar (8) > page content. Popovers (30) and an open
- * chart tooltip (its chart is raised to 9) appear above the sub-bar; native select menus are OS layers.
+ * Sticky layers. z-index order: header (10) > chart tooltip (9) > sub-bar (8) > page content; popovers (30)
+ * also sit above the sub-bar; native select menus are OS layers. Chart cards must not be stacking contexts
+ * (no containment, transform or z-index on .chart), or the tooltip could not rise above the sub-bar.
  * --sticky-top is where sub-bars stick: under the 56 px header, or at 0 where the header scrolls away.
  * --subbar-height is published by src/sticky.js; scroll-padding-top keeps anchor jumps and keyboard
  * focus below header + sub-bar.
@@ -174,7 +175,6 @@ html { scroll-padding-top: calc(var(--sticky-top) + var(--subbar-height) + var(-
 .sticky-sentinel { height: 1px; margin-bottom: -1px; pointer-events: none; }
 .subbar { position: sticky; top: var(--sticky-top); z-index: 8; transition: box-shadow 120ms ease; }
 .subbar.is-stuck { box-shadow: 0 1px 0 var(--separator), 0 6px 16px rgb(0 0 0 / .08); }
-.chart:has(.tooltip) { position: relative; z-index: 9; }
 @media print {
   .topbar, .subbar { position: static; box-shadow: none; }
   html { scroll-padding-top: 0; }
@@ -491,7 +491,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .mark-group.is-selected .mark { stroke: var(--label); stroke-width: 2; }
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .mark,
 .chart.has-selection .mark-group:not(.is-selected):not(.is-hover) .chart-value { opacity: .35; }
-.tooltip { position: absolute; z-index: 20; display: grid; gap: 0; max-width: min(280px, 100%); padding: 6px var(--s3); border-radius: var(--radius-control); color: var(--label); font: var(--t-footnote); pointer-events: none; box-shadow: 0 6px 20px rgb(0 0 0 / .16); overflow-wrap: anywhere; }
+.tooltip { position: absolute; z-index: 9; display: grid; gap: 0; max-width: min(280px, 100%); padding: 6px var(--s3); border-radius: var(--radius-control); color: var(--label); font: var(--t-footnote); pointer-events: none; box-shadow: 0 6px 20px rgb(0 0 0 / .16); overflow-wrap: anywhere; }
 /* Fixed detail area under each plot: the hint and every mark's details share one grid cell, so the
    area is as tall as the tallest content and hovering/selecting never shifts the layout. */
 .chart-detail { display: grid; margin-top: var(--s2); }
@@ -502,8 +502,9 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .detail-cell { min-width: 0; }
 /* Two columns of label: value pairs when the chart card is wide enough (>= 440 px, i.e. screens >= 600 px
    with one or two charts per row), so the reserved area is about two lines tall. */
-.chart { container-type: inline-size; }
-@container (min-width: 440px) {
+/* The container is the detail area itself (not the chart card, which must not become a stacking context). */
+.chart-detail { container-type: inline-size; }
+@container (min-width: 414px) {
   .chart-detail-item { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .chart-detail-item strong, .chart-detail-item b { font-weight: 600; }

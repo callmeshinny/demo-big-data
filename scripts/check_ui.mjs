@@ -235,6 +235,122 @@ try {
     }
   });
 
+  const stickyState = (page) => page.evaluate(() => {
+    const header = document.querySelector(".topbar").getBoundingClientRect();
+    const bar = document.querySelector(".subbar").getBoundingClientRect();
+    return { headerBottom: header.bottom, top: bar.top, bottom: bar.bottom, height: bar.height, visible: bar.bottom > 0 && bar.top < innerHeight };
+  });
+
+  await check("sticky sub-bars: after scrolling 1500 px the tab's bar is visible right under the header (1280, 375; EN, VI)", async () => {
+    for (const lang of ["en", "vi"]) for (const width of [1280, 375]) {
+      for (const hash of ["#experiments/e1", "#recommendation", "#dataset"]) {
+        const page = await open(hash, { width, height: 800, lang });
+        await page.evaluate(() => window.scrollTo(0, 1500));
+        await page.waitForTimeout(150);
+        const state = await stickyState(page);
+        assert.ok(state.visible, `${lang} ${width} ${hash}: bar visible`);
+        assert.ok(Math.abs(state.top - Math.max(0, state.headerBottom)) <= 1, `${lang} ${width} ${hash}: bar top ${state.top} vs header bottom ${state.headerBottom}`);
+        if (width === 375) assert.ok(Math.max(0, state.headerBottom) + state.height <= 120, `${lang} ${hash}: header + sub-bar ${Math.max(0, state.headerBottom) + state.height} px at 375`);
+        assert.ok(await page.locator(".subbar.is-stuck").count() === 1, `${lang} ${width} ${hash}: stuck state`);
+        await page.context().close();
+      }
+    }
+  });
+
+  await check("switching to E3 while scrolled shows the E3 title below the sub-nav (1280, 375)", async () => {
+    for (const width of [1280, 375]) {
+      const page = await open("#experiments/e1", { width, height: 800 });
+      await page.evaluate(() => window.scrollTo(0, 1500));
+      await page.waitForTimeout(150);
+      await page.locator(".subtabs a[href='#experiments/e3']").click();
+      await page.waitForFunction(() => document.getElementById("title-E3"));
+      await page.waitForTimeout(150);
+      const { bar, title } = await page.evaluate(() => ({ bar: document.querySelector(".subbar").getBoundingClientRect().bottom, title: document.getElementById("title-E3").getBoundingClientRect().top }));
+      assert.ok(title >= bar - 0.5 && title < 800, `${width}: E3 title top ${title}, sub-nav bottom ${bar}`);
+      await page.context().close();
+    }
+  });
+
+  await check("Dataset nav: 'Key findings' lands below the sub-bar and is aria-current; hash survives reload", async () => {
+    for (const lang of ["en", "vi"]) for (const width of [1280, 375]) {
+      const page = await open("#dataset", { width, height: 800, lang });
+      await page.locator(".dataset-nav a[href='#dataset/key-findings']").click();
+      await page.waitForTimeout(400);
+      const result = await page.evaluate(() => ({
+        bar: document.querySelector(".subbar").getBoundingClientRect().bottom,
+        heading: document.getElementById("dataset-key-findings-title").getBoundingClientRect().top,
+        current: document.querySelector(".dataset-nav [aria-current='true']")?.getAttribute("href"),
+      }));
+      assert.ok(result.heading >= result.bar - 0.5 && result.heading < 400, `${lang} ${width}: heading ${result.heading} vs bar ${result.bar}`);
+      assert.equal(result.current, "#dataset/key-findings", `${lang} ${width}: aria-current`);
+      await page.reload({ waitUntil: "networkidle" });
+      await page.waitForTimeout(400);
+      const after = await page.evaluate(() => ({ bar: document.querySelector(".subbar").getBoundingClientRect().bottom, heading: document.getElementById("dataset-key-findings-title").getBoundingClientRect().top }));
+      assert.ok(after.heading >= after.bar - 0.5 && after.heading < 400, `${lang} ${width}: after reload heading ${after.heading} vs bar ${after.bar}`);
+      await page.context().close();
+    }
+  });
+
+  await check("chart tooltip and glossary popover opened near the sub-bar are not covered by it", async () => {
+    const page = await open("#experiments/e1", { width: 1280, height: 800 });
+    // Stick the sub-nav, select a bar (pinned tooltip), then scroll until the tooltip overlaps the sub-nav.
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.locator("[data-mark='Popularity']").first().scrollIntoViewIfNeeded();
+    await page.locator("[data-mark='Popularity']").first().click();
+    await page.mouse.move(5, 790);
+    await page.evaluate(() => {
+      const tip = document.querySelector(".tooltip").getBoundingClientRect();
+      const bar = document.querySelector(".subbar").getBoundingClientRect();
+      window.scrollBy(0, tip.top - bar.top - 12);
+    });
+    await page.waitForTimeout(150);
+    const result = await page.evaluate(() => {
+      const tip = document.querySelector(".tooltip");
+      tip.style.pointerEvents = "auto"; // the tooltip ignores the pointer by design; enable it only to hit-test the paint order
+      const box = tip.getBoundingClientRect();
+      const bar = document.querySelector(".subbar").getBoundingClientRect();
+      const header = document.querySelector(".topbar").getBoundingClientRect();
+      const overlapY = Math.max(box.top, bar.top) + 4;
+      const onTop = [box.left + 12, box.left + box.width / 2].every((x) => tip.contains(document.elementFromPoint(x, overlapY)));
+      // Outside the tooltip the sub-nav itself must still be on top of the chart card.
+      const barX = Math.min(bar.right - 20, box.right + 40);
+      const barOnTop = document.querySelector(".subbar").contains(document.elementFromPoint(barX, bar.top + bar.height / 2));
+      return { overlaps: box.top < bar.bottom && box.bottom > bar.top, onTop, barOnTop, belowHeader: box.top >= header.bottom - 0.5 || !document.querySelector(".topbar").contains(document.elementFromPoint(box.left + 12, header.bottom - 4)) };
+    });
+    assert.ok(result.overlaps, "the tooltip overlaps the sub-nav area");
+    assert.ok(result.onTop, "tooltip is drawn above the sub-nav");
+    assert.ok(result.barOnTop, "the sub-nav stays above the chart card");
+    await page.keyboard.press("Escape");
+    // Glossary popover from the stuck Recommendations control bar.
+    await page.goto(`${home}#recommendation`, { waitUntil: "networkidle" });
+    await page.evaluate(() => window.scrollTo(0, 1500));
+    await page.waitForTimeout(150);
+    await page.locator(".control-bar .glossary .popover-button").click();
+    const popoverOnTop = await page.evaluate(() => {
+      const pop = document.querySelector(".control-bar .popover:not([hidden])");
+      const box = pop.getBoundingClientRect();
+      return [[box.left + 10, box.top + 10], [box.left + box.width / 2, box.top + box.height / 2]].every(([x, y]) => pop.contains(document.elementFromPoint(x, y)));
+    });
+    assert.ok(popoverOnTop, "glossary popover is drawn above the content and the sub-bar");
+    await page.context().close();
+  });
+
+  await check("select chevron sits >= 12 px from the select's right border (Session, Dataset subset)", async () => {
+    for (const [hash, scope] of [["#recommendation", ".control-bar"], ["#dataset", "#view"]]) for (const width of [1280, 375]) {
+      const page = await open(hash, { width, height: 800 });
+      const gap = await page.evaluate((selector) => {
+        const wrap = document.querySelector(`${selector} .select-wrap`);
+        const select = wrap.querySelector("select").getBoundingClientRect();
+        const chevron = wrap.querySelector(".select-chevron").getBoundingClientRect();
+        return { gap: select.right - chevron.right, height: select.height, appearance: getComputedStyle(wrap.querySelector("select")).appearance };
+      }, scope);
+      assert.ok(gap.gap >= 12, `${hash} ${width}: chevron gap ${gap.gap}`);
+      assert.equal(gap.height, 44);
+      assert.equal(gap.appearance, "none");
+      await page.context().close();
+    }
+  });
+
   await check("hit row and Actual-next-item panel highlight each other", async () => {
     const tip = await open("#recommendation");
     await tip.locator(".presenter-tip").click();
