@@ -1,15 +1,16 @@
 """Every official value shown by the UI still matches the team package (metrics.json -> tables).
 
-Reads ../Big-Data/metrics/releases/tv2-20261124/metrics.json (the source of truth). Skips if the
-team repo is not checked out next to this repo. Also checks every public/*.json stays < 300 KB.
+Reads <BIG_DATA_ROOT>/metrics/releases/tv2-20261124/metrics.json (the source of truth; BIG_DATA_ROOT
+defaults to ../Big-Data). Skips if the team repo cannot be found. Also checks every public/*.json stays < 300 KB.
 """
 import json
 import math
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT.parent / "Big-Data" / "metrics" / "releases" / "tv2-20261124" / "metrics.json"
+from team_root import BIG_DATA_ROOT, ROOT
+
+PACKAGE = BIG_DATA_ROOT / "metrics" / "releases" / "tv2-20261124" / "metrics.json"
 
 
 def leaves(value, path=()):
@@ -30,7 +31,7 @@ def same(a, b):
 
 
 class OfficialValuesTest(unittest.TestCase):
-    @unittest.skipUnless(PACKAGE.exists(), "team repo not checked out next to this repo")
+    @unittest.skipUnless(PACKAGE.exists(), f"team repo not found at {BIG_DATA_ROOT}; set BIG_DATA_ROOT")
     def test_all_table_values_match_metrics_json(self):
         package = json.loads(PACKAGE.read_text(encoding="utf8"))["tables"]
         public = json.loads((ROOT / "public" / "official-results.json").read_text(encoding="utf8"))["tables"]

@@ -1,4 +1,4 @@
-"""Run with PYTHONPATH=../Big-Data:scripts python3 -m unittest discover -s tests."""
+"""Run with PYTHONPATH=../Big-Data:scripts python3 -m unittest discover -s tests (team repo: BIG_DATA_ROOT, default ../Big-Data)."""
 import hashlib
 import json
 from pathlib import Path
@@ -10,12 +10,14 @@ import unittest
 from export_official_results import VM_ENVIRONMENT_VALUES, read_vm_environment
 
 
-ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT.parent / "Big-Data/metrics/releases/tv2-20261124"
-TEAM_ROOT = ROOT.parent / "Big-Data"
+from team_root import BIG_DATA_ROOT, ROOT
+
+TEAM_ROOT = BIG_DATA_ROOT
+PACKAGE = TEAM_ROOT / "metrics/releases/tv2-20261124"
 SCRIPT = ROOT / "scripts/export_official_results.py"
 
 
+@unittest.skipUnless(PACKAGE.exists(), f"team repo not found at {BIG_DATA_ROOT}; set BIG_DATA_ROOT")
 class OfficialResultsExportTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
