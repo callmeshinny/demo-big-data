@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { setLanguage } from "../src/i18n.js";
-import { buildE3E4View, buildScalingView, chartCoordinates, formatE3Context } from "../src/scaling.js";
+import { buildE3E4View, buildScalingView, chartCoordinates, chartLayout, formatE3Context, textWidth } from "../src/scaling.js";
 
 const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
 
@@ -58,4 +58,26 @@ test("E3 and E4 panels preserve official configs, measurements, notes, and exclu
   assert.equal(e4.formats[0].cells[2].raw, String(official.tables.E4[0].preprocessing_wall_seconds_including_read));
   assert.equal(e4.excluded.length, 2);
   assert.equal(Object.hasOwn(e4, "preprocessingNote"), false);
+});
+
+test("E5 chart labels are numbers only, padded from the longest tick, and never collide", () => {
+  for (const locale of ["en", "vi"]) {
+    setLanguage(locale);
+    const view = buildScalingView(official);
+    assert.equal(view.e5Table.rows.find((row) => row.field === "seconds_per_million_events").label.includes("(s)"), false);
+    for (const chart of view.charts) {
+      for (const width of [600, 520, 300, 260]) {
+        const layout = chartLayout(chart.series, { width, height: 300, formatValue: chart.formatValue });
+        const labels = [...layout.ticks, ...layout.xLabels, ...layout.pointLabels];
+        for (const label of [...layout.ticks, ...layout.pointLabels]) {
+          assert.match(label.text, /^[\d.,]+$/, `${chart.id}: "${label.text}" must be a number only`);
+        }
+        const longest = Math.max(...layout.ticks.map((tick) => textWidth(tick.text, layout.fontSize)));
+        assert.ok(layout.padding.left >= longest + layout.fontSize, `${chart.id}@${width}: left padding fits tick labels`);
+        assert.ok(layout.ticks.every((tick) => tick.visible), `${chart.id}@${width}: all y ticks shown`);
+        assert.ok(labels.filter((label) => label.visible).length >= 8, `${chart.id}@${width}: most labels shown`);
+      }
+    }
+    assert.ok(!view.charts.some((chart) => chart.yLabel.includes("million events (s)")));
+  }
 });

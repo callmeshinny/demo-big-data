@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { t } from "./i18n.js";
 import { EXPERIMENTS } from "./data.js";
 import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
-import { buildE3E4View, buildScalingView, chartCoordinates, formatE3Context } from "./scaling.js";
+import { buildE3E4View, buildScalingView, chartLayout, formatE3Context } from "./scaling.js";
 import { formatCount, formatSeconds } from "./format.js";
 import { EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 
@@ -50,29 +50,46 @@ function OfficialE2Panel({ results }) {
   </section>;
 }
 
+/** Width of an element in CSS pixels, so the chart draws text at its real size. */
+function useWidth(fallback) {
+  const ref = useRef(null);
+  const [width, setWidth] = useState(fallback);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(240, Math.floor(entry.contentRect.width))));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  return [ref, width];
+}
+
 function E5Chart({ chart }) {
-  const { points, yTicks } = chartCoordinates(chart.series);
+  const [ref, width] = useWidth(600);
+  const height = width < 420 ? 260 : 300;
+  const layout = chartLayout(chart.series, { width, height, formatValue: chart.formatValue });
+  const { padding, points } = layout;
   const path = points.map((point, index) => `${index ? "L" : "M"}${point.cx},${point.cy}`).join(" ");
   return <figure className="scaling-chart">
     <figcaption>{chart.title}</figcaption>
-    <svg viewBox="0 0 600 300" role="img" aria-label={chart.title}>
-      {yTicks.map(({ value, cy }) => <g key={value}>
-        <line x1="66" y1={cy} x2="576" y2={cy} className="chart-gridline" />
-        <text x="58" y={cy + 4} textAnchor="end" className="chart-tick">{chart.formatY(value).text}</text>
-      </g>)}
-      <line x1="66" y1="246" x2="576" y2="246" className="chart-axis" />
-      <line x1="66" y1="24" x2="66" y2="246" className="chart-axis" />
-      <text x="320" y="288" textAnchor="middle" className="chart-axis-label">{t("e5_x_axis_events")}</text>
-      <text x="18" y="138" textAnchor="middle" transform="rotate(-90 18 138)" className="chart-axis-label">{chart.yLabel}</text>
-      {points.map((point) => <text key={point.runId} x={point.cx} y="265" textAnchor="middle" className="chart-tick">
-        {formatCount(point.x).text}
-      </text>)}
-      <path d={path} className="chart-line" />
-      {points.map((point) => <g key={point.runId}>
-        <circle cx={point.cx} cy={point.cy} r="5" className="chart-point"><title>{`${formatCount(point.x).text} · ${chart.formatY(point.y).text} · ${point.runId}`}</title></circle>
-        <text x={point.cx} y={point.cy - 11} textAnchor="middle" className="chart-value">{chart.formatPoint(point.y).text}</text>
-      </g>)}
-    </svg>
+    <div ref={ref} className="chart-frame">
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${chart.title}. ${chart.yLabel}`}>
+        {layout.ticks.map((tick) => <g key={tick.key}>
+          <line x1={padding.left} y1={tick.cy} x2={padding.right} y2={tick.cy} className="chart-gridline" />
+          {tick.visible && <text x={tick.x} y={tick.y} textAnchor="end" className="chart-tick">{tick.text}</text>}
+        </g>)}
+        <line x1={padding.left} y1={padding.bottom} x2={padding.right} y2={padding.bottom} className="chart-axis" />
+        <line x1={padding.left} y1={padding.top} x2={padding.left} y2={padding.bottom} className="chart-axis" />
+        <text x={layout.xTitle.x} y={layout.xTitle.y} textAnchor="middle" className="chart-axis-label">{t("e5_x_axis_events")}</text>
+        <text x={layout.yTitle.x} y={layout.yTitle.y} textAnchor="middle" transform={`rotate(-90 ${layout.yTitle.x} ${layout.yTitle.y})`} className="chart-axis-label">{chart.yLabel}</text>
+        {layout.xLabels.map((label) => label.visible && <text key={label.key} x={label.x} y={label.y} textAnchor="middle" className="chart-tick">{label.text}</text>)}
+        <path d={path} className="chart-line" />
+        {points.map((point, index) => <g key={point.runId}>
+          <circle cx={point.cx} cy={point.cy} r="5" className="chart-point"><title>{`${formatCount(point.x).text} · ${chart.formatValue(point.y).text} · ${point.runId}`}</title></circle>
+          {layout.pointLabels[index].visible && <text x={layout.pointLabels[index].x} y={layout.pointLabels[index].y} textAnchor={layout.pointLabels[index].anchor} className="chart-value">{layout.pointLabels[index].text}</text>}
+        </g>)}
+      </svg>
+    </div>
   </figure>;
 }
 

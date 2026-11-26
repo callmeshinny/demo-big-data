@@ -79,7 +79,9 @@ def bars(axis, labels, values, ylabel, formatter, color=COLORS[0]):
 
 def line_values(axis, x_values, y_values, ylabel, formatter, color=COLORS[0]):
     axis.plot(x_values, y_values, color=color, marker="o", linewidth=2)
-    axis.set_ylim(bottom=0)
+    shown = [y for y in y_values if y is not None]
+    # Headroom so the top point label clears the subplot title.
+    axis.set_ylim(bottom=0, top=max(shown) * 1.15 if shown else None)
     axis.set_xlabel("Events (n_events)")
     axis.set_ylabel(ylabel)
     axis.spines[["top", "right"]].set_visible(False)
@@ -160,9 +162,9 @@ def make_figure(name, payload):
         figure = Figure(figsize=(9.4, 5.2), facecolor="white")
         left, right = figure.subplots(1, 2)
         line_values(left, events, [value(row, "composed_seconds_excluding_first_seen") for row in data],
-                    "Composed time excluding first-seen (s)", lambda number: f"{number:.1f}")
+                    "Composed time (s)", lambda number: f"{number:.1f}")
         line_values(right, events, [value(row, "seconds_per_million_events") for row in data],
-                    "Seconds per million events (s/million)", lambda number: f"{number:.1f}", COLORS[1])
+                    "Seconds per million events", lambda number: f"{number:.1f}", COLORS[1])
         left.set_title("Composed time", fontsize=10)
         right.set_title("Seconds per million events", fontsize=10)
         figure.suptitle("E5 · Composed time and normalized time by event volume", x=0.04, ha="left", fontweight="bold")

@@ -91,6 +91,18 @@ try {
             ));
             assert.deepEqual(overlaps, [], `Metric cells overlap in ${name} at ${width}`);
           }
+          const chartProblems = await page.evaluate(() => [...document.querySelectorAll("figure.scaling-chart")].flatMap((figure, chartIndex) => {
+            const card = figure.getBoundingClientRect();
+            const texts = [...figure.querySelectorAll("svg text")].map((node) => ({ text: node.textContent, rect: node.getBoundingClientRect() }));
+            const outside = texts.filter(({ rect }) => rect.left < card.left - 0.5 || rect.right > card.right + 0.5 || rect.top < card.top - 0.5 || rect.bottom > card.bottom + 0.5)
+              .map(({ text }) => `chart ${chartIndex}: "${text}" outside card`);
+            const collisions = texts.flatMap((a, index) => texts.slice(index + 1).filter((b) =>
+              Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left) > 0.5
+              && Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top) > 0.5,
+            ).map((b) => `chart ${chartIndex}: "${a.text}" overlaps "${b.text}"`));
+            return [...outside, ...collisions];
+          }));
+          assert.deepEqual(chartProblems, [], `Chart text in ${name} at ${width}`);
           await page.screenshot({ path: path.join(folder, `${name}-${width}.png`), fullPage: true });
         };
         await page.goto(`${home}/#recommendation`);

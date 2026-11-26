@@ -1,5 +1,5 @@
 import { t } from "./i18n.js";
-import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatSecondsPerMillionEventsPoint } from "./format.js";
+import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatNumberOnly, formatRatio, formatSeconds, formatSecondsPerMillionEvents } from "./format.js";
 import { modelLabel } from "./data.js";
 
 const E2_FIELDS = [
@@ -65,8 +65,7 @@ export function buildScalingView(results) {
         y: row.composed_seconds_excluding_first_seen,
         runId: row.run_id,
       })),
-      formatY: formatSeconds,
-      formatPoint: formatSeconds,
+      formatValue: (value) => formatNumberOnly(formatSeconds, value),
     },
     {
       id: "normalized",
@@ -78,8 +77,7 @@ export function buildScalingView(results) {
         y: row.seconds_per_million_events,
         runId: row.run_id,
       })),
-      formatY: formatSecondsPerMillionEvents,
-      formatPoint: formatSecondsPerMillionEventsPoint,
+      formatValue: (value) => formatNumberOnly(formatSecondsPerMillionEvents, value),
     },
   ];
   return { e2Table, e5Table, charts, registrySummary: results?.run_registry_summary ?? null };
@@ -175,10 +173,10 @@ export function formatE3Context(context) {
   return t("e3_context", modelLabel(context.model), number(context.subset), context.split, number(context.partition), number(context.sessions), number(context.evalBatchSize), changedField);
 }
 
-export function chartCoordinates(series, width = 600, height = 300) {
+export function chartCoordinates(series, width = 600, height = 300, padding = {}) {
   const points = series.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
   if (!points.length) return { points: [], yTicks: [] };
-  const left = 66, right = width - 24, top = 24, bottom = height - 54;
+  const { left = 66, right = width - 24, top = 24, bottom = height - 54 } = padding;
   const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs), maxY = Math.max(0, ...ys), yScale = maxY || 1;
   const coordinates = points.map((point) => ({
@@ -191,4 +189,113 @@ export function chartCoordinates(series, width = 600, height = 300) {
     return { value, cy: bottom - (value / yScale) * (bottom - top) };
   });
   return { points: coordinates, yTicks };
+}
+
+// Glyph width as a share of font size. Monospace is 0.6; 0.62 leaves a margin.
+const GLYPH = 0.62;
+
+export function textWidth(text, fontSize) {
+  return String(text).length * fontSize * GLYPH;
+}
+
+function textBox({ x, y, text, anchor, fontSize }) {
+  const width = textWidth(text, fontSize);
+  const x0 = anchor === "end" ? x - width : anchor === "middle" ? x - width / 2 : x;
+  // Browsers report the full line box (ascent + descent), about 1.25 em tall.
+  return { x0, x1: x0 + width, y0: y - fontSize * 1.0, y1: y + fontSize * 0.3 };
+}
+
+const GAP = 4;
+const overlaps = (a, b) => a.x0 - GAP < b.x1 && b.x0 - GAP < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+/** True when any segment of the polyline passes through the box (sampled every 2 px). */
+function crossesLine(box, points) {
+  for (let index = 1; index < points.length; index += 1) {
+    const a = points[index - 1], b = points[index];
+    const steps = Math.max(1, Math.ceil(Math.hypot(b.cx - a.cx, b.cy - a.cy) / 2));
+    for (let step = 0; step <= steps; step += 1) {
+      const x = a.cx + (b.cx - a.cx) * step / steps, y = a.cy + (b.cy - a.cy) * step / steps;
+      if (x > box.x0 - 2 && x < box.x1 + 2 && y > box.y0 - 2 && y < box.y1 + 2) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Lays out a line chart at its real pixel width. The unit lives in the y-axis title only,
+ * so ticks and point labels are numbers. Left padding follows the longest tick label.
+ * A label that would collide with one already placed is hidden; its value stays in the
+ * table above the chart and in the point tooltip.
+ */
+export function chartLayout(series, { width = 600, height = 300, fontSize = 13, formatValue, formatX = (value) => formatCount(value).text } = {}) {
+  const tickText = (value) => (value === 0 ? "0" : formatValue(value).text);
+  const valid = series.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+  const maxY = Math.max(0, ...valid.map((point) => point.y)) || 1;
+  const tickValues = Array.from({ length: 4 }, (_, index) => maxY * index / 3);
+  const longestTick = Math.max(...tickValues.map((value) => textWidth(tickText(value), fontSize)));
+  const titleBand = fontSize * 1.6;
+  const lastX = valid.length ? formatX(valid.at(-1).x) : "";
+  const lastPoint = valid.length ? formatValue(valid.at(-1).y).text : "";
+  const padding = {
+    left: Math.ceil(titleBand + longestTick + 10),
+    right: width - Math.ceil(Math.max(16, textWidth(lastX, fontSize) / 2, textWidth(lastPoint, fontSize) / 2) + 6),
+    top: Math.ceil(fontSize * 2),
+    bottom: height - Math.ceil(fontSize * 3 + 18),
+  };
+  const { points, yTicks } = chartCoordinates(valid, width, height, padding);
+  const placed = [];
+  const fits = (label, avoidLine) => {
+    const box = textBox({ ...label, fontSize });
+    const inside = box.x0 >= 0 && box.x1 <= width && box.y0 >= 0 && box.y1 <= height;
+    return inside && !placed.some((other) => overlaps(box, other)) && !(avoidLine && crossesLine(box, points)) ? box : null;
+  };
+  const place = (label) => {
+    const box = fits(label, false);
+    if (box) placed.push(box);
+    return { ...label, visible: Boolean(box) };
+  };
+  // Point labels try above, upper-left, upper-right, then below, keeping clear of the line.
+  const placePoint = (key, point, text) => {
+    const gap = 9;
+    const candidates = [
+      { x: point.cx, y: point.cy - gap, anchor: "middle" },
+      { x: point.cx - gap, y: point.cy - gap / 2, anchor: "end" },
+      { x: point.cx + gap, y: point.cy - gap / 2, anchor: "start" },
+      { x: point.cx + gap, y: point.cy + fontSize + 2, anchor: "start" },
+      { x: point.cx - gap, y: point.cy + fontSize + 2, anchor: "end" },
+      { x: point.cx, y: point.cy + fontSize + gap, anchor: "middle" },
+    ].map((candidate) => ({ key, text, ...candidate }));
+    for (const avoidLine of [true, false]) {
+      for (const candidate of candidates) {
+        const box = fits(candidate, avoidLine);
+        if (box) {
+          placed.push(box);
+          return { ...candidate, visible: true };
+        }
+      }
+    }
+    return { ...candidates[0], visible: false };
+  };
+  const ticks = yTicks.map(({ value, cy }) => place({ key: `y${value}`, value, cy, x: padding.left - 8, y: cy + fontSize * 0.35, text: tickText(value), anchor: "end" }));
+  const xLabelY = padding.bottom + fontSize + 10;
+  // First and last x labels win; middle ones show when there is room.
+  const order = points.map((_, index) => index).sort((a, b) => (a === 0 || a === points.length - 1 ? -1 : 0) - (b === 0 || b === points.length - 1 ? -1 : 0));
+  const xLabels = [];
+  for (const index of order) {
+    const point = points[index];
+    const text = formatX(point.x);
+    const half = textWidth(text, fontSize) / 2;
+    const x = Math.min(Math.max(point.cx, half + 1), width - half - 1);
+    xLabels[index] = place({ key: `x${point.runId ?? index}`, x, y: xLabelY, text, anchor: "middle" });
+  }
+  const pointLabels = [];
+  for (const index of order) {
+    const point = points[index];
+    pointLabels[index] = placePoint(`p${point.runId ?? index}`, point, formatValue(point.y).text);
+  }
+  return {
+    width, height, fontSize, padding, points, ticks, xLabels, pointLabels,
+    xTitle: { x: (padding.left + padding.right) / 2, y: height - 6 },
+    yTitle: { x: fontSize + 2, y: (padding.top + padding.bottom) / 2 },
+  };
 }
