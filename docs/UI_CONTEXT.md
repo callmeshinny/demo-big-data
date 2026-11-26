@@ -1,6 +1,6 @@
 # UI context: TV4 demo web
 
-Snapshot: 26/11/2026. Describes local `main` after the E3/E4 rewording and the compact chart detail area. `origin/main` is at `5ecc80b`; later commits are local until the user pushes them. Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
+Snapshot: 26/11/2026. Describes local `main` after the Key findings, the E3 rename and the real E4 configuration. `origin/main` is at `5ecc80b`; later commits are local until the user pushes them. Read this before any UI change. Data rules live in `AGENTS.md` and `docs/CONTEXT.md`; this file covers the interface only. If they disagree, `AGENTS.md` wins.
 
 ## 1. What the site is
 
@@ -9,7 +9,7 @@ Snapshot: 26/11/2026. Describes local `main` after the E3/E4 rewording and the c
 
 | File | Used by | Content |
 |---|---|---|
-| `public/official-results.json` | Experiments, E1 strip | E1–E5 from package `tv2-20261124` (262 values, checked against `metrics.json`) |
+| `public/official-results.json` | Experiments, E1 strip | E1–E5 from package `tv2-20261124` (262 values, checked against `metrics.json`), `stage_shares` (from `reports/tables/tv2-20261124/stage_shares.csv`, checked against E5), `configs[*].e4_config` (E4 preprocessing configuration) |
 | `public/dataset-overview.json` | Dataset | TV2 supplementary tables, raw audit, manifests |
 | `public/demo-data.json` | Recommendations | Real E1 predictions: 30 of 1,337 test sessions, same sessions for Popularity/GRU/XLNet, ranked IDs only (no scores), catalog subset + full-catalog SHA |
 | `public/sample-predictions.csv` | not used by the UI | Format sample (rule 9 exception in `AGENTS.md`) |
@@ -26,7 +26,7 @@ Snapshot: 26/11/2026. Describes local `main` after the E3/E4 rewording and the c
 | Presenter mode | `src/presenter.js` (`readPresenter`, `savePresenter`, `PresenterContext`) |
 | Tabs | `src/Recommendation.jsx`, `src/Dataset.jsx` (+ `DatasetContext.jsx`), `src/Experiments.jsx` |
 | Charts | `src/Chart.jsx` (`BarChart`, `LineChart`, `useSelection`, `useWidth`), `src/chart-math.js` |
-| Experiment views | `src/e1.js`, `src/scaling.js` (E2–E5), `src/takeaways.js` (E3/E4 takeaway wording chosen from the JSON values), `src/run-config.js`, `src/RunConfigDetails.jsx`, `src/interpretation-notes.js` |
+| Experiment views | `src/e1.js`, `src/scaling.js` (E2–E5), `src/takeaways.js` (E3/E4 sentences, E4 fairness line), `src/findings.js` (Key findings for E1–E5 and Dataset), `src/KeyFinding.jsx`, `src/run-config.js` (run kinds), `src/RunConfigDetails.jsx` (incl. `E4ConfigDetails`), `src/interpretation-notes.js` |
 | Shared UI | `src/ui.jsx` (`Notice`, `DataLoadFailure`, `InterpretationNote`, `DataKindBadge`, `StatusBadge`, `Issues`), `src/ProductCard.jsx`, `src/Glossary.jsx`, `src/EvaluationProtocol.jsx` |
 | Data helpers | `src/data.js` (`normalizeDemo`, `firstAllModelHitSession`, `sessionContext`, `modelLabel`, `EXPERIMENTS`) |
 | Formatting | `src/format.js` (the only formatter) |
@@ -87,13 +87,15 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 **Dataset tab.** Raw month facts, why this subset, 5V summary, weekly cuDF subsets (N% links to E2), caveats, representativeness limits, split population, session length, processing pipeline. Never claim that hash sampling guarantees representativeness.
 
 **Experiments tab.**
-- A segmented sub-nav with subtitles: E1 Model comparison, E2 Data size, E3 Training batch size, E4 Storage format, E5 Scalability.
-- Each panel contains: title, subtitle, (E3/E4) a course-item line in `--label-2`, one takeaway sentence (an i18n template filled from JSON, with no numeric literals), charts, a metric × run table whose columns link to the chart marks, one notes block, and a closed "Configuration & sources".
+- A segmented sub-nav with subtitles: E1 Model comparison, E2 Data size, E3 Training batch size, E4 Storage format, E5 Scalability (one line at ≥ 1024 px, may wrap below, never an ellipsis).
+- Each panel contains: title, subtitle, (E3/E4) a course-item line in `--label-2`, (E4) the fairness line, the **Key finding** callout, charts, a metric × run table whose columns link to the chart marks, one notes block, and a closed "Configuration & sources".
 - The Environment card is at the bottom and collapsed.
 - Per-experiment rules:
   - **E3 · Training batch size (GRU).** Course item 3 asks to vary compute resources; the hardware was fixed (one AWS VM, one Tesla T4) and only the GRU training batch changed (32 vs 128, read from JSON), on validation. Never claim CPU, RAM or workers were varied. Validation badge, train-batch headers read from configs, a hardware/limitation note (hardware names read from `vm_environment`), the held-constant note. Charts: training time, sampled GPU process memory, validation Recall@20. No throughput (the package has no throughput field) and no "peak" CUDA memory (it is sampled).
   - **E4 · Storage and retrieval: CSV vs Parquet.** Course item 4. The same events stored both ways: file size (MiB, raw bytes in the tooltip), read time, and preprocessing time (which already includes the read). One chart for each.
-  - **Takeaway wording (E3/E4).** `src/takeaways.js` picks every comparison word (faster/slower, more/less, lower/higher, smaller/larger and the VI equivalents) by comparing the JSON values; equal or missing values give a neutral sentence that only lists the values. E4 says "similar" only if the preprocessing times differ by < 10% of the larger, and adds "because reading is only a small part of it" only if each read is < 10% of its preprocessing time.
+  - **E4 fairness line** (under the subtitle, above the Key finding): "✓ Same data: {n} events, fingerprints match · same program · all nine columns read as strings". Shown only when both runs have `fingerprint_match` true, equal event counts, the same program and the same all-string schema policy. The ✓ uses `--label` (green means Hit).
+  - **E4 "Configuration & sources"** is a "Preprocessing configuration" table (Parameter | CSV run | Parquet run | Same) from `e4_config`: input format, subset, events, fingerprint match, program, read scope, schema policy, cache, events after repeat removal, vocabulary size, cuDF/NVTabular versions, notebook commit (8 chars, full in the tooltip), split seed/ratios, partition column. No training rows. Stage timings are not exported (their scope differs from the official E4 table).
+  - **Sentence wording (E3/E4).** `src/takeaways.js` picks every comparison word (faster/slower, more/less, lower/higher, smaller/larger and the VI equivalents) by comparing the JSON values; equal or missing values give a neutral sentence that only lists the values. E4 says "similar" only if the preprocessing times differ by < 10% of the larger, and adds "because reading is only a small part of it" only if each read is < 10% of its preprocessing time.
   - E5 Bottleneck values are mapped to readable i18n labels, with the raw value in the title attribute.
   - E5 links only to the same E2 level. Nothing links E3 beside E1/E2.
 
@@ -104,8 +106,15 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 - Category labels are never truncated (no ellipsis): measured in the page font, wrapped to two lines, then reduced to the 13 px caption size, then staggered.
 - **Fixed detail area under every chart.** The hint ("Select a bar or point for details" / "Chọn một cột hoặc điểm để xem chi tiết", `--label-2`, vertically centred) and every mark's details share one grid cell, so the area is always as tall as the tallest content and hovering or selecting never changes the card height. When the chart card is ≥ 440 px the details are two columns of label: value pairs (about two lines).
 - Tooltip placement: on screens ≥ 900 px a floating glass tooltip sits above or beside the mark when it fits without covering the selected mark or any value, category or axis label; otherwise (middle bars, and always below 900 px) the details show in the fixed area.
-- Desktop bar charts are 290 px tall; E3 and E4 show three charts per row from 1100 px.
+- Desktop bar charts are 290 px tall. At most two charts per row: E3 and E4 have three, so the third wraps to the next row, left-aligned and the same width (every card ≥ 440 px at 1280 and titles fit one line).
 - Never plot a series that is not in the JSON.
+
+**Key finding callouts.** From TV2's `reports/tables/tv2-20261124/analysis.md` (findings 1–7 and section 8); add no claim that is not in that file.
+- `KeyFinding` (`<aside aria-label="Key finding">`): label "Key finding" / "Đúc kết" (13 px, `--label-2`, letter-spaced), optional headline (`--t-lead`, a heading one level below the panel title), body (`--t-body`), one caveat (13 px, `--label-2`), source "Source: TV2 analysis, 24/11 (analysis.md)". Neutral highlight with no new colour meaning: solid `--surface`, 4 px `--label` left border, 14 px radius, shadow, 24 px padding; no glass, no accent, no green/red. Presenter mode enlarges it through the type tokens (headline 22 px, body 18 px).
+- One per experiment panel, directly under the subtitle/course line (and the E4 fairness line), before the charts. It replaces the old one-line takeaway (the takeaway is its body). The Dataset tab has a "Key findings" group of three callouts after the 5V summary.
+- `src/findings.js` shows a headline or an added clause only when the JSON values agree with it (E1 best needs Recall@20 and NDCG@20 to agree and cheapest needs train and final-eval time to agree, else that half is omitted; E2 Recall@20 strictly rising; E3 larger batch lower process time and lower Recall@20; E4 smaller, faster read and each read < 10% of preprocessing; E5 bottleneck at the first and last subset, shares from `stage_shares`; Dataset values from `dataset-overview.json`). Ratios that exist only in analysis.md prose (5.28×, 4.19×, 1.47×, 43.97%, 8.34×) are never rendered; the UI shows both values.
+
+**Not applicable vs Not available yet.** `src/run-config.js` classifies a run as training, baseline (Popularity) or preprocessing (E4). A field that does not exist for that kind shows "Not applicable" / "Không áp dụng"; "Not available yet" / "Chưa có" is only for an expected value that was not delivered.
 
 **Glossary ⓘ.** Session, History (prefix), Top-20, Hit, Recall@20, NDCG@20, Validation vs test. Keyboard and touch accessible; Esc closes the popover and returns focus. Definitions follow `docs/data_contract.md` and the team's model protocol. Never invent a definition.
 
@@ -130,7 +139,7 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 3. Contrast: text ≥ 4.5:1, large text and control borders ≥ 3:1, the high-contrast set ≥ 7:1 where feasible, and text on glass checked against the worst case. Add every new colour pair to `tests/contrast.test.js`.
 4. Keep the Recommendation order and the fold acceptance from section 4.
 5. Never put E3 next to E1/E2. Keep planned and actual configuration separate. Keep the interpretation notes.
-6. No new dependency unless it is justified in the report. The JS bundle is about 290 kB.
+6. No new dependency unless it is justified in the report. The JS bundle is about 309 kB.
 7. Every `public/*.json` stays under 300 KB. Never commit the bundle, the catalog, Parquet or checkpoints.
 
 ## 7. Checks (run from `tv4-demo-web/`)
@@ -150,7 +159,7 @@ python3 scripts/check_demo_script.py
 git diff --check
 ```
 
-Counts at this snapshot: `npm test` 85/85, `npm run test:e2e` 43/43, Python 25/25 (official values 262/262), demo script 402 English walkthrough words. JS bundle 290 kB (gzip 90 kB).
+Counts at this snapshot: `npm test` 97/97, `npm run test:e2e` 46/46, Python 27/27 (official values 262/262), demo script 415 English walkthrough words. JS bundle 309 kB (gzip 97 kB). Every `public/*.json` is below 300 KB (largest: `demo-data.json`, 80 KB).
 
 After these pass, look at the screenshots yourself (`scripts/capture_screens.mjs`; save outside the repo, e.g. `/tmp/...`). Automated checks have missed overlap, clipped labels and raw i18n keys before. Check widths 1440, 1280×800, 768 and 375, in EN and VI, in light, dark and high contrast, with presenter mode on and off.
 

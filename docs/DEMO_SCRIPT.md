@@ -15,9 +15,9 @@
 
 *Tiếng Việt. Bài toán là dự đoán sản phẩm tiếp theo trong phiên mua sắm dựa trên sản phẩm đã xem, thêm vào giỏ hoặc mua. Nhóm dùng bộ dữ liệu sự kiện thương mại điện tử công khai tháng 10/2019 và workflow cuDF theo tuần. Đầu vào thí nghiệm dùng các tập con lồng nhau ở mức phiên trong bảy ngày đầu, không lấy mẫu ngẫu nhiên từng sự kiện.*
 
-**English.** The Dataset tab traces raw population, cleaning, eligible sequences, vocabulary and train, validation and test counts to the TV2 package. It reports subset sizes, event and sequence distribution differences, and known limits. These are checks on this sample, not proof it represents all shoppers or seasons.
+**English.** The Dataset tab traces cleaning and split counts to the TV2 package. After cleanup the task is mostly next-product browsing, and results cover only sessions with at least two interactions.
 
-*Tiếng Việt. Tab Dataset truy xuất quy mô dữ liệu thô, bước làm sạch, chuỗi hợp lệ, vocabulary và số lượng train, validation, test theo package TV2. Tab cũng cho biết mỗi tập con chiếm bao nhiêu và phân phối sự kiện, chuỗi khác tập đầy đủ ra sao. Đây là mô tả mẫu dữ liệu, không chứng minh mẫu đại diện cho mọi người mua hay mọi mùa.*
+*Tiếng Việt. Tab Dataset truy xuất số liệu làm sạch và chia tập theo package TV2. Sau khi làm sạch, bài toán chủ yếu là dự đoán sản phẩm xem tiếp theo, và kết quả chỉ áp dụng cho session có ít nhất hai tương tác.*
 
 ### Recommendations
 
@@ -25,31 +25,31 @@
 
 *Tiếng Việt. Tab Recommendation phát lại dự đoán test E1 chính thức của Popularity, GRU và XLNet. Tab hiển thị 30 trong 1.337 phiên, chọn theo cùng quy tắc SHA-256 với seed 1 cho cả ba mô hình. Quy tắc băm mã phiên nên việc chọn không phụ thuộc mô hình có dự đoán trúng hay không. Chọn phiên để xem lịch sử tương tác, sản phẩm tiếp theo thực tế và Top-20 theo thứ tự mô hình.*
 
-**English.** A hit means the actual product ID appears in the Top-20; the sentence under the actual item gives its rank. The E1 strip below the list shows official full-test metrics, not values recomputed from these 30 sessions. Models export ranked IDs only, so there is no Score column. This is saved-output replay, not live inference.
+**English.** A hit means the actual product appears in the Top-20. The E1 strip below shows official full-test metrics, not values from these 30 sessions. Models export ranked IDs only, so there is no score; this is saved-output replay.
 
-*Tiếng Việt. Dự đoán trúng nghĩa là mã sản phẩm thực tế nằm trong Top-20; câu dưới sản phẩm thực tế cho biết thứ hạng. Dải E1 bên dưới danh sách là metric chính thức trên toàn bộ test, không phải giá trị tính lại trên 30 phiên này. Model chỉ xuất mã sản phẩm theo thứ hạng, nên không có cột Điểm. Đây là phát lại output đã lưu, không phải suy luận trực tiếp.*
+*Tiếng Việt. Dự đoán trúng nghĩa là sản phẩm thực tế nằm trong Top-20. Dải E1 bên dưới là metric chính thức trên toàn bộ tập test, không phải giá trị từ 30 phiên này. Model chỉ xuất mã sản phẩm theo thứ hạng nên không có điểm; đây là phát lại output đã lưu.*
 
 ### Experiments
 
-**English.** E1 compares the three models under the delivered test protocol. XLNet leads Recall@20 at 0.1249 in this single run. Treat this as a descriptive result from one seed, not evidence of repeat-run stability.
+**English.** E1 is the only fair model comparison. XLNet is the most accurate, with Recall@20 at 0.1249, and Popularity is the cheapest to train and evaluate. GRU is only slightly above Popularity on this test. It is one run and one seed, so this holds for the runs we measured, not as a general ranking.
 
-*Tiếng Việt. E1 so sánh ba mô hình theo protocol test đã bàn giao. Trong lần chạy đơn lẻ này, XLNet có Recall@20 cao nhất: 0.1249. Đây là kết quả của một lần chạy và một seed, không phải bằng chứng về độ ổn định qua nhiều lần chạy.*
+*Tiếng Việt. E1 là phép so sánh mô hình công bằng duy nhất. XLNet chính xác nhất, Recall@20 đạt 0.1249, còn Popularity có chi phí huấn luyện và đánh giá thấp nhất. GRU chỉ nhỉnh hơn Popularity một chút trên tập test này. Đây là một lần chạy, một seed, nên kết luận đúng cho các run đã đo, không phải xếp hạng tổng quát.*
 
-**English.** E2 trains GRU on each nested subset. Test Recall@20 is 0.0883 at 10% and 0.3899 at 100%. The test data and catalog change with the subset, so this is not a pure train-size effect.
+**English.** E2 trains GRU on each nested subset. Recall@20 rises from 0.0883 at 10% to 0.3899 at 100%, but the test sessions and catalog also change, so this is not a pure training-size effect. We mainly use E2 to see how pipeline cost grows with data.
 
-*Tiếng Việt. E2 huấn luyện GRU trên từng tập con lồng nhau. Recall@20 trên test là 0.0883 ở 10% và 0.3899 ở 100%. Dữ liệu test và catalog thay đổi theo tập con, nên đây không chỉ là ảnh hưởng của kích thước tập huấn luyện.*
+*Tiếng Việt. E2 huấn luyện GRU trên từng tập con lồng nhau. Recall@20 tăng từ 0.0883 ở 10% lên 0.3899 ở 100%, nhưng tập test và catalog cũng thay đổi, nên đây không chỉ là tác động của kích thước dữ liệu huấn luyện. Nhóm dùng E2 chủ yếu để xem chi phí pipeline tăng theo dữ liệu.*
 
-**English.** For compute resources, we kept the same VM and GPU and changed the GRU training batch from 32 to 128. The larger batch trained faster but used more GPU memory and scored lower on validation. This is a validation result, so we don't compare it with the test results in E1.
+**English.** For compute resources, we kept the same VM and GPU and changed the GRU training batch from 32 to 128. The larger batch trained faster but used more GPU memory and scored lower on validation: a trade-off, not a free improvement. We don't compare this validation result with E1.
 
-*Tiếng Việt. Với tài nguyên tính toán, nhóm giữ nguyên VM và GPU, chỉ đổi batch huấn luyện GRU từ 32 lên 128. Batch lớn hơn huấn luyện nhanh hơn nhưng dùng nhiều bộ nhớ GPU hơn và cho điểm validation thấp hơn. Đây là kết quả trên validation, nên nhóm không so sánh với kết quả test của E1.*
+*Tiếng Việt. Với tài nguyên tính toán, nhóm giữ nguyên VM và GPU, chỉ đổi batch huấn luyện GRU từ 32 lên 128. Batch lớn hơn huấn luyện nhanh hơn nhưng dùng nhiều bộ nhớ GPU hơn và điểm validation thấp hơn: một sự đánh đổi, không phải cải tiến miễn phí. Nhóm không so sánh kết quả validation này với E1.*
 
-**English.** For storage, we saved the same events as CSV and Parquet. Parquet is much smaller and faster to read, but total preprocessing barely changes, because reading is a small part of the pipeline.
+**English.** For storage, we saved the same events as CSV and Parquet, with matching data fingerprints. TV2's analysis finds Parquet about five times smaller and about four times faster to read, but total preprocessing barely changes, because reading is a small part of the pipeline.
 
-*Tiếng Việt. Với lưu trữ, nhóm lưu cùng một tập sự kiện dưới dạng CSV và Parquet. Parquet nhỏ hơn nhiều và đọc nhanh hơn, nhưng tổng thời gian tiền xử lý gần như không đổi, vì bước đọc chỉ là một phần nhỏ của pipeline.*
+*Tiếng Việt. Với lưu trữ, nhóm lưu cùng một tập sự kiện dưới dạng CSV và Parquet, dấu vân tay dữ liệu trùng khớp. Theo phân tích của TV2, Parquet nhỏ hơn khoảng năm lần và đọc nhanh hơn khoảng bốn lần, nhưng tổng thời gian tiền xử lý gần như không đổi, vì bước đọc chỉ là một phần nhỏ của pipeline.*
 
-**English.** E5 reuses verified E2 runs across four subset sizes. Normalized time is 66.7, 56.9, 55.8 and 55.6 seconds per million events. Composed time excludes shared first-seen and is not observed end-to-end wall time. These measured curves do not guarantee throughput.
+**English.** E5 reuses the verified E2 runs. The bottleneck moves from preprocessing at 10% to training at 100%, so faster reading alone will not fix it at scale. Time per million events is 66.7, 56.9, 55.8 and 55.6 seconds, as fixed costs spread over more data.
 
-*Tiếng Việt. E5 dùng lại các lượt E2 đã xác minh để trình bày thời gian tổng hợp và số giây trên một triệu sự kiện ở bốn kích thước tập con. Các giá trị chuẩn hóa là 66.7, 56.9, 55.8 và 55.6 giây trên một triệu sự kiện. Thời gian tổng hợp không gồm first-seen dùng chung và không phải thời gian đầu-cuối quan sát trực tiếp. Đường biểu diễn mô tả pipeline đã đo, không phải cam kết throughput.*
+*Tiếng Việt. E5 dùng lại các lượt E2 đã xác minh. Nút thắt chuyển từ tiền xử lý ở 10% sang huấn luyện ở 100%, nên chỉ đọc nhanh hơn sẽ không giải quyết được ở quy mô lớn. Thời gian cho mỗi triệu sự kiện lần lượt là 66.7, 56.9, 55.8 và 55.6 giây, vì chi phí cố định được chia cho nhiều dữ liệu hơn.*
 
 ## Likely questions
 
@@ -105,6 +105,10 @@
 
     *Vì sao không thay đổi CPU, RAM hay số worker? Nhóm có một VM AWS với một GPU T4, nên phần cứng cố định. Batch size là thiết lập tài nguyên nhóm điều khiển được: nó thay đổi lượng việc GPU làm mỗi bước và lượng bộ nhớ GPU dùng. Thay đổi CPU, RAM hay số worker cần thêm loại VM khác, nhóm ghi nhận là hướng phát triển.*
 
+14. **Was E4 a fair comparison?** Yes. Both runs used the same 882,808 events, verified by a fingerprint, the same program, and all nine columns read as strings, so only the file format differs.
+
+    *E4 có phải so sánh công bằng không? Có. Hai lượt chạy dùng cùng 882,808 sự kiện, đã xác minh bằng dấu vân tay dữ liệu, cùng chương trình, và đọc cả chín cột dạng chuỗi, nên chỉ khác nhau ở định dạng tệp.*
+
 ## Sources
 
-Values are copied from package `tv2-20261124`, chiefly `E1.csv`, `E2.csv`, `E3.csv`, `E4.csv`, and `E5.csv`, and rounded as the UI shows them. Limitations are from `manifest.json → limits` and `data_dictionary.json`.
+Values are copied from package `tv2-20261124`, chiefly `E1.csv`, `E2.csv`, `E3.csv`, `E4.csv`, and `E5.csv`, and rounded as the UI shows them. Spoken ratios ("about five times smaller", "about four times faster") are TV2's, from `reports/tables/tv2-20261124/analysis.md` finding 6; the UI shows both values instead. Limitations are from `manifest.json → limits` and `data_dictionary.json`.

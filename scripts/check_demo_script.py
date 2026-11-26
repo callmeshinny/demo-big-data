@@ -13,6 +13,7 @@ REQUIRED_QUESTIONS = (
     "Does the demo run live inference, and how can it be rebuilt?",
     "How is the 30-session sample selected?",
     "Why didn't you vary CPU, RAM or workers?",
+    "Was E4 a fair comparison?",
     "Are these toy or real recommendations?",
     "Why might the sample be browsing-heavy?",
     "What does the Recommendation tab show?",
@@ -61,6 +62,26 @@ def check_numbers(walkthrough, official):
     for number in re.findall(r"(?<![\w.])\d+\.\d+(?![\w.])", walkthrough):
         if number not in allowed:
             errors.append(f"English walkthrough number {number} is not a displayed value from official-results.json")
+    return errors
+
+
+def check_e4_fairness_answer(text, official):
+    """The E4 fairness answer must quote the E4 event count from the JSON (both runs read the same count)."""
+    answer = re.search(r"(?ms)\*\*Was E4 a fair comparison\?\*\*(.*?)(?=^\s*\*E4 |^\d+\. |\Z)", text)
+    counts = {run.get("n_events") for run in official.get("tables", {}).get("E4", [])}
+    if not answer:
+        return []
+    if len(counts) != 1 or None in counts:
+        return ["E4 runs do not report one shared event count; the fairness answer cannot be checked"]
+    expected = f"{counts.pop():,}"
+    numbers = re.findall(r"\d[\d,]*\d", answer.group(1))
+    if expected not in numbers or any(number != expected for number in numbers):
+        return [f"E4 fairness answer must quote {expected} events from official-results.json"]
+    return []
+
+
+def check_numbers_e3(walkthrough, official):
+    errors = []
     batches = sorted(run["train_batch_size"] for run in official.get("tables", {}).get("E3", []))
     if batches and f"from {batches[0]} to {batches[-1]}" not in walkthrough:
         errors.append(f"English walkthrough must state the E3 batch sizes from the JSON ({batches[0]} and {batches[-1]})")
@@ -90,7 +111,10 @@ def check_text(text):
     missing_values = [value for value in DISPLAY_VALUES if value not in walkthrough]
     if missing_values:
         errors.append(f"English walkthrough is missing displayed values: {', '.join(missing_values)}")
-    errors.extend(check_numbers(walkthrough, json.loads(OFFICIAL.read_text(encoding="utf-8"))))
+    official = json.loads(OFFICIAL.read_text(encoding="utf-8"))
+    errors.extend(check_numbers(walkthrough, official))
+    errors.extend(check_numbers_e3(walkthrough, official))
+    errors.extend(check_e4_fairness_answer(text, official))
 
     q4 = re.search(
         r"(?ms)^4\. \*\*What does Recall@20 mean\?\*\*(.*?)(?=^\s*\*Tiếng Việt\.|^5\.)",

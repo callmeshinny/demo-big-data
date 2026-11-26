@@ -20,10 +20,10 @@ The order matches [DEMO_SCRIPT.md](DEMO_SCRIPT.md): Dataset → Recommendations 
 
 1. **Dataset:** explain session-based next-item prediction and the weekly cuDF subsets. Point out the official population, cleaning and split tables. Each subset column links to its E2 result.
 2. **Recommendations:** click the presenter tip “Try session X: hit for all 3 models” (X is computed from the data; currently 21546). Show the interaction history, the actual next item and the sentence “Hit — the actual item is ranked N of 20”. Hover the green row in the Top-20: the Actual next item panel highlights too. Switch models with the segmented control. Explain that the fixed seed-1 sample is outcome-independent, that the E1 strip below the list is the official full-test result (not recomputed on this sample), and that the page replays saved outputs (no Score column, no live inference).
-3. **Experiments → E1 · Model comparison:** read the takeaway sentence. Click the XLNet bar: the other bars dim and the XLNet table column highlights. Press Esc. Say this is one run and one seed.
-4. **E2 · Data size:** read the takeaway (Recall@20 at 10% and 100%). Say that test data and catalog change with the subset, so it is not a pure train-size effect.
+3. **Experiments → E1 · Model comparison:** read the Key finding headline. Click the XLNet bar: the other bars dim and the XLNet table column highlights. Press Esc. Say this is one run and one seed.
+4. **E2 · Data size:** read the Key finding (Recall@20 at 10% and 100%). Say that test data and catalog change with the subset, so it is not a pure train-size effect.
 5. **E3 · Training batch size:** say the VM and GPU stayed the same and only the GRU training batch changed (read the sizes from the subtitle). Point at the Validation badge and the hardware/held-constant notes. Do not compare with E1/E2 test.
-6. **E4 · Storage format:** compare file size (MiB), read time and preprocessing time; preprocessing already includes reading, so it barely changes. Mention warm-cache conditions.
+6. **E4 · Storage format:** point at the "Same data" fairness line, then compare file size (MiB), read time and preprocessing time; preprocessing already includes reading, so it barely changes. Mention warm-cache conditions.
 7. **E5 · Scalability:** show composed time and seconds per million events against event count (axes start at zero). Click a point to show its tooltip and the link to the same E2 level. State that composed time excludes shared first-seen and is not observed end-to-end wall time.
 
 Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the bilingual talk track and Q&A. Read detailed values from the screen so labels, units and source IDs remain visible.
