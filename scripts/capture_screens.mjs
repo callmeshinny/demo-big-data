@@ -56,10 +56,11 @@ try {
   try {
     for (const locale of ["en", "vi"]) {
       setLanguage(locale);
-      const folder = path.join(destination, locale);
+      for (const scheme of ["light", "dark"]) {
+      const folder = path.join(destination, scheme === "light" ? locale : `${locale}-dark`);
       await mkdir(folder, { recursive: true });
       for (const width of widths) {
-        const page = await browser.newPage({ viewport: { width, height: 900 } });
+        const page = await browser.newPage({ viewport: { width, height: 900 }, colorScheme: scheme });
         page.setDefaultTimeout(8000);
         const errors = [];
         page.on("pageerror", (error) => errors.push(error.message));
@@ -216,6 +217,7 @@ try {
         const alert = page.getByRole("alert");
         await alert.getByText(t("could_not_load_the_dataset_overview"), { exact: true }).waitFor();
         await page.close();
+      }
       }
     }
   } finally {

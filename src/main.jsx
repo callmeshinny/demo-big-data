@@ -112,8 +112,9 @@ function App() {
   const state = { recommendation: demo, data: dataset, experiments: officialResults }[tab];
 
   return (
-    <main className="shell">
+    <>
       <header className="topbar">
+        <div className="topbar-inner">
         <div className="brand">
           {logo && <img className="brand-logo" src={logo} alt="" />}
           <h1>{siteName}</h1>
@@ -129,7 +130,9 @@ function App() {
               aria-pressed={language === code} onClick={() => chooseLanguage(code)}>{code.toUpperCase()}</button>)}
           </div>
         </div>
+        </div>
       </header>
+      <main className="shell">
       {cover && <img className="brand-cover" src={cover} alt="" />}
       <p className="tab-intro">{t(`${tab}_tab_intro`)}</p>
       <div role="tabpanel">
@@ -146,7 +149,8 @@ function App() {
           <code>{name}</code> {t("commit")} {file.provenance?.team_commit ?? t("not_available_yet")} {t("exported")} {file.provenance?.generated_at ?? t("not_available_yet")} · {file.provenance?.data_kind ?? t("not_available_yet")}
         </li>)}</ul>
       </footer>
-    </main>
+      </main>
+    </>
   );
 }
 
