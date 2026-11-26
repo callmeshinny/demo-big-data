@@ -467,7 +467,8 @@ export const messages = {
     "terms_label": "Terms:",
     "dataset_intro": "Source data, sampling, cleanup and session splits behind every result.",
     "open_e2_level": "E2 result →",
-    "unit_s_per_million_events": "seconds per million events"
+    "unit_s_per_million_events": "seconds per million events",
+    "site_name_short": "Next-Item Demo"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -937,7 +938,8 @@ export const messages = {
     "terms_label": "Thuật ngữ:",
     "dataset_intro": "Dữ liệu nguồn, lấy mẫu, làm sạch và chia phiên đứng sau mọi kết quả.",
     "open_e2_level": "Kết quả E2 →",
-    "unit_s_per_million_events": "giây trên một triệu sự kiện"
+    "unit_s_per_million_events": "giây trên một triệu sự kiện",
+    "site_name_short": "Demo gợi ý"
   }
 };
 

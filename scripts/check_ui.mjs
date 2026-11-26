@@ -187,6 +187,21 @@ try {
     }
   });
 
+  await check("header title never truncates (1024-1440, default and presenter, EN and VI)", async () => {
+    for (const lang of ["en", "vi"]) for (const search of ["", "?present=1"]) for (const width of [1024, 1101, 1180, 1280, 1440]) {
+      const page = await open("#recommendation", { width, lang, search });
+      const fit = await page.evaluate(() => {
+        const name = [...document.querySelectorAll(".brand-name > span")].find((el) => getComputedStyle(el).display !== "none");
+        const inner = document.querySelector(".topbar-inner");
+        return { clipped: name.scrollWidth > name.clientWidth + 0.5 || name.getBoundingClientRect().width < name.scrollWidth - 0.5,
+          ellipsis: getComputedStyle(document.querySelector(".brand-name")).textOverflow === "ellipsis",
+          rowOverflow: inner.scrollWidth > inner.clientWidth + 0.5, text: name.textContent };
+      });
+      assert.deepEqual([fit.clipped, fit.ellipsis, fit.rowOverflow], [false, false, false], `${lang} ${search || "default"} ${width}: ${fit.text}`);
+      await page.context().close();
+    }
+  });
+
   await check("sticky header <= 56 px and anchors clear it", async () => {
     const page = await open("#experiments/e1", { width: 1440, height: 900 });
     const header = await page.locator(".topbar").boundingBox();

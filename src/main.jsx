@@ -121,7 +121,7 @@ function App() {
         <div className="topbar-inner">
         <div className="brand">
           {logo && <img className="brand-logo" src={logo} alt="" />}
-          <span className="brand-name">{siteName}</span>
+          <span className="brand-name"><span className="brand-full">{siteName}</span><span className="brand-short">{t("site_name_short")}</span></span>
         </div>
         <MainNav tab={tab} />
         <div className="header-utility">

@@ -161,8 +161,15 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .topbar { position: sticky; top: 0; z-index: 10; border-width: 0 0 1px; }
 [id] { scroll-margin-top: calc(var(--header-height) + var(--s4)); }
 .topbar-inner { display: flex; align-items: center; gap: var(--s3); max-width: 1200px; min-height: calc(var(--header-height) - 1px); margin: 0 auto; padding: 0 var(--s5); }
-.brand { display: flex; flex: 0 1 auto; align-items: center; gap: var(--s3); min-width: 0; }
-.brand-name { font: var(--t-lead); font-weight: 600; color: var(--label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand { display: flex; flex: 0 0 auto; align-items: center; gap: var(--s3); }
+/* The title never truncates: between 1101 and 1279 px (one-row header, tight) it switches to a shorter label. */
+.brand { flex-shrink: 0; }
+.brand-name { font: var(--t-lead); font-weight: 600; color: var(--label); white-space: nowrap; }
+.brand-short { display: none; }
+@media (min-width: 1101px) and (max-width: 1279px) {
+  .brand-full { display: none; }
+  .brand-short { display: inline; }
+}
 .brand-logo { display: block; max-width: 140px; max-height: 44px; object-fit: contain; }
 .header-utility { display: flex; align-items: center; gap: var(--s2); margin-left: auto; }
 
