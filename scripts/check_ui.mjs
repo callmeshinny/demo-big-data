@@ -175,6 +175,30 @@ try {
     }
   });
 
+  await check("Key finding: one callout above the first chart on E1–E5 and on Dataset, no duplicate takeaway, 375 and presenter", async () => {
+    for (const lang of ["en", "vi"]) for (const [width, search] of [[1280, ""], [375, ""], [1280, "?present=1"]]) {
+      for (const hash of ["#experiments/e1", "#experiments/e2", "#experiments/e3", "#experiments/e4", "#experiments/e5"]) {
+        const page = await open(hash, { width, lang, search });
+        const result = await page.evaluate(() => {
+          const panel = document.querySelector(".experiment-panel");
+          const callouts = panel.querySelectorAll("aside.key-finding");
+          const chart = panel.querySelector("figure.chart");
+          const above = callouts.length === 1 && Boolean(callouts[0].compareDocumentPosition(chart) & Node.DOCUMENT_POSITION_FOLLOWING);
+          const box = callouts[0]?.getBoundingClientRect();
+          return { count: callouts.length, above, oldTakeaway: panel.querySelectorAll(".takeaway").length,
+            visible: Boolean(box && box.width > 0 && box.height > 0), overflow: document.documentElement.scrollWidth - innerWidth,
+            label: callouts[0]?.getAttribute("aria-label") };
+        });
+        assert.deepEqual([result.count, result.above, result.oldTakeaway, result.visible, result.overflow], [1, true, 0, true, 0], `${lang} ${width}${search} ${hash}`);
+        await page.context().close();
+      }
+      const page = await open("#dataset", { width, lang, search });
+      const dataset = await page.evaluate(() => ({ count: document.querySelectorAll("aside.key-finding").length, overflow: document.documentElement.scrollWidth - innerWidth }));
+      assert.deepEqual(dataset, { count: 3, overflow: 0 }, `${lang} ${width}${search} dataset`);
+      await page.context().close();
+    }
+  });
+
   await check("hit row and Actual-next-item panel highlight each other", async () => {
     const tip = await open("#recommendation");
     await tip.locator(".presenter-tip").click();

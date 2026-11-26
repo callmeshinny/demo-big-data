@@ -10,7 +10,9 @@ import { experimentHref } from "./navigation.js";
 import { BarChart, LineChart, useSelection } from "./Chart.jsx";
 import { usePresenter } from "./presenter.js";
 import { Glossary } from "./Glossary.jsx";
-import { e3Limitation, e3Subtitle, e3Takeaway, e4Pair, e4Subtitle, e4Takeaway, formatLabel } from "./takeaways.js";
+import { e3Limitation, e3Subtitle, e4Pair, e4Subtitle, formatLabel } from "./takeaways.js";
+import { e1Finding, e2Finding, e3Finding, e4Finding, e5Finding } from "./findings.js";
+import { KeyFinding } from "./KeyFinding.jsx";
 import { modelColourKey } from "./Recommendation.jsx";
 
 const basename = (value) => (typeof value === "string" && value ? value.split("/").at(-1) : null);
@@ -25,15 +27,16 @@ function point({ key, label, value, formatter, unit, runId, source, colour, x, d
   return { key, label, y: isMissing(value) ? null : value / scale, short, display: full.text, raw: full.raw, unit, runId, source, colour, x };
 }
 
-/** Panel shell: title + subtitle, one plain-language takeaway, charts, table, one shared note block. */
-function Panel({ id, title, subtitle, course, badge, takeaway, children }) {
+/** Panel shell: title + subtitle (+ course line, fairness line), the Key finding callout, charts, table, one note block. */
+function Panel({ id, title, subtitle, course, badge, lead, finding, children }) {
   return <section className="panel experiment-panel" id={`panel-${id.toLowerCase()}`} aria-labelledby={`title-${id}`}>
     <header className="experiment-head">
       <h2 id={`title-${id}`}>{title}{badge}</h2>
       {subtitle && <p className="experiment-subtitle">{subtitle}</p>}
       {course && <p className="experiment-course">{course}</p>}
     </header>
-    {takeaway && <p className="takeaway">{takeaway}</p>}
+    {lead}
+    {finding && <KeyFinding finding={finding} level={3} />}
     {children}
   </section>;
 }
@@ -105,12 +108,8 @@ function E1Panel({ results }) {
   }));
   const recall = chartPoints("Recall@20", formatRatio);
   const ndcg = chartPoints("NDCG@20", formatRatio);
-  const ranked = recall.filter((p) => p.y != null).sort((a, b) => b.y - a.y);
-  const takeaway = ranked.length >= 2
-    ? t("e1_takeaway", ranked[0].label, ranked[0].display, ranked.at(-1).label, ranked.at(-1).display)
-    : missingText();
   const rows = view.rows.map((row, index) => ({ ...row, primary: index < 2, group: index === 2 ? t("time_and_memory_secondary") : null }));
-  return <Panel id="E1" title={`E1 · ${t("experiment_nav_e1")}`} subtitle={formatE1Context(view.context)} takeaway={takeaway}>
+  return <Panel id="E1" title={`E1 · ${t("experiment_nav_e1")}`} subtitle={formatE1Context(view.context)} finding={e1Finding(results)}>
     <p className="fair-note">{t("e1_fair_note")} <span className="terms">{t("terms_label")} {t("e1_recall_20")} <Glossary term="recall" /> {t("e1_ndcg_20")} <Glossary term="ndcg" /></span></p>
     <div className="charts">
       <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={recall} selected={selected} onSelect={setSelected} />
@@ -138,8 +137,7 @@ function E2Panel({ results, initial }) {
     key: String(run.subset), label: `${run.subset}%`, value: run[field], formatter: formatRatio, runId: run.run_id, source: basename(run.source_metrics), colour,
   }));
   const first = runs[0], last = runs.at(-1);
-  const takeaway = first && last ? t("e2_takeaway", model, formatRatio(first["Recall@20"]).text, first.subset, formatCount(first.n_events).text, formatRatio(last["Recall@20"]).text, last.subset, formatCount(last.n_events).text) : missingText();
-  return <Panel id="E2" title={`E2 · ${t("experiment_nav_e2")}`} subtitle={t("e2_subtitle", model)} takeaway={takeaway}>
+  return <Panel id="E2" title={`E2 · ${t("experiment_nav_e2")}`} subtitle={t("e2_subtitle", model)} finding={e2Finding(results)}>
     <div className="charts">
       <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20")} selected={selected} onSelect={setSelected} />
       <BarChart title={`${t("e1_ndcg_20")} (${t("test_split")})`} metric={t("e1_ndcg_20")} yLabel={t("e1_ndcg_20")} points={chartPoints("NDCG@20")} selected={selected} onSelect={setSelected} />
@@ -179,7 +177,7 @@ function E3Panel({ results }) {
     key: run.run_id, label: header(run), value: read(run), formatter, displayUnit, unit, runId: run.run_id, source: basename(run.source_metrics), colour,
   }));
   return <Panel id="E3" title={t("e3_panel_title", modelLabel(runs[0]?.model))} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
-    subtitle={e3Subtitle(results)} course={t("e3_course_item")} takeaway={e3Takeaway(results)}>
+    subtitle={e3Subtitle(results)} course={t("e3_course_item")} finding={e3Finding(results)}>
     <p className="fair-note">{t("e3_not_beside_test")} <Glossary term="validation" /></p>
     <div className="charts charts-3">
       <BarChart title={t("e3_chart_train_time")} metric={t("e1_train_time_s")} yLabel={t("seconds_axis")}
@@ -214,7 +212,7 @@ function E4Panel({ results }) {
   }));
   const byRun = new Map(e4.formats.map((format) => [format.runId, format]));
   const formats = runs.map((run) => byRun.get(run.run_id)).filter(Boolean);
-  return <Panel id="E4" title={t("e4_panel_title")} subtitle={e4Subtitle(results)} course={t("e4_course_item")} takeaway={e4Takeaway(results)}>
+  return <Panel id="E4" title={t("e4_panel_title")} subtitle={e4Subtitle(results)} course={t("e4_course_item")} finding={e4Finding(results)}>
     <div className="charts charts-3">
       <BarChart title={t("e4_file_size_bytes")} metric={t("e4_file_size_bytes")} yLabel={t("mib_axis")} points={chartPoints("bytes", formatBytes, "MiB")} selected={selected} onSelect={setSelected} />
       <BarChart title={t("e4_read_time_s")} metric={t("e4_read_time_s")} yLabel={t("seconds_axis")} points={chartPoints("read_seconds", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
@@ -246,12 +244,8 @@ function E5Panel({ results }) {
     value: run[field], formatter, runId: run.run_id, source: basename(run.source_log), x: events.get(run.subset) ?? run.n_events, unit,
   }));
   const first = e5[0], last = e5.at(-1);
-  const takeaway = first && last ? t("e5_takeaway",
-    formatSeconds(first.composed_seconds_excluding_first_seen).text, first.subset, formatCount(first.n_events).text,
-    formatSeconds(last.composed_seconds_excluding_first_seen).text, last.subset, formatCount(last.n_events).text,
-    formatSeconds(first.seconds_per_million_events).text, formatSeconds(last.seconds_per_million_events).text) : missingText();
   const firstSeen = e5.find((run) => !isMissing(run.first_seen_seconds_shared))?.first_seen_seconds_shared;
-  return <Panel id="E5" title={`E5 · ${t("experiment_nav_e5")}`} subtitle={t("e5_subtitle")} takeaway={takeaway}>
+  return <Panel id="E5" title={`E5 · ${t("experiment_nav_e5")}`} subtitle={t("e5_subtitle")} finding={e5Finding(results)}>
     <div className="charts">
       <LineChart title={t("e5_composed_seconds_chart")} metric={t("e5_composed_time_s")} yLabel={t("e5_composed_seconds_axis")} xLabel={t("e5_x_axis_events")}
         points={chartPoints("composed_seconds_excluding_first_seen", formatSeconds, "s")} selected={selected} onSelect={setSelected} />

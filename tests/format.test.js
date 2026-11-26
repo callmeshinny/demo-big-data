@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   byteDisplayUnit, formatBytes, formatCount, formatGeneralNumber, formatMsPerSession, formatNumberOnly,
-  formatPercent, formatRatio, formatScore, formatSeconds, formatSecondsPerMillionEvents, isMissing, significant3,
+  formatPercent, formatPercentShare, formatRatio, formatScore, formatSeconds, formatSecondsPerMillionEvents, isMissing, significant3,
 } from "../src/format.js";
 import { setLanguage } from "../src/i18n.js";
 
@@ -45,6 +45,8 @@ test("counts, percentages, scores and general numbers", () => {
   assert.equal(formatCount(882808).text, "882,808");
   assert.equal(formatCount(1337).text, "1,337");
   assert.equal(formatPercent(48.58634).text, "48.59%");
+  assert.deepEqual(formatPercentShare(51.68347156956679), { text: "51.7%", raw: "51.68347156956679" });
+  assert.equal(formatPercentShare(88.05888).text, "88.1%");
   assert.equal(formatScore(0.8125).text, "0.8125");
   assert.equal(formatGeneralNumber(63398), "63,398");
   assert.equal(formatGeneralNumber(0.123456), "0.1235");
@@ -61,7 +63,7 @@ test("number-only cells drop the unit that lives in the header, keep the raw val
 test("missing values never print NaN, undefined, null or 0", () => {
   for (const value of [null, undefined, "", Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
     assert.equal(isMissing(value), true, String(value));
-    for (const formatter of [formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatMsPerSession, formatBytes, formatCount, formatPercent, formatScore]) {
+    for (const formatter of [formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatMsPerSession, formatBytes, formatCount, formatPercent, formatPercentShare, formatScore]) {
       const { text, raw } = formatter(value);
       assert.equal(text, "Not available yet", `${formatter.name}(${String(value)})`);
       assert.equal(raw, String(value));

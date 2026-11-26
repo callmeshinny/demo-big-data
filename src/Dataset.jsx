@@ -6,6 +6,8 @@ import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { DataLoadFailure } from "./ui.jsx";
 import { experimentHref } from "./navigation.js";
+import { datasetFindings } from "./findings.js";
+import { KeyFinding } from "./KeyFinding.jsx";
 
 const SUBSET_FIELDS = () => [
   [t("raw_sessions"), "raw_sessions"], [t("actual_raw_session_pct"), "actual_raw_session_pct"],
@@ -34,6 +36,7 @@ export default function Dataset({ state, e2Levels = [] }) {
     return <DataLoadFailure title={t("could_not_load_the_dataset_overview")} detail={state.error ?? state.fatal} />;
   }
   const { overview } = state;
+  const findings = datasetFindings(overview);
   const raw = overview.raw_month;
   const subset = overview.subsets.find((row) => String(row.subset) === selected) ?? overview.subsets[0];
   const subsetFields = SUBSET_FIELDS();
@@ -60,6 +63,10 @@ export default function Dataset({ state, e2Levels = [] }) {
       </section>
       <SubsetSelection sampling={overview.sampling} subsets={overview.subsets} source={overview.supplementary_sources?.sampling_population} distributionSource={overview.supplementary_sources?.subset_distribution} />
       <FiveVs overview={overview} />
+      {findings.length > 0 && <section className="panel" aria-labelledby="dataset-key-findings">
+        <h2 id="dataset-key-findings">{t("key_findings")}</h2>
+        <div className="key-findings-group">{findings.map((finding) => <KeyFinding key={finding.key} finding={finding} level={3} />)}</div>
+      </section>}
       <section className="panel">
         <h2>{t("weekly_cudf_subsets")}</h2>
         <div className="table-scroll">

@@ -462,7 +462,16 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .experiment-subtitle { color: var(--label-2); margin: 0 0 var(--s1); }
 .experiment-course { color: var(--label-2); margin: 0 0 var(--s3); }
 @media (min-width: 1100px) { .charts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.takeaway { font: var(--t-lead); color: var(--label); margin: 0 0 var(--s3); max-width: 75ch; }
+/* Key finding callout: neutral highlight (no new colour meaning). Presenter mode enlarges it via the tokens. */
+.key-finding { margin: var(--s4) 0; padding: var(--s5); background: var(--surface); border-left: 4px solid var(--label); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .08), 0 0 0 1px var(--separator); max-width: 80ch; }
+.key-finding > * { margin: 0; }
+.key-finding > * + * { margin-top: var(--s2); }
+.kf-label { color: var(--label-2); font: var(--t-footnote); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.key-finding .kf-headline { display: block; margin: var(--s2) 0 0; color: var(--label); font: var(--t-lead); font-weight: 600; }
+.kf-body { color: var(--label); font: var(--t-body); }
+.kf-caveat, .kf-source { color: var(--label-2); font: var(--t-footnote); }
+.key-findings-group { display: grid; gap: var(--s4); }
+.key-findings-group .key-finding { margin: 0; max-width: none; }
 .fair-note { margin: 0 0 var(--s2); font-weight: 600; display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
 .badge-validation { background: var(--fill); color: var(--label); box-shadow: inset 0 0 0 1px var(--control-border); font: var(--t-footnote); font-weight: 600; }
 .notes { margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--separator); color: var(--label-2); }

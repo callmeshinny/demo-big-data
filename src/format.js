@@ -103,5 +103,11 @@ export function formatPercent(value) {
   return result(value, `${Number(value).toFixed(2)}%`);
 }
 
+/** A share in percent with 1 decimal (e.g. stage share of composed time): 51.68347 -> "51.7%". */
+export function formatPercentShare(value) {
+  if (isMissing(value)) return missing(value);
+  return result(value, `${Number(value).toFixed(1)}%`);
+}
+
 /** Distance-type ratios on the Dataset tab (e.g. total variation): 4 decimals like Recall/NDCG. */
 export const formatDistance = formatRatio;
