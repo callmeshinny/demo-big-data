@@ -232,9 +232,9 @@ function E5Panel({ results }) {
   const [selected, setSelected] = useSelection();
   const e5 = [...(results?.tables?.E5 ?? [])].sort((a, b) => a.subset - b.subset);
   const events = new Map((results?.tables?.E2 ?? []).map((row) => [row.subset, row.n_events]));
-  const chartPoints = (field, formatter) => e5.map((run) => point({
+  const chartPoints = (field, formatter, unit) => e5.map((run) => point({
     key: String(run.subset), label: `${run.subset}% · ${formatCount(events.get(run.subset) ?? run.n_events).text} ${t("events")}`,
-    value: run[field], formatter, runId: run.run_id, source: basename(run.source_log), x: events.get(run.subset) ?? run.n_events, unit: "s",
+    value: run[field], formatter, runId: run.run_id, source: basename(run.source_log), x: events.get(run.subset) ?? run.n_events, unit,
   }));
   const first = e5[0], last = e5.at(-1);
   const takeaway = first && last ? t("e5_takeaway",
@@ -245,9 +245,9 @@ function E5Panel({ results }) {
   return <Panel id="E5" title={`E5 · ${t("experiment_nav_e5")}`} subtitle={t("e5_subtitle")} takeaway={takeaway}>
     <div className="charts">
       <LineChart title={t("e5_composed_seconds_chart")} metric={t("e5_composed_time_s")} yLabel={t("e5_composed_seconds_axis")} xLabel={t("e5_x_axis_events")}
-        points={chartPoints("composed_seconds_excluding_first_seen", formatSeconds)} selected={selected} onSelect={setSelected} />
+        points={chartPoints("composed_seconds_excluding_first_seen", formatSeconds, "s")} selected={selected} onSelect={setSelected} />
       <LineChart title={t("e5_normalized_seconds_chart")} metric={t("e5_seconds_per_million_events")} yLabel={t("e5_normalized_seconds_axis")} xLabel={t("e5_x_axis_events")}
-        points={chartPoints("seconds_per_million_events", formatSecondsPerMillionEvents)} selected={selected} onSelect={setSelected} />
+        points={chartPoints("seconds_per_million_events", formatSecondsPerMillionEvents, t("unit_s_per_million_events"))} selected={selected} onSelect={setSelected} />
     </div>
     <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)}
       link={selected == null ? null : <a href={experimentHref("E2", selected)}>{t("open_in_e2", selected)}</a>} />
