@@ -275,6 +275,10 @@ export default function Experiments({ state, active, select = null }) {
   // Switching E1–E5 while scrolled down: keep the sub-nav in view and bring the new panel's top just
   // below it (scroll-padding-top accounts for header + sub-bar). Runs once per panel switch.
   useLayoutEffect(() => {
+    // One-row scrolling sub-nav on phones: keep the active experiment in view.
+    const nav = sticky.bar.current;
+    const link = nav?.querySelector('[aria-current="page"]');
+    if (nav && link && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, link.offsetLeft - nav.offsetLeft - 16);
     if (!isPastStickyLine(sticky.sentinel.current)) return;
     document.getElementById(`panel-${String(active).toLowerCase()}`)?.scrollIntoView({ block: "start" });
   }, []);

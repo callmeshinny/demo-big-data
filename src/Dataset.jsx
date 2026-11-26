@@ -1,11 +1,12 @@
 import { t } from "./i18n.js";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { formatValue } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
 import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { DataLoadFailure } from "./ui.jsx";
-import { experimentHref } from "./navigation.js";
+import { DATASET_SECTIONS, datasetHref, experimentHref } from "./navigation.js";
+import { useStickyBar } from "./sticky.js";
 import { datasetFindings } from "./findings.js";
 import { KeyFinding } from "./KeyFinding.jsx";
 
@@ -29,7 +30,67 @@ const PIPELINE = () => [
   [t("pipeline_top_20"), t("export_a_ranked_list_for_each"), "TV2"],
 ];
 
-export default function Dataset({ state, e2Levels = [] }) {
+/** Sticky in-page nav for the Dataset tab (segmented link bar, scroll-spy via aria-current). */
+function DatasetNav({ sticky, current, onPick }) {
+  const list = useRef(null);
+  // Keep the current link visible in the one-row, horizontally scrolling nav on phones.
+  useEffect(() => {
+    const container = list.current;
+    const link = container?.querySelector('[aria-current="true"]');
+    if (!container || !link || container.scrollWidth <= container.clientWidth) return;
+    const left = link.offsetLeft - container.offsetLeft;
+    if (left < container.scrollLeft || left + link.offsetWidth > container.scrollLeft + container.clientWidth) {
+      container.scrollLeft = Math.max(0, left - 16);
+    }
+  }, [current]);
+  return <>
+    <div ref={sticky.sentinel} className="sticky-sentinel" aria-hidden="true" />
+    <nav ref={(node) => { sticky.bar.current = node; list.current = node; }} className={`segmented subtabs subbar-scroll dataset-nav glass subbar${sticky.stuck ? " is-stuck" : ""}`} aria-label={t("ds_nav_label")}>
+      {DATASET_SECTIONS.map((section) => <a key={section} href={datasetHref(section)} aria-current={current === section ? "true" : undefined}
+        onClick={() => onPick(section)}>
+        <span className="subtab-label">{t(`ds_nav_${section.replace("-", "_")}`)}</span>
+      </a>)}
+    </nav>
+  </>;
+}
+
+const sectionElement = (section) => document.getElementById(`dataset-${section}`);
+
+export default function Dataset({ state, e2Levels = [], section = null }) {
+  const sticky = useStickyBar();
+  const [current, setCurrent] = useState(section ?? DATASET_SECTIONS[0]);
+  const ready = Boolean(state.overview);
+  // Hash links (#dataset/<slug>) scroll to their section, also after a reload.
+  useEffect(() => {
+    if (!ready || !section) return;
+    setCurrent(section);
+    sectionElement(section)?.scrollIntoView({ block: "start" });
+  }, [ready, section]);
+  // Scroll-spy: the first section whose heading is in the band just below header + sub-bar.
+  useEffect(() => {
+    if (!ready || typeof IntersectionObserver === "undefined") return undefined;
+    const visible = new Set();
+    const css = getComputedStyle(document.documentElement);
+    const offset = (parseFloat(css.getPropertyValue("--sticky-top")) || 0) + (parseFloat(css.getPropertyValue("--subbar-height")) || 0);
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const slug = entry.target.id.replace("dataset-", "");
+        if (entry.isIntersecting) visible.add(slug); else visible.delete(slug);
+      }
+      const first = DATASET_SECTIONS.find((slug) => visible.has(slug));
+      if (first) setCurrent(first);
+    }, { rootMargin: `${-Math.ceil(offset + 8)}px 0px -55% 0px`, threshold: 0 });
+    for (const slug of DATASET_SECTIONS) {
+      const element = sectionElement(slug);
+      if (element) observer.observe(element);
+    }
+    return () => observer.disconnect();
+  }, [ready]);
+  const pick = (slug) => {
+    setCurrent(slug);
+    // Same hash clicked again: no hashchange, so scroll here as well.
+    if (window.location.hash === datasetHref(slug)) sectionElement(slug)?.scrollIntoView({ block: "start" });
+  };
   const e2Subsets = new Set(e2Levels);
   const [selected, setSelected] = useState("");
   if (state.error || state.fatal) {
@@ -48,7 +109,8 @@ export default function Dataset({ state, e2Levels = [] }) {
         <h1 className="page-title">{t("dataset")}</h1>
         <p className="page-intro">{t("dataset_intro")}</p>
       </div>
-      <section className="panel">
+      <DatasetNav sticky={sticky} current={current} onPick={pick} />
+      <section className="panel" id="dataset-overview">
         <h2>{t("e_commerce_dataset")}</h2>
         <p>{t("the_kaggle_ecommerce_dataset_records_activity")} {raw.min_timestamp_utc?.slice(0, 7) ?? t("not_available_yet")}{t("each_event_is_a_view_add")}</p>
         <p>{t("dataset_product_identifiers")}</p>
@@ -63,8 +125,8 @@ export default function Dataset({ state, e2Levels = [] }) {
       </section>
       <SubsetSelection sampling={overview.sampling} subsets={overview.subsets} source={overview.supplementary_sources?.sampling_population} distributionSource={overview.supplementary_sources?.subset_distribution} />
       <FiveVs overview={overview} />
-      {findings.length > 0 && <section className="panel" aria-labelledby="dataset-key-findings">
-        <h2 id="dataset-key-findings">{t("key_findings")}</h2>
+      {findings.length > 0 && <section className="panel" id="dataset-key-findings" aria-labelledby="dataset-key-findings-title">
+        <h2 id="dataset-key-findings-title">{t("key_findings")}</h2>
         <div className="key-findings-group">{findings.map((finding) => <KeyFinding key={finding.key} finding={finding} level={3} />)}</div>
       </section>}
       <section className="panel">
@@ -78,7 +140,7 @@ export default function Dataset({ state, e2Levels = [] }) {
         </div>
         <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.sampling_population)}</code></p>
       </section>
-      <section className="panel">
+      <section className="panel" id="dataset-caveats">
         <h2>{t("data_caveats")}</h2>
         <p>{t("single_interaction_caveat", formatValue(subset?.single_interaction_session_pct))}</p>
         <p>{t("browsing_heavy_caveat", formatValue(subset?.view_pct_clean_events))}</p>
@@ -89,7 +151,7 @@ export default function Dataset({ state, e2Levels = [] }) {
         <ul><li>{t("representativeness_week_only")}</li><li>{t("representativeness_no_slices")}</li><li>{t("distinct_not_distribution")}</li><li>{t("no_generalization_claim")}</li></ul>
         <p className="definition">{t("source")} <code>{formatValue(overview.supplementary_sources?.subset_distribution)}</code> · <code>scripts/analyze_sampling.py</code></p>
       </section>
-      <section className="panel">
+      <section className="panel" id="dataset-splits">
         <h2>{t("split_population")}</h2>
         <div className="table-scroll"><table className="config-table numeric-table">
           <thead><tr><th scope="col">{t("subset")}</th>{[["final_test_D", t("final_test_partition")], ["train_used_1_to_Dminus1", t("train_used_partitions")], ["validation_used_2_to_D", t("validation_used_partitions")]].map(([field, label]) => <th scope="col" key={field}>{label}</th>)}</tr></thead>
@@ -112,7 +174,7 @@ export default function Dataset({ state, e2Levels = [] }) {
           </li>)}</ul>
         </> : <p>{t("not_available_yet")}</p>}
       </section>
-      <section className="panel">
+      <section className="panel" id="dataset-pipeline">
         <h2>{t("processing_pipeline")}</h2>
         <ol className="pipeline">{PIPELINE().map(([label, description, owner]) => <li key={label}><strong>{label}</strong> · {owner}<p>{description}</p></li>)}</ol>
       </section>

@@ -20,3 +20,10 @@ test("a level can be preselected, legacy hashes resolve, unknown hashes open Rec
   assert.equal(routeFromHash("#other").tab, "recommendation");
   assert.equal(routeFromHash("").tab, "recommendation");
 });
+
+test("Dataset sections have hash routes", async () => {
+  const { DATASET_SECTIONS, datasetHref } = await import("../src/navigation.js");
+  for (const section of DATASET_SECTIONS) assert.deepEqual(routeFromHash(datasetHref(section)), { tab: "dataset", section });
+  assert.deepEqual(routeFromHash("#dataset/unknown"), { tab: "dataset" });
+  assert.ok(DATASET_SECTIONS.length <= 7);
+});

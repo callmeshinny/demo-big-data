@@ -89,7 +89,7 @@ function App() {
     try { localStorage.setItem("tv4-language", next); } catch { /* Storage is optional. */ }
     updateLanguage(next);
   }
-  const [{ tab, experiment, select }, setRoute] = useState(currentRoute);
+  const [{ tab, experiment, select, section }, setRoute] = useState(currentRoute);
   const [presenter, setPresenter] = useState(() => readPresenter());
   useEffect(() => {
     document.documentElement.classList.toggle("presenter", presenter);
@@ -136,7 +136,7 @@ function App() {
       <div className="view" id="view">
         {state.loading ? <p className="loading">{t("loading_data")}</p>
           : tab === "recommendation" ? <Recommendation state={state} productInfo={products} protocol={dataset.overview?.evaluation_protocol} official={officialResults.results} />
-            : tab === "dataset" ? <Dataset state={state} e2Levels={(officialResults.results?.tables?.E2 ?? []).map((row) => row.subset)} />
+            : tab === "dataset" ? <Dataset state={state} section={section ?? null} e2Levels={(officialResults.results?.tables?.E2 ?? []).map((row) => row.subset)} />
               : <Experiments key={`${experiment}/${select ?? ""}`} state={state} active={experiment} select={select} />}
       </div>
 

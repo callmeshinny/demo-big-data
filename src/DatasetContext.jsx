@@ -10,7 +10,7 @@ function Evidence({ source, short = false }) {
 
 export function SubsetSelection({ sampling, subsets, source, distributionSource }) {
   if (!sampling) return null;
-  return <section className="panel">
+  return <section className="panel" id="dataset-subsets">
     <h2>{t("why_subset")}</h2>
     <p>{t("whole_session_sampling", formatValue(sampling.seed))}</p>
     <p>{t("session_sampling_rationale")}</p>
@@ -47,7 +47,7 @@ export function FiveVs({ overview }) {
     ["veracity", t("veracity_facts", formatValue(raw.missing?.brand), formatValue(raw.missing?.category_code), formatValue(raw.invalid_timestamps), formatValue(cleanup?.consecutive_repeat_rows_removed)), [raw.source, cleanup?.source]],
     ["value", t("value_facts", formatValue(protocol?.top_k)), [protocol?.source]],
   ];
-  return <section className="panel">
+  return <section className="panel" id="dataset-5v">
     <h2>{t("five_vs")}</h2>
     <div className="dataset-cards">{cards.map(([key, text, sources]) => <article key={key}>
       <h3>{t(key)}</h3><p>{text}</p>

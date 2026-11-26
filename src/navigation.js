@@ -14,7 +14,10 @@ export function routeFromHash(hash) {
     const select = /^\d+$/.test(parts[2] ?? "") ? parts[2] : null;
     return { tab: "experiments", experiment, select };
   }
-  if (name === "dataset" || name === "data") return { tab: "dataset" };
+  if (parts[0] === "dataset" || name === "data") {
+    const section = DATASET_SECTIONS.includes(name.split("/")[1]) ? name.split("/")[1] : null;
+    return section ? { tab: "dataset", section } : { tab: "dataset" };
+  }
   return { tab: "recommendation" };
 }
 
@@ -23,3 +26,10 @@ export function experimentHref(id, select) {
 }
 
 export const VIEW_IDS = ["recommendation", "dataset", "experiments"];
+
+/** In-page sections of the Dataset tab (#dataset/<slug>); element ids are `dataset-<slug>`. */
+export const DATASET_SECTIONS = ["overview", "subsets", "5v", "key-findings", "caveats", "splits", "pipeline"];
+
+export function datasetHref(section) {
+  return `#dataset/${section}`;
+}

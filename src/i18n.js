@@ -551,7 +551,15 @@ export const messages = {
     "e4cfg_notebook_commit": "Notebook commit",
     "e4cfg_split_seed": "Split seed",
     "e4cfg_requested_ratios": "Requested split ratios",
-    "e4cfg_partition_col": "Partition column"
+    "e4cfg_partition_col": "Partition column",
+    "ds_nav_label": "Dataset sections",
+    "ds_nav_overview": "Overview",
+    "ds_nav_subsets": "Subsets",
+    "ds_nav_5v": "5V",
+    "ds_nav_key_findings": "Key findings",
+    "ds_nav_caveats": "Caveats",
+    "ds_nav_splits": "Splits",
+    "ds_nav_pipeline": "Pipeline"
   },
   "vi": {
     "recommendation_tab_intro": "Chọn mô hình và phiên: xem lịch sử tương tác, sản phẩm thực sự xuất hiện tiếp theo và Top-20 đã lưu của mô hình.",
@@ -1105,7 +1113,15 @@ export const messages = {
     "e4cfg_notebook_commit": "Commit notebook",
     "e4cfg_split_seed": "Seed chia tập",
     "e4cfg_requested_ratios": "Tỷ lệ chia tập yêu cầu",
-    "e4cfg_partition_col": "Cột phân vùng"
+    "e4cfg_partition_col": "Cột phân vùng",
+    "ds_nav_label": "Các mục dữ liệu",
+    "ds_nav_overview": "Tổng quan",
+    "ds_nav_subsets": "Tập con",
+    "ds_nav_5v": "5V",
+    "ds_nav_key_findings": "Đúc kết",
+    "ds_nav_caveats": "Lưu ý",
+    "ds_nav_splits": "Chia tập",
+    "ds_nav_pipeline": "Pipeline"
   }
 };
 
