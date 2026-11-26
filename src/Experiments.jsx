@@ -1,7 +1,7 @@
 import React from "react";
 import { t } from "./i18n.js";
 import { EXPERIMENTS } from "./data.js";
-import { InterpretationNote, Notice } from "./ui.jsx";
+import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, chartCoordinates, formatE3Context } from "./scaling.js";
 import { formatCount, formatSeconds } from "./format.js";
@@ -144,7 +144,7 @@ function OfficialE4Panel({ results }) {
 }
 
 export default function Experiments({ state, active }) {
-  if (state.error) return <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{state.error}</Notice>;
+  if (state.error) return <DataLoadFailure title={t("could_not_load_e1_e5_results")} detail={state.error} />;
   if (state.loading) return <p className="loading">{t("loading_data")}</p>;
   const results = state.results;
   if (!results) return <Notice kind="error" title={t("could_not_load_e1_e5_results")}>{t("MISSING")}</Notice>;

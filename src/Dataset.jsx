@@ -4,7 +4,7 @@ import { formatValue } from "./data.js";
 import { histogramBuckets } from "./dataset.js";
 import { FiveVs, SubsetSelection } from "./DatasetContext.jsx";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
-import { Notice } from "./ui.jsx";
+import { DataLoadFailure } from "./ui.jsx";
 
 const SUBSET_FIELDS = () => [
   [t("raw_sessions"), "raw_sessions"], [t("actual_raw_session_pct"), "actual_raw_session_pct"],
@@ -28,7 +28,9 @@ const PIPELINE = () => [
 
 export default function Dataset({ state }) {
   const [selected, setSelected] = useState("");
-  if (state.error || state.fatal) return <Notice kind="error" title={t("could_not_load_the_dataset_overview")}>{state.error ?? state.fatal}</Notice>;
+  if (state.error || state.fatal) {
+    return <DataLoadFailure title={t("could_not_load_the_dataset_overview")} detail={state.error ?? state.fatal} />;
+  }
   const { overview } = state;
   const raw = overview.raw_month;
   const subset = overview.subsets.find((row) => String(row.subset) === selected) ?? overview.subsets[0];

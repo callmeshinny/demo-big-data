@@ -11,6 +11,16 @@ export function Notice({ kind = "info", title, children }) {
   );
 }
 
+export function DataLoadFailure({ title, detail }) {
+  return <Notice kind="error" title={title}>
+    <p>{t("section_data_could_not_be_loaded")}</p>
+    <details className="load-error-details">
+      <summary>{t("technical_details")}</summary>
+      <pre>{detail}</pre>
+    </details>
+  </Notice>;
+}
+
 export function InterpretationNote({ dictionaryKey }) {
   return <p className="interpretation-note">
     <span>{interpretationNoteText(dictionaryKey)}</span>

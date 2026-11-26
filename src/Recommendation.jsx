@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { formatValue, INVALID_PRODUCT_ID, modelLabel, sessionContext } from "./data.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
-import { Issues, Notice } from "./ui.jsx";
+import { DataLoadFailure, Issues, Notice } from "./ui.jsx";
 
 /** The official E1 runs are all present in the delivered sample. */
 function runOptions(group) {
@@ -27,11 +27,11 @@ export default function Recommendation({ state, productInfo, protocol, official 
   const unknownSession = sessionChoice !== null && !sessionIds.includes(sessionChoice);
   const sessionId = sessionChoice ?? sessionIds[0] ?? "";
 
-  if (error) return <Notice kind="error" title={t("could_not_load_recommendation_data")}>{error}</Notice>;
+  if (error) return <DataLoadFailure title={t("could_not_load_recommendation_data")} detail={error} />;
   if (fatal) {
     return (
       <>
-        <Notice kind="error" title={t("invalid_recommendation_data")}>{fatal}</Notice>
+        <DataLoadFailure title={t("invalid_recommendation_data")} detail={fatal} />
         <Issues issues={issues} />
       </>
     );

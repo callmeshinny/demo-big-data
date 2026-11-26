@@ -76,7 +76,9 @@ class OfficialResultsExportTest(unittest.TestCase):
         readme = (TEAM_ROOT / "environment/README.md").read_text(encoding="utf-8")
         for field, value in VM_ENVIRONMENT_VALUES.items():
             self.assertEqual(environment[field], value)
-            self.assertIn(environment[field], readme)
+        for field in ("gpu", "vram", "cpu", "vcpu"):
+            with self.subTest(field=field):
+                self.assertIn(environment[field], readme)
         self.assertEqual(environment["source"], "environment/README.md (team 88f7e02)")
         self.assertEqual(environment["checksum_note"], "file edited by TV3 after packaging; links only, values unchanged")
 

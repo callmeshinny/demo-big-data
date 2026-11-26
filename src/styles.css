@@ -53,6 +53,9 @@ code { font-family: var(--mono); font-size: 0.92em; background: var(--beige); bo
 .notice strong { display: block; margin-bottom: 4px; }
 .notice-error { border-color: var(--rose-line); background: var(--rose-bg); color: var(--burgundy); }
 .notice-warn { border-color: var(--gold-line); background: var(--butter); color: var(--brown); }
+.load-error-details { margin-top: 8px; }
+.load-error-details summary { cursor: pointer; font-weight: 700; }
+.load-error-details pre { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
 .issues { margin-bottom: 16px; border: 1px dashed var(--gold-line); border-radius: 10px; padding: 8px 12px; background: var(--bg); color: var(--brown); font-size: 13px; }
 .issues summary { cursor: pointer; font-weight: 700; }
 
