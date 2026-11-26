@@ -275,3 +275,16 @@ test("glossary: every term is defined in EN and VI and appears as an accessible 
   assert.match(html, /class="popover-button" aria-expanded="false"/);
   assert.match(html, /role="dialog"[^>]*hidden=""/, "popovers start closed");
 });
+
+test("E3 keeps the Validation badge next to its renamed title (EN and VI)", async () => {
+  const i18n = await load("/src/i18n.js");
+  const { default: Experiments } = await load("/src/Experiments.jsx");
+  for (const locale of ["en", "vi"]) {
+    i18n.setLanguage(locale);
+    const html = dom.renderToStaticMarkup(React.createElement(Experiments, { state: { results: official }, active: "E3" }));
+    const heading = html.slice(html.indexOf('<h2 id="title-E3"'), html.indexOf("</h2>", html.indexOf('<h2 id="title-E3"')));
+    assert.ok(heading.includes(i18n.t("e3_panel_title", "GRU")), locale);
+    assert.ok(heading.includes(`<span class="badge badge-validation">${i18n.t("validation_badge")}</span>`), `${locale}: badge inside the title`);
+    assert.ok(text(html).includes(`E3 · ${i18n.t("experiment_nav_e3")}`), `${locale}: sub-tab`);
+  }
+});

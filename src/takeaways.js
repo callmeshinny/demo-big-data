@@ -66,11 +66,22 @@ export function e3Subtitle(results) {
 }
 
 /** Hardware named in the limitation note, read from the package environment; null when absent. */
+/**
+ * Hardware phrase for the E3 limitation note, built from the package environment fields:
+ * cloud "VM AWS Ubuntu 22.04" -> provider "AWS", OS "Ubuntu 22.04"; gpu "Tesla T4 (compute …)" -> "Tesla T4".
+ * EN "one AWS VM (Ubuntu 22.04) with one Tesla T4". A missing field drops its part; nothing -> null.
+ */
 export function e3Hardware(results) {
   const vm = results?.vm_environment ?? {};
-  const gpu = typeof vm.gpu === "string" ? vm.gpu.split(" (")[0].trim() : null;
-  const parts = [vm.cloud, gpu].filter((value) => typeof value === "string" && value.trim());
-  return parts.length ? parts.join(" · ") : null;
+  const cloud = typeof vm.cloud === "string" ? vm.cloud.trim() : "";
+  const match = cloud.match(/^VM\s+(\S+)(?:\s+(.+))?$/i);
+  const provider = match?.[1] ?? null;
+  const os = match?.[2]?.trim() || null;
+  const gpu = typeof vm.gpu === "string" && vm.gpu.trim() ? vm.gpu.split(" (")[0].trim() : null;
+  const machine = provider && os ? t("e3_hw_vm_os", provider, os) : provider ? t("e3_hw_vm", provider) : null;
+  const card = gpu ? t("e3_hw_gpu", gpu) : null;
+  if (machine && card) return t("e3_hw_both", machine, card);
+  return machine ?? card ?? null;
 }
 
 export function e3Limitation(results) {

@@ -57,9 +57,16 @@ test("E3 takeaway is neutral when a value is equal or missing", () => {
 test("E3 subtitle and limitation read batch sizes and hardware from JSON", () => {
   setLanguage("en");
   assert.equal(e3Subtitle(official), "Same VM and GPU; only the GRU training batch changes (32 vs 128) · validation partition");
-  assert.equal(e3Hardware(official), `${official.vm_environment.cloud} · ${official.vm_environment.gpu.split(" (")[0]}`);
-  assert.ok(e3Limitation(official).startsWith(`Hardware was fixed (${e3Hardware(official)}); CPU, RAM`));
+  assert.equal(e3Hardware(official), "one AWS VM (Ubuntu 22.04) with one Tesla T4");
+  assert.ok(e3Limitation(official).startsWith("Hardware was fixed: one AWS VM (Ubuntu 22.04) with one Tesla T4. CPU, RAM"));
+  setLanguage("vi");
+  assert.equal(e3Hardware(official), "một VM AWS (Ubuntu 22.04) với một GPU Tesla T4");
+  setLanguage("en");
+  assert.equal(e3Hardware({ vm_environment: { cloud: official.vm_environment.cloud } }), "one AWS VM (Ubuntu 22.04)", "missing GPU drops that part");
+  assert.equal(e3Hardware({ vm_environment: { gpu: official.vm_environment.gpu } }), "one Tesla T4", "missing VM drops that part");
+  assert.equal(e3Hardware({ vm_environment: { cloud: "VM AWS", gpu: "Tesla T4" } }), "one AWS VM with one Tesla T4", "missing OS drops the brackets");
   const noHardware = { ...official, vm_environment: {} };
+  assert.equal(e3Hardware(noHardware), null);
   assert.ok(e3Limitation(noHardware).startsWith("Hardware was fixed; CPU, RAM"));
 });
 
