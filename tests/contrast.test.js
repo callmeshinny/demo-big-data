@@ -72,10 +72,13 @@ const PAIRS = [
   ["model-xlnet", "surface", GRAPHIC, "XLNet mark"],
   ["chart-neutral", "surface", GRAPHIC, "neutral chart mark"],
   ["accent", "surface", GRAPHIC, "focus ring on card"],
+  ["on-positive", "positive", GRAPHIC, "Hit ✓ glyph on its green badge"],
+  ["label-2", "selected-bg", TEXT, "column sub-label (N events) in a selected column"],
+  ["label", "selected-bg", TEXT, "cell text in a selected column"],
 ];
 
 const REQUIRED = ["bg", "bg-tint", "surface", "label", "label-2", "control-border", "accent", "fill", "segment",
-  "positive", "positive-text", "positive-bg", "danger", "danger-bg", "caution", "caution-bg",
+  "positive", "positive-text", "positive-bg", "on-positive", "selected-bg", "danger", "danger-bg", "caution", "caution-bg",
   "model-popularity", "model-gru", "model-xlnet", "chart-neutral"];
 
 for (const [scheme, theme] of Object.entries(themes)) {

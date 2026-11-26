@@ -16,11 +16,15 @@
   --control-border: #86868b;
   --accent: #0066cc;
   --fill: #e8e8ed;
+  /* Selected table column: a light accent tint; --label-2 on it stays >= 4.5:1 (tested). */
+  --selected-bg: #eef5fc;
   --segment: #ffffff;
   /* --positive is the Hit marker colour (bars, icons, outlines); --positive-text is the same meaning for text. */
   --positive: #248a3d;
   --positive-text: #1a7f37;
   --positive-bg: #edf8f0;
+  /* Glyph on a --positive fill (Hit ✓ badge): white in light mode, black in dark mode, >= 3:1. */
+  --on-positive: #ffffff;
   /* --danger is for problems only: load errors, failed checks, config "Differs". A miss is neutral. */
   --danger: #d70015;
   --danger-bg: #fdeceb;
@@ -76,10 +80,12 @@
     --control-border: #8e8e93;
     --accent: #2997ff;
     --fill: #2c2c2e;
+    --selected-bg: #1d2835;
     --segment: #636366;
     --positive: #30d158;
     --positive-text: #30d158;
     --positive-bg: #0e2a16;
+    --on-positive: #000000;
     --danger: #ff453a;
     --danger-bg: #3b1210;
     --caution: #ffb340;
@@ -300,7 +306,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .actual-panel .product-card { display: inline-flex; margin: 0 0 var(--s3); }
 .hit-sentence { display: flex; align-items: center; gap: var(--s2); font: var(--t-lead); font-weight: 600; }
 .outcome-icon { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font: var(--t-table); font-weight: 700; flex: 0 0 auto; align-self: center; }
-.match .outcome-icon { background: var(--positive); color: #ffffff; }
+.match .outcome-icon { background: var(--positive); color: var(--on-positive); }
 .miss .outcome-icon { box-shadow: inset 0 0 0 1.5px var(--label-2); color: var(--label-2); }
 /*
  * Colour meanings: --accent = interactive/active only; --positive = hit/passed;
@@ -436,7 +442,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .notes .interpretation-note { margin: var(--s2) 0 0; }
 .notes li .interpretation-note { display: inline; margin: 0; }
 .notes li .interpretation-note small { display: block; }
-.metric-table th.is-selected, .metric-table td.is-selected { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 -2px 0 var(--accent); }
+.metric-table th.is-selected, .metric-table td.is-selected { background: var(--selected-bg); box-shadow: inset 0 -2px 0 var(--accent); }
 .metric-table td { cursor: pointer; }
 .metric-table tr.primary-row td.num { font: var(--t-lead); font-family: var(--mono); font-weight: 600; }
 .metric-table tr.group-row th { background: var(--surface); color: var(--label-2); font: var(--t-footnote); font-weight: 600; padding-top: var(--s4); position: static; }
