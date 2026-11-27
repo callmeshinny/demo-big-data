@@ -34,7 +34,7 @@ test("E1: best needs Recall@20 and NDCG@20 to agree; cheapest needs train and ev
 test("E1: body lists every Recall@20; GRU-vs-Popularity sentence only when Popularity < GRU < best", () => {
   const finding = e1Finding(official);
   assert.equal(finding.body, "Recall@20: 0.1249 for XLNet, 0.0883 for GRU, 0.0868 for Popularity. GRU only just beats the simple Popularity baseline.");
-  assert.equal(finding.caveat, "One run and one seed, so read the ranking as indicative.");
+  assert.equal(finding.caveat, "One run, one seed, no significance test, so read the ranking as indicative.");
   const gruLower = patchTable("E1", "model", { gru: { "Recall@20": 0.05 } });
   assert.ok(!e1Finding(gruLower).body.includes("only just beats"));
   setLanguage("vi");

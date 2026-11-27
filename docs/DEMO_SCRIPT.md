@@ -31,9 +31,9 @@
 
 ### Experiments
 
-**English.** E1 is the only fair model comparison. XLNet predicts best and Popularity is cheapest to run. Recall@20 is 0.1249 for XLNet, 0.0883 for GRU and 0.0868 for Popularity, so GRU only just beats the simple Popularity baseline. It is one run and one seed, so we read the ranking as indicative.
+**English.** E1 is the only fair model comparison. XLNet predicts best and Popularity is cheapest to run. Recall@20 is 0.1249 for XLNet, 0.0883 for GRU and 0.0868 for Popularity, so GRU only just beats the simple Popularity baseline. It is one run, one seed and no significance test, so the ranking is indicative.
 
-*Tiếng Việt. E1 là phép so sánh mô hình công bằng duy nhất. XLNet dự đoán tốt nhất, Popularity chạy rẻ nhất. Recall@20: XLNet 0.1249, GRU 0.0883, Popularity 0.0868, nên GRU chỉ nhỉnh hơn mô hình Popularity đơn giản một chút. Chỉ một lần chạy, một seed, nên thứ hạng chỉ mang tính tham khảo.*
+*Tiếng Việt. E1 là phép so sánh mô hình công bằng duy nhất. XLNet dự đoán tốt nhất, Popularity chạy rẻ nhất. Recall@20: XLNet 0.1249, GRU 0.0883, Popularity 0.0868, nên GRU chỉ nhỉnh hơn mô hình Popularity đơn giản một chút. Một lần chạy, một seed, chưa kiểm định thống kê, nên thứ hạng chỉ mang tính tham khảo.*
 
 **English.** In E2, larger subsets score higher. Recall@20 rises from 0.0883 at 10% to 0.3899 at 100%. Each subset also has its own test sessions and catalog, so the gain cannot be credited to more training data alone.
 
