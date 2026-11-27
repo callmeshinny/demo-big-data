@@ -148,6 +148,8 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 
 ## 5. Number display (`src/format.js` only)
 
+- Number and unit are always joined with a non-breaking space (U+00A0): "0.454 s", "24.2 MiB", "882,808 events". Percent stays attached ("51.7%").
+
 - Recall/NDCG: 4 decimals.
 - Times: 3 significant digits, with the unit in the row or column header.
 - Bytes: MiB/GiB with 1 decimal and the unit shown.
@@ -191,7 +193,8 @@ After these pass, look at the screenshots yourself (`scripts/capture_screens.mjs
 
 - Commits after `5ecc80b` (this file, the fixed chart detail area, the E3/E4 rewording, stale-label cleanup, the compact detail area, the E3/E4 talk lines) are local until the user pushes `main`.
 - Forced-colors mode is not verifiable in headless Chrome. Check it manually on the presentation laptop.
-- Not done on 28/11 (time limit): non-breaking space between numbers and units in `src/format.js`, and replacing the data literals in `i18n.js` (`product_details_note` "week 1 of the 10% data", `sampling_scope` "UTC 01–07").
+- Done 28/11: numbers and units are joined with U+00A0 (`NBSP`, `joinUnit`, `keepUnitsTogether` in `src/format.js`; browser check at 375 px, EN/VI, E1–E5 and Recommendations). Tests compare sentences through `tests/helpers.js` `plain()`, which first fails on any ordinary number–unit space.
+- Done 28/11: no data literals in `i18n.js`. `product_details_note` takes the window from `product-info.json → checks.window_utc` and the subset from the run; `sampling_scope` takes the window from `dataset-overview.json → sampling.scope` (half-open end → last day) via `dateRange()`. `tests/i18n.test.js` fails if any key outside its allow-list (protocol constants, notation, formulas, the source date) contains a digit.
 - Product details come from the 10% week file only; a product's last price in that week may differ from other weeks or subsets.
 - E3 does not vary CPU, RAM or workers (one VM, one GPU); varying them is listed as future work in `docs/DEMO_SCRIPT.md`.
 - Still open for the user to decide ("the site feels too academic"): an Overview tab (problem → what we did → what we found), a Simple/Detailed switch merged with presenter mode, plain-language headings such as "E2 · Does more data help?", and Recall shown as "% of sessions" (the raw value stays in the tooltip; confirm with TV2).
