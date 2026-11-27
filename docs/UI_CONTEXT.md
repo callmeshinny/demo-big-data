@@ -99,7 +99,7 @@ Snapshot: 27/11/2026. Describes local `main` after the plain-language Key findin
 
 Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are visible without scrolling.
 
-**Dataset tab.** Title only (no intro sentence). Raw month facts, why this subset, 5V summary, weekly cuDF subsets (N% links to E2), caveats, representativeness limits, split population, session length, processing pipeline. Never claim that hash sampling guarantees representativeness.
+**Dataset tab.** Title only (no intro sentence). The Key findings group comes first (nav order Key findings, Overview, Subsets, 5V, Caveats, Splits, Pipeline; `#dataset/key-findings` and scroll-spy unchanged). Then raw month facts, why this subset, 5V summary, weekly cuDF subsets (N% links to E2), caveats, representativeness limits, split population, session length, processing pipeline. Never claim that hash sampling guarantees representativeness.
 
 **Experiments tab.**
 - A segmented sub-nav with short labels: E1 Model comparison, E2 Data size, E3 Compute resources, E4 Storage format, E5 Scalability (one line at ≥ 1024 px, may wrap below, never an ellipsis).
@@ -108,6 +108,7 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 - One footnote at the bottom of the tab: "Key findings summarise TV2's analysis (analysis.md, 24/11)." (the Dataset tab has the same footnote at its bottom).
 - The Environment card is at the bottom and collapsed.
 - Per-experiment rules:
+  - **E2 · Data size.** Four charts, two per row: Recall@20, NDCG@20, and processing time by data size as two linked charts (`preprocessing_seconds`, `train_seconds_including_sequence_io`; never summed). The Key finding adds "Preprocessing grows from … and training from … between 10% and 100%" only when both are higher at the largest subset; otherwise it lists the values.
   - **E3 · Compute resources: GRU batch 32 vs 128** (title built from JSON; VI "E3 · Tài nguyên tính toán: batch GRU 32 và 128"). Course item 3 asks to vary compute resources; the hardware was fixed (one AWS VM, one Tesla T4) and only the GRU training batch changed (32 vs 128, read from JSON), on validation. Never claim CPU, RAM or workers were varied. Validation badge, train-batch headers read from configs, a hardware/limitation note (hardware names read from `vm_environment`), the held-constant note. Charts: training time, sampled GPU process memory, validation Recall@20. No throughput (the package has no throughput field) and no "peak" CUDA memory (it is sampled).
   - **E4 · Storage and retrieval: CSV vs Parquet.** Course item 4. The same events stored both ways: file size (MiB, raw bytes in the tooltip), read time, and preprocessing time (which already includes the read). One chart for each.
   - **E4 fairness line** (under the title, above the Key finding): "✓ Same data: {n} events, fingerprints match · same program · all nine columns read as strings". Shown only when both runs have `fingerprint_match` true, equal event counts, the same program and the same all-string schema policy. The ✓ uses `--label` (green means Hit).
@@ -138,6 +139,10 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 **Glossary ⓘ.** Session, History (prefix), Top-20, Hit, Recall@20, NDCG@20, Validation vs test. Keyboard and touch accessible; Esc closes the popover and returns focus. Definitions follow `docs/data_contract.md` and the team's model protocol. Never invent a definition.
 
 **Presenter mode.** Body and tables 18 px, footnotes 16 px, chart labels 16 px, larger section spacing, solid header, notes collapsed. Never shrink text to make content fit; let the page scroll.
+
+**Loading.** `index.html` shows a static centred "Loading the demo…" (page background, system font, light/dark) inside `#root` until React mounts, plus a `<noscript>` line "This demo needs JavaScript."
+
+**Footer provenance.** Each data file shows its commit and export date; `product-info.json` shows "Source week-010.parquet · SHA {first 8} · Exported {date}" from its `source_file`, `source_sha256` and `generated_at` fields.
 
 **Errors and empty states.** A friendly `DataLoadFailure` with technical details collapsed. Missing values show "Not available yet" / "Chưa có". Inapplicable values show "Not applicable" / "Không áp dụng". Never show NaN, undefined, null or 0 for a missing value.
 
@@ -186,6 +191,7 @@ After these pass, look at the screenshots yourself (`scripts/capture_screens.mjs
 
 - Commits after `5ecc80b` (this file, the fixed chart detail area, the E3/E4 rewording, stale-label cleanup, the compact detail area, the E3/E4 talk lines) are local until the user pushes `main`.
 - Forced-colors mode is not verifiable in headless Chrome. Check it manually on the presentation laptop.
+- Not done on 28/11 (time limit): non-breaking space between numbers and units in `src/format.js`, and replacing the data literals in `i18n.js` (`product_details_note` "week 1 of the 10% data", `sampling_scope` "UTC 01–07").
 - Product details come from the 10% week file only; a product's last price in that week may differ from other weeks or subsets.
 - E3 does not vary CPU, RAM or workers (one VM, one GPU); varying them is listed as future work in `docs/DEMO_SCRIPT.md`.
 - Still open for the user to decide ("the site feels too academic"): an Overview tab (problem → what we did → what we found), a Simple/Detailed switch merged with presenter mode, plain-language headings such as "E2 · Does more data help?", and Recall shown as "% of sessions" (the raw value stays in the tooltip; confirm with TV2).

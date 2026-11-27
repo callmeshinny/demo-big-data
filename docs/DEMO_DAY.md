@@ -30,6 +30,9 @@ Use [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the bilingual talk track and Q&A. Read 
 
 ## Fallback without network access
 
+A ready fallback pack lives **outside Git** in `../tv4-fallback/`: `dist/` (the built site with its JSON), `screenshots/` (talk order, 1280×800 EN; Recommendations hit rows for session 21546 per model and the 46465 miss; presenter E1/E5 at 1440) and `README.txt` (how to open it offline). Rebuild it after any UI change. **The fallback video is not included: a person must record it.**
+
+
 1. Before the event, generate the static site and screenshots:
 
    ```bash

@@ -21,7 +21,7 @@
 
 ### Recommendations
 
-**English.** The Recommendation tab replays official E1 test predictions for Popularity, GRU and XLNet. It shows 30 of 1,337 sessions, selected by the seed-1 SHA-256 rule on session ID, independent of hit or miss. Choose a model and session to see the history, the actual next product and the model-ordered Top-20.
+**English.** The Recommendation tab replays official E1 test predictions for Popularity, GRU and XLNet. It shows 30 of 1,337 sessions, selected by the seed-1 SHA-256 rule on session ID, independent of hit or miss.
 
 *Tiếng Việt. Tab Recommendation phát lại dự đoán test E1 chính thức của Popularity, GRU và XLNet. Tab hiển thị 30 trong 1.337 phiên, chọn theo cùng quy tắc SHA-256 với seed 1 cho cả ba mô hình. Quy tắc băm mã phiên nên việc chọn không phụ thuộc mô hình có dự đoán trúng hay không. Chọn phiên để xem lịch sử tương tác, sản phẩm tiếp theo thực tế và Top-20 theo thứ tự mô hình.*
 
@@ -35,9 +35,9 @@
 
 *Tiếng Việt. E1 là phép so sánh mô hình công bằng duy nhất. XLNet dự đoán tốt nhất, Popularity chạy rẻ nhất. Recall@20: XLNet 0.1249, GRU 0.0883, Popularity 0.0868, nên GRU chỉ nhỉnh hơn mô hình Popularity đơn giản một chút. Một lần chạy, một seed, chưa kiểm định thống kê, nên thứ hạng chỉ mang tính tham khảo.*
 
-**English.** In E2, larger subsets score higher. Recall@20 rises from 0.0883 at 10% to 0.3899 at 100%. Each subset also has its own test sessions and catalog, so the gain cannot be credited to more training data alone.
+**English.** In E2, larger subsets score higher. Recall@20 rises from 0.0883 at 10% to 0.3899 at 100%. Preprocessing grows from 30.4 to 45.4 seconds and training from 27.6 to 433 seconds. Each subset has its own test sessions and catalog, so the gain is not from training data alone.
 
-*Tiếng Việt. Trong E2, tập dữ liệu lớn hơn cho điểm cao hơn. Recall@20 tăng từ 0.0883 (10%) lên 0.3899 (100%). Mỗi tập con có tập test và catalog riêng, nên không thể quy toàn bộ mức tăng cho việc có thêm dữ liệu huấn luyện.*
+*Tiếng Việt. Trong E2, tập dữ liệu lớn hơn cho điểm cao hơn. Recall@20 tăng từ 0.0883 (10%) lên 0.3899 (100%). Tiền xử lý tăng từ 30.4 lên 45.4 giây, huấn luyện từ 27.6 lên 433 giây. Mỗi tập con có tập test và catalog riêng, nên không thể quy toàn bộ mức tăng cho việc có thêm dữ liệu huấn luyện.*
 
 **English.** For compute resources, we kept the same VM and GPU and changed the GRU training batch from 32 to 128. Batch 128 trains faster but predicts worse. Training time drops from 51.7 to 30.6 seconds and GPU memory rises from 2.2 to 3.9 GiB, while validation Recall@20 falls from 0.1964 to 0.1299. We don't compare this validation result with E1 or E2.
 
