@@ -2,6 +2,8 @@
  "data_kind": "real",
  "source": "official 10% cleaned week file, derived by TV4",
  "source_sha256": "743b1e5323a14eef63be9221cd8ee2aa565c3c7db2c44f000b5a7432b70b60d3",
+ "source_file": "week-010.parquet",
+ "generated_at": "2026-11-28",
  "checks": {
   "rows": 638089,
   "distinct_products": 63398,

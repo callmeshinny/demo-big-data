@@ -63,6 +63,8 @@ function useOptionalProductInfo(url, language) {
         return;
       }
       setState(error ? { error } : { ...normalizeProductInfo(data), provenance: {
+        source_file: data?.source_file,
+        source_sha256: data?.source_sha256,
         team_commit: data?.team_commit,
         generated_at: data?.generated_at,
         data_kind: data?.data_kind,
@@ -146,7 +148,9 @@ function App() {
           ["demo-data.json", demo], ["product-info.json", products],
           ["dataset-overview.json", dataset], ["official-results.json", officialResults],
         ].filter(([name, file]) => name !== "product-info.json" || file.provenance?.data_kind === "real").map(([name, file]) => <li key={name}>
-          <code>{name}</code> {t("commit")} {file.provenance?.team_commit ?? t("not_available_yet")} {t("exported")} {file.provenance?.generated_at ?? t("not_available_yet")} · {file.provenance?.data_kind ?? t("not_available_yet")}
+          <code>{name}</code> {file.provenance?.source_sha256
+            ? t("footer_source_sha", file.provenance.source_file ?? t("not_available_yet"), file.provenance.source_sha256.slice(0, 8), file.provenance.generated_at ?? t("not_available_yet"))
+            : <>{t("commit")} {file.provenance?.team_commit ?? t("not_available_yet")} {t("exported")} {file.provenance?.generated_at ?? t("not_available_yet")}</>} · {file.provenance?.data_kind ?? t("not_available_yet")}
         </li>)}</ul>
       </footer>
       </main>

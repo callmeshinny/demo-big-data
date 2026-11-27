@@ -12,7 +12,7 @@ Example (Parquet input needs pyarrow):
 
 import argparse
 import csv
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import math
@@ -143,7 +143,7 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def build_payload(rows, wanted, *, source, source_sha256, data_kind="real", **expected):
+def build_payload(rows, wanted, *, source, source_sha256, data_kind="real", source_file=None, generated_at=None, **expected):
     """Validate the whole week, then keep only the displayed IDs (sorted numerically when possible)."""
     products, summary = latest_by_product(rows)
     checks = validate(summary, **expected)
@@ -154,6 +154,8 @@ def build_payload(rows, wanted, *, source, source_sha256, data_kind="real", **ex
         "data_kind": data_kind,
         "source": source,
         "source_sha256": source_sha256,
+        "source_file": source_file,
+        "generated_at": generated_at or date.today().isoformat(),
         "checks": checks,
         "price_rule": PRICE_RULE,
         "products": exported,
@@ -182,7 +184,8 @@ def main():
     try:
         rows = parquet_rows(args.input) if args.input.suffix.lower() == ".parquet" else csv_rows(args.input)
         wanted = displayed_ids(json.loads(args.demo_data.read_text(encoding="utf-8")))
-        payload = build_payload(rows, wanted, source=args.source, source_sha256=sha256(args.input), data_kind=args.data_kind)
+        payload = build_payload(rows, wanted, source=args.source, source_sha256=sha256(args.input), data_kind=args.data_kind,
+                                source_file=args.input.name)
         text = render(payload)
     except (OSError, ValueError, KeyError) as error:
         parser.exit(1, f"Export failed: {error}\n")

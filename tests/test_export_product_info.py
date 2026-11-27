@@ -52,6 +52,8 @@ class PayloadTest(unittest.TestCase):
         self.assertEqual(result["data_kind"], "real")
         self.assertEqual(result["source"], "official 10% cleaned week file, derived by TV4")
         self.assertIn("price_rule", result)
+        self.assertRegex(result["generated_at"], r"^\d{4}-\d{2}-\d{2}$")
+        self.assertIn("source_file", result)
         self.assertEqual(result["products"]["2"], {"brand": None, "category_code": None, "price": 10.0})
 
     def test_displayed_ids_cover_history_target_and_top20(self):

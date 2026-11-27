@@ -389,6 +389,15 @@ try {
     await page.context().close();
   });
 
+  await check("footer provenance: product-info.json shows source, SHA and export date; no 'Not available yet'", async () => {
+    const page = await open("#recommendation");
+    const footer = (await page.locator("footer li").allInnerTexts()).join("\n");
+    const line = footer.split("\n").find((text) => text.includes("product-info.json"));
+    assert.match(line ?? "", /Source week-010\.parquet · SHA [0-9a-f]{8} · Exported \d{4}-\d{2}-\d{2}/, line);
+    assert.ok(!footer.includes("Not available yet"), footer);
+    await page.context().close();
+  });
+
   await check("glossary popover: opens, Esc closes and returns focus", async () => {
     const page = await open("#recommendation");
     const button = page.locator(".history-panel .glossary .popover-button");
