@@ -60,7 +60,7 @@ export function normalizeProductInfo(raw) {
       price: Number.isFinite(info.price) ? info.price : null,
     });
   }
-  return { products, dataKind: raw.data_kind };
+  return { products, dataKind: raw.data_kind, window: isObject(raw.checks) ? raw.checks.window_utc ?? null : null };
 }
 
 // ---------------------------------------------------------------- Part A

@@ -128,5 +128,19 @@ export function formatPrice(value) {
   return result(value, grouped(value, 2));
 }
 
+/**
+ * First and last day of a delivered date window, as written in the JSON (YYYY-MM-DD), or null.
+ * "2019-10-01 .. 2019-10-07 UTC" -> {start: "2019-10-01", end: "2019-10-07"}. With endExclusive, a half-open
+ * "[2019-10-01, 2019-10-08)" gives end "2019-10-07" (the last included day).
+ */
+export function dateRange(text, { endExclusive = false } = {}) {
+  const days = typeof text === "string" ? text.match(/\d{4}-\d{2}-\d{2}/g) : null;
+  if (!days || days.length < 2) return null;
+  const [start, last] = days;
+  if (!endExclusive) return { start, end: last };
+  const end = new Date(Date.parse(`${last}T00:00:00Z`) - 24 * 3600 * 1000).toISOString().slice(0, 10);
+  return { start, end };
+}
+
 /** Distance-type ratios on the Dataset tab (e.g. total variation): 4 decimals like Recall/NDCG. */
 export const formatDistance = formatRatio;

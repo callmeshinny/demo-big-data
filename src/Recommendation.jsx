@@ -2,7 +2,7 @@ import { t } from "./i18n.js";
 import React, { useState } from "react";
 import { firstAllModelHitSession, formatValue, INVALID_PRODUCT_ID, modelKey, modelLabel, sessionContext } from "./data.js";
 import { buildE1View } from "./e1.js";
-import { formatCount, formatScore } from "./format.js";
+import { dateRange, formatCount, formatScore } from "./format.js";
 import EvaluationProtocol from "./EvaluationProtocol.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 import { DataKindBadge, DataLoadFailure, Issues, Notice, Select } from "./ui.jsx";
@@ -35,7 +35,8 @@ function HitSentence({ session }) {
     : <p className="hit-sentence miss"><span className="outcome-icon" aria-hidden="true">✕</span><span>{t("miss_sentence", size)}</span><Glossary term="hit" align="end" /></p>;
 }
 
-function MethodDetails({ run, group, protocol, sample, count, hasProducts }) {
+function MethodDetails({ run, group, protocol, sample, count, hasProducts, productWindow }) {
+  const week = dateRange(productWindow);
   const p = run?.provenance ?? {};
   const rows = [
     [t("run_id_label"), run?.run_id],
@@ -52,7 +53,7 @@ function MethodDetails({ run, group, protocol, sample, count, hasProducts }) {
     <EvaluationProtocol protocol={protocol} />
     <p>{t("sample_hash_explanation", sample?.seed ?? "—", formatValue(count))}</p>
     {!run?.scoreAvailable && <p>{t("models_export_ranked_ids_only")}</p>}
-    {hasProducts && <p>{t("product_details_note")}</p>}
+    {hasProducts && <p>{t("product_details_note", week?.start ?? t("MISSING"), week?.end ?? t("MISSING"), run?.subset ?? t("MISSING"))}</p>}
     <dl className="env method-sources">{rows.map(([label, value]) => <div key={label}>
       <dt>{label}</dt><dd title={value == null ? undefined : String(value)}>{value == null || value === "" ? t("not_available_yet") : String(value)}</dd>
     </div>)}</dl>
@@ -225,7 +226,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
         <a href={experimentHref("E1")}>{t("open_e1")}</a>
       </section>}
 
-      <MethodDetails run={run} group={group} protocol={protocol} sample={sample} count={count} hasProducts={Boolean(products?.size)} />
+      <MethodDetails run={run} group={group} protocol={protocol} sample={sample} count={count} hasProducts={Boolean(products?.size)} productWindow={productInfo?.window} />
     </>
   );
 }

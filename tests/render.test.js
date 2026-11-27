@@ -333,14 +333,16 @@ test("product cards: ID, brand · category, price from product-info.json; Method
   for (const locale of ["en", "vi"]) {
     m.i18n.setLanguage(locale);
     const html = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: info, protocol: overview.evaluation_protocol, official }));
-    assert.equal(html.split(m.i18n.t("product_details_note")).length - 1, 1, `${locale}: one product details line`);
+    const note = m.i18n.t("product_details_note", "2019-10-01", "2019-10-07", 10);
+    assert.equal(html.split(note).length - 1, 1, `${locale}: one product details line with the window and subset from JSON`);
+    assert.equal(info.window, json("../public/product-info.json").checks.window_utc);
     assert.match(html, /<small class="product-meta">[^<]+ › [^<]+<\/small>/, locale);
     assert.match(html, new RegExp(`<small class="product-price" title="[\\d.]+">${m.i18n.t("product_price", "\\d+\\.\\d{2}")}</small>`), locale);
     assert.ok(!/\$\d/.test(text(html)), `${locale}: no currency symbol`);
   }
   // Without a lookup the cards show IDs only and the note is absent.
   const bare = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, protocol: overview.evaluation_protocol, official }));
-  assert.ok(!bare.includes("product-meta") && !bare.includes(m.i18n.t("product_details_note")));
+  assert.ok(!bare.includes("product-meta") && !bare.includes(m.i18n.t("product_details_note").slice(0, 16)));
 });
 
 test("E2 has processing-time charts: preprocessing and training per subset, never summed", async () => {

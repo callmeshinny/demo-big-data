@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   byteDisplayUnit, formatBytes, formatCount, formatGeneralNumber, formatMsPerSession, formatNumberOnly,
-  formatPercent, formatPercentShare, formatRatio, formatScore, formatSeconds, formatSecondsPerMillionEvents, isMissing, joinUnit, keepUnitsTogether, NBSP, significant3,
+  formatPercent, formatPercentShare, formatRatio, formatScore, formatSeconds, formatSecondsPerMillionEvents, dateRange, isMissing, joinUnit, keepUnitsTogether, NBSP, significant3,
 } from "../src/format.js";
 import { setLanguage } from "../src/i18n.js";
 
@@ -38,6 +38,13 @@ test("number and unit are joined with U+00A0; percent stays attached", () => {
   assert.equal(formatPercentShare(51.68347).text, "51.7%");
   assert.equal(keepUnitsTogether("Tesla T4 15360 MiB"), "Tesla T4 15360\u00A0MiB", "delivered text: only the unit space changes");
   assert.equal(keepUnitsTogether("Ubuntu 22.04"), "Ubuntu 22.04");
+});
+
+test("dateRange: inclusive window and half-open scope from the JSON text", () => {
+  assert.deepEqual(dateRange("2019-10-01 .. 2019-10-07 UTC"), { start: "2019-10-01", end: "2019-10-07" });
+  assert.deepEqual(dateRange("UTC [2019-10-01, 2019-10-08); non-null", { endExclusive: true }), { start: "2019-10-01", end: "2019-10-07" });
+  assert.equal(dateRange("no dates"), null);
+  assert.equal(dateRange(null), null);
 });
 
 test("bytes: MiB or GiB with 1 decimal and an explicit unit", () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { formatValue } from "./data.js";
 import { t } from "./i18n.js";
-import { formatDistance } from "./format.js";
+import { dateRange, formatDistance } from "./format.js";
 
 function Evidence({ source, short = false }) {
   if (!source) return null;
@@ -14,7 +14,8 @@ export function SubsetSelection({ sampling, subsets, source, distributionSource 
     <h2>{t("why_subset")}</h2>
     <p>{t("whole_session_sampling", formatValue(sampling.seed))}</p>
     <p>{t("session_sampling_rationale")}</p>
-    <p>{t("sampling_scope", formatValue(sampling.population_sessions))}</p>
+    {(() => { const range = dateRange(sampling.scope, { endExclusive: true });
+      return <p>{t("sampling_scope", range?.start ?? t("MISSING"), range?.end ?? t("MISSING"), formatValue(sampling.population_sessions))}</p>; })()}
     <p>{t("subset_diversity")}</p>
     <div className="table-scroll"><table className="config-table numeric-table">
       <thead><tr>{[t("target_percent"), t("actual_raw_session_pct"), t("raw_sessions")].map((label) => <th scope="col" key={label}>{label}</th>)}</tr></thead>
