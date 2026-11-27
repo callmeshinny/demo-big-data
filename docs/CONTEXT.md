@@ -11,7 +11,7 @@ Snapshot: 25/11/2026. The team repository `../Big-Data` is the source of truth f
 
 ## What is still pending
 
-- TV1 product metadata (brand, category and price) remains pending. Product cards show original product IDs only.
+- Product cards show the original ID, brand, category and last weekly price from `public/product-info.json`, derived by TV4 from the official 10% cleaned week file. The dataset has no product names.
 - No score should be shown for a recommendation: the exported prediction records contain ranked IDs only.
 
 ## Interpretation rules

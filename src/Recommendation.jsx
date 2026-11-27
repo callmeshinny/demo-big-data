@@ -35,7 +35,7 @@ function HitSentence({ session }) {
     : <p className="hit-sentence miss"><span className="outcome-icon" aria-hidden="true">✕</span><span>{t("miss_sentence", size)}</span><Glossary term="hit" align="end" /></p>;
 }
 
-function MethodDetails({ run, group, protocol, sample, count }) {
+function MethodDetails({ run, group, protocol, sample, count, hasProducts }) {
   const p = run?.provenance ?? {};
   const rows = [
     [t("run_id_label"), run?.run_id],
@@ -52,7 +52,7 @@ function MethodDetails({ run, group, protocol, sample, count }) {
     <EvaluationProtocol protocol={protocol} />
     <p>{t("sample_hash_explanation", sample?.seed ?? "—", formatValue(count))}</p>
     {!run?.scoreAvailable && <p>{t("models_export_ranked_ids_only")}</p>}
-    <p>{t("optional_product_lookup_missing")}</p>
+    {hasProducts && <p>{t("product_details_note")}</p>}
     <dl className="env method-sources">{rows.map(([label, value]) => <div key={label}>
       <dt>{label}</dt><dd title={value == null ? undefined : String(value)}>{value == null || value === "" ? t("not_available_yet") : String(value)}</dd>
     </div>)}</dl>
@@ -225,7 +225,7 @@ export default function Recommendation({ state, productInfo, protocol, official 
         <a href={experimentHref("E1")}>{t("open_e1")}</a>
       </section>}
 
-      <MethodDetails run={run} group={group} protocol={protocol} sample={sample} count={count} />
+      <MethodDetails run={run} group={group} protocol={protocol} sample={sample} count={count} hasProducts={Boolean(products?.size)} />
     </>
   );
 }

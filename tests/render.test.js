@@ -326,3 +326,19 @@ test("no intro, subtitle or course lines; no empty paragraphs; one Key finding s
     assert.match(config, /<p class="config-context">[^<]*1,337/);
   }
 });
+
+test("product cards: ID, brand · category, price from product-info.json; Method details names the source", async () => {
+  const m = await modules();
+  const info = m.data.normalizeProductInfo(json("../public/product-info.json"));
+  for (const locale of ["en", "vi"]) {
+    m.i18n.setLanguage(locale);
+    const html = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: info, protocol: overview.evaluation_protocol, official }));
+    assert.equal(html.split(m.i18n.t("product_details_note")).length - 1, 1, `${locale}: one product details line`);
+    assert.match(html, /<small class="product-meta">[^<]+ › [^<]+<\/small>/, locale);
+    assert.match(html, new RegExp(`<small class="product-price" title="[\\d.]+">${m.i18n.t("product_price", "\\d+\\.\\d{2}")}</small>`), locale);
+    assert.ok(!/\$\d/.test(text(html)), `${locale}: no currency symbol`);
+  }
+  // Without a lookup the cards show IDs only and the note is absent.
+  const bare = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, protocol: overview.evaluation_protocol, official }));
+  assert.ok(!bare.includes("product-meta") && !bare.includes(m.i18n.t("product_details_note")));
+});

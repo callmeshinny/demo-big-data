@@ -6,7 +6,7 @@ Official source package: `tv2-20261124` from the adjacent read-only `../Big-Data
 
 ## Overall result
 
-The demo uses the official TV2 package for E1–E5 experiment results, dataset overview, figures, and bilingual demo materials. The Recommendation view now replays a fixed, checksum-verified sample of real E1 predictions. TV1 product metadata remains pending, so recommendation cards show original product IDs only.
+The demo uses the official TV2 package for E1–E5 experiment results, dataset overview, figures, and bilingual demo materials. The Recommendation view now replays a fixed, checksum-verified sample of real E1 predictions. Product cards show the original ID, brand, category and last weekly price from `public/product-info.json`, derived by TV4 from the official 10% cleaned week file. The dataset has no product names.
 
 No team-repository files were changed and nothing was pushed.
 
@@ -40,7 +40,7 @@ No team-repository files were changed and nothing was pushed.
 - E1 results represent a single run and seed.
 - Missing values stay unavailable; no scores are inferred from ranks.
 - The local `../tv4-real-bundle/` is an export input only and must never be committed. The public app stores only sampled IDs and the catalog subset; full-catalog SHA and size are retained.
-- TV1 product lookup remains pending; product cards show original IDs only.
+- Product cards show the original ID, brand, category and last weekly price from `public/product-info.json` (derived by TV4 from the official 10% cleaned week file; `scripts/export_product_info.py`). The dataset has no product names.
 
 ## Final audit evidence
 

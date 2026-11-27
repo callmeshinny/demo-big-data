@@ -61,9 +61,9 @@
 
    *Vì sao E3 dùng validation? E3 đo so sánh batch size trên validation; protocol nói không so sánh trực tiếp các giá trị này với test E1/E2 (`dictionary.E3_accuracy`).*
 
-3. **Why are prediction scores and product names missing?** The delivered rows contain ranked product IDs, not per-item scores or TV1 metadata. The UI does not infer a score from rank or invent names.
+3. **Why are prediction scores and product names missing?** The delivered rows contain ranked product IDs, not per-item scores, and the dataset has no product-name column. Cards show the original ID, brand, category and the last price seen in week 1 of the 10% data, with no currency because the dataset states none. The UI does not infer a score from rank or invent names.
 
-   *Vì sao thiếu điểm dự đoán và tên sản phẩm? Các dòng được bàn giao có mã sản phẩm theo thứ hạng, không có điểm từng sản phẩm hay metadata từ TV1. UI không suy ra điểm từ thứ hạng hoặc tự đặt tên.*
+   *Vì sao thiếu điểm dự đoán và tên sản phẩm? Các dòng được bàn giao có mã sản phẩm theo thứ hạng, không có điểm từng sản phẩm, và dataset không có cột tên sản phẩm. Thẻ hiển thị mã gốc, brand, danh mục và giá cuối cùng trong tuần 1 của tập 10%, không có đơn vị tiền vì dataset không ghi. UI không suy ra điểm từ thứ hạng hoặc tự đặt tên.*
 
 4. **What does Recall@20 mean?** For each evaluated session, it is one if the actual next item appears in the Top-20 and zero otherwise, averaged over sessions. See [docs/modeling/model_protocol.md](../../Big-Data/docs/modeling/model_protocol.md), “Evaluation chung cho ba model.”
 
@@ -97,9 +97,9 @@
 
     *Vì sao mẫu có thể thiên về hành vi xem? Nguồn là một khoảng thời gian ngắn và tập con giữ nguyên toàn bộ phiên. Tab Dataset báo cáo khác biệt phân phối sự kiện, chuỗi và các giới hạn đã biết; không nên khái quát kết quả cho mọi khách hàng.*
 
-12. **What does the Recommendation tab show?** Real E1 predictions for 30 of 1,337 sessions, selected by the seed-1 hash rule, with history, actual next product and Top-20. It shows no per-item scores or product names.
+12. **What does the Recommendation tab show?** Real E1 predictions for 30 of 1,337 sessions, selected by the seed-1 hash rule, with history, actual next product and Top-20. Cards show the ID, brand, category and last weekly price; there are no per-item scores or product names.
 
-    *Tab Recommendation hiển thị gì? Dự đoán E1 thật cho 30 trong 1.337 phiên, chọn theo quy tắc hash seed 1, cùng lịch sử, sản phẩm tiếp theo thực tế và Top-20. Tab không hiển thị điểm từng sản phẩm hay tên sản phẩm.*
+    *Tab Recommendation hiển thị gì? Dự đoán E1 thật cho 30 trong 1.337 phiên, chọn theo quy tắc hash seed 1, cùng lịch sử, sản phẩm tiếp theo thực tế và Top-20. Thẻ hiển thị mã, brand, danh mục và giá cuối tuần; không có điểm từng sản phẩm hay tên sản phẩm.*
 
 13. **Why didn't you vary CPU, RAM or workers?** We had one AWS VM with a single T4 GPU, so the hardware was fixed. Batch size was the resource setting we could control: it changes how much work the GPU does per step and how much GPU memory it uses. Varying CPU, RAM or workers would need more VM types, which we list as future work.
 

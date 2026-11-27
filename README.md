@@ -55,7 +55,15 @@ PYTHONPATH=../Big-Data:scripts python3 scripts/export_demo_data.py \
   --configs ../Big-Data/metrics/releases/tv2-20261124/configs.json \
   --prediction-checks ../Big-Data/metrics/tv2-analysis-20261124/prediction_checks.json \
   --split-population ../Big-Data/reports/tables/tv2-20261124/split_population.csv \
+  --product-lookup product-info.json \
   --output public/demo-data.json --sample 30 --sample-seed 1
+```
+
+Product details on the cards (brand, category, last price in the week; the dataset has no names) come from the official 10% cleaned week file. The export checks 638,089 rows, 63,398 products and the 2019-10-01..07 UTC window, and keeps only the displayed product IDs (needs `pyarrow`):
+
+```bash
+python3 scripts/export_product_info.py ../tv4-real-bundle/week-010.parquet \
+  --demo-data public/demo-data.json --output public/product-info.json --data-kind real
 ```
 
 See [docs/DEMO_DAY.md](docs/DEMO_DAY.md) for presentation and offline fallback steps.

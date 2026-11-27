@@ -398,6 +398,8 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .product-card > div { display: grid; gap: 2px; min-width: 0; }
 .product-card small { color: var(--label-2); font: var(--t-footnote); }
 .product-card .product-id { font: var(--t-table); font-family: var(--mono); color: var(--label); }
+/* Long category paths wrap (never an ellipsis). */
+.product-card .product-meta, .product-card .product-price { white-space: normal; overflow-wrap: anywhere; }
 
 .empty-state { border: 1px dashed var(--control-border); border-radius: var(--radius-control); padding: var(--s5); margin-top: var(--s3); text-align: center; color: var(--label-2); }
 .empty-state strong { color: var(--label); }

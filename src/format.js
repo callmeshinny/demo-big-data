@@ -9,6 +9,7 @@ import { t } from "./i18n.js";
  *   times .................. 3 significant digits    1.5164 -> 1.52 s, 56.902 -> 56.9 s, 327.5 -> 328 s
  *   bytes .................. MiB or GiB, 1 decimal   134004153 -> 127.8 MiB
  *   counts ................. thousands separators    882808 -> 882,808
+ *   prices ................. 2 decimals, no currency 308.86 -> 308.86, 45 -> 45.00
  *   null / undefined / "" / NaN / ±Infinity -> "Not available yet" / "Chưa có", never "NaN"
  */
 
@@ -107,6 +108,12 @@ export function formatPercent(value) {
 export function formatPercentShare(value) {
   if (isMissing(value)) return missing(value);
   return result(value, `${Number(value).toFixed(1)}%`);
+}
+
+/** Product price from the week file: 2 decimals and no currency symbol (the dataset states none). */
+export function formatPrice(value) {
+  if (isMissing(value)) return missing(value);
+  return result(value, grouped(value, 2));
 }
 
 /** Distance-type ratios on the Dataset tab (e.g. total variation): 4 decimals like Recall/NDCG. */
