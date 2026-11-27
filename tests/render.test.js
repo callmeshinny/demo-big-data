@@ -307,3 +307,20 @@ test("E4 configuration: preprocessing table without 'Not available yet'; fairnes
     assert.ok(html.indexOf('class="fairness-line"') < finding, "fairness line above the Key finding");
   }
 });
+
+test("no intro, subtitle or course lines; no empty paragraphs; one Key finding source per tab", async () => {
+  const m = await modules();
+  for (const locale of ["en", "vi"]) {
+    const pages = renderAll(m, locale);
+    for (const [name, html] of Object.entries(pages)) {
+      for (const cls of ["page-intro", "experiment-subtitle", "experiment-course", "kf-source"]) assert.ok(!html.includes(cls), `${locale}/${name}: ${cls}`);
+      assert.ok(!/<p[^>]*>\s*<\/p>/.test(html), `${locale}/${name}: empty <p>`);
+      const sources = html.split(m.i18n.t("kf_source_footnote").replaceAll("'", "&#x27;")).length - 1;
+      assert.equal(sources, name === "recommendation" ? 0 : 1, `${locale}/${name}: source footnote count`);
+    }
+    // E1 context moved into "Configuration & sources" (and the screen-reader table caption).
+    const e1 = pages.E1;
+    const config = e1.slice(e1.indexOf('<details class="config config-bundle">'));
+    assert.match(config, /<p class="config-context">[^<]*1,337/);
+  }
+});

@@ -104,7 +104,6 @@ export default function Recommendation({ state, productInfo, protocol, official 
     <>
       <div className="page-head">
         <h1 className="page-title">{t("recommendations")}</h1>
-        <p className="page-intro">{t("recommendation_tab_intro")}</p>
         {run?.data_kind === "real"
           ? <span className="badge badge-real">{t("real_e1_badge", formatValue(count), formatValue(total))}</span>
           : <DataKindBadge kind={run?.data_kind} />}

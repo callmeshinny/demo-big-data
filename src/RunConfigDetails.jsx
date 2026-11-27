@@ -85,9 +85,10 @@ export function E4ConfigDetails({ results, runIds }) {
   </details>;
 }
 
-export function PanelConfigDetails({ results, runIds }) {
+export function PanelConfigDetails({ results, runIds, context = null }) {
   return <details className="config config-bundle">
     <summary>{t("configuration_and_sources")}</summary>
+    {context && <p className="config-context">{context}</p>}
     {runIds.map((runId) => <ConfigRun key={runId} runId={runId} config={results?.configs?.[runId]} />)}
   </details>;
 }

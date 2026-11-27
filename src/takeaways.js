@@ -3,7 +3,6 @@
 // All numbers are formatted by src/format.js; templates live in src/i18n.js (no numeric literals there).
 import { messages, t } from "./i18n.js";
 import { byteDisplayUnit, formatBytes, formatCount, formatRatio, formatSeconds, isMissing } from "./format.js";
-import { modelLabel } from "./data.js";
 
 /** "higher" | "lower" | "equal" | null (missing) for a compared with b. */
 export function compare(a, b) {
@@ -58,13 +57,6 @@ export function e3Takeaway(results) {
   }
   return t("e3_kf_body", change(dt, time(small), time(large)), change(dg, gpu(small), gpu(large)),
     change(dr, recall(small), recall(large), "chg_fall"));
-}
-
-/** E3 subtitle values: the two train batch sizes and the model, all from JSON. */
-export function e3Subtitle(results) {
-  const pair = e3Pair(results);
-  if (!pair) return t("MISSING");
-  return t("e3_subtitle", modelLabel(pair[0].model), pair[0].train_batch_size, pair[1].train_batch_size);
 }
 
 /** Hardware named in the limitation note, read from the package environment; null when absent. */
@@ -131,16 +123,6 @@ export function e4Takeaway(results) {
     return `${head} ${t("e4_kf_prep_only", prep(base), prep(subject), because)}`;
   }
   return `${head} ${t("e4_kf_prep", prep(base), prep(subject))}`;
-}
-
-export function e4Subtitle(results) {
-  const pair = e4Pair(results);
-  if (!pair) return t("MISSING");
-  const [base, subject] = pair;
-  const count = (run) => formatCount(run.n_events).text;
-  return base.n_events === subject.n_events
-    ? t("e4_subtitle", count(base))
-    : t("e4_subtitle_counts", count(base), count(subject));
 }
 
 /**

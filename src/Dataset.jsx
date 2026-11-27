@@ -107,7 +107,6 @@ export default function Dataset({ state, e2Levels = [], section = null }) {
     <>
       <div className="page-head">
         <h1 className="page-title">{t("dataset")}</h1>
-        <p className="page-intro">{t("dataset_intro")}</p>
       </div>
       <DatasetNav sticky={sticky} current={current} onPick={pick} />
       <section className="panel" id="dataset-overview">

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { setLanguage } from "../src/i18n.js";
-import { compare, e3Hardware, e3Limitation, e3Subtitle, e3Takeaway, isSimilar, isSmallPart } from "../src/takeaways.js";
+import { compare, e3Hardware, e3Limitation, e3Takeaway, isSimilar, isSmallPart } from "../src/takeaways.js";
 
 const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
 const withE3 = (patch) => {
@@ -54,9 +54,8 @@ test("E3 takeaway is neutral when a value is equal or missing", () => {
   assert.match(e3Takeaway(missing), /GPU memory Not available yet/);
 });
 
-test("E3 subtitle and limitation read batch sizes and hardware from JSON", () => {
+test("E3 limitation reads hardware from JSON", () => {
   setLanguage("en");
-  assert.equal(e3Subtitle(official), "Same VM and GPU; only the GRU training batch changes (32 vs 128) · validation partition");
   assert.equal(e3Hardware(official), "one AWS VM (Ubuntu 22.04) with one Tesla T4");
   assert.ok(e3Limitation(official).startsWith("Hardware was fixed: one AWS VM (Ubuntu 22.04) with one Tesla T4. CPU, RAM"));
   setLanguage("vi");
@@ -79,7 +78,7 @@ test("10% rules: similar and small part", () => {
   assert.equal(isSmallPart(1, null), false);
 });
 
-import { e4Subtitle, e4Takeaway, formatLabel } from "../src/takeaways.js";
+import { e4Takeaway, formatLabel } from "../src/takeaways.js";
 const withE4 = (patch) => {
   const copy = structuredClone(official);
   copy.tables.E4 = copy.tables.E4.map((run) => ({ ...run, ...(patch[run.format] ?? {}) }));
@@ -94,7 +93,6 @@ test("E4 takeaway with the shipped data: preprocessing only drops a little, 'bec
   assert.equal(e4Takeaway(official),
     "Dung lượng giảm từ 127.8 MiB xuống 24.2 MiB, thời gian đọc từ 0.454 s xuống 0.109 s. Tổng thời gian tiền xử lý chỉ giảm từ 35.0 s xuống 33.6 s, vì bước đọc chỉ chiếm phần nhỏ.");
   setLanguage("en");
-  assert.equal(e4Subtitle(official), "The same 882,808 events stored as CSV and as Parquet: file size, read time, preprocessing time");
   assert.equal(formatLabel("parquet"), "Parquet");
   assert.equal(formatLabel("orc"), "ORC", "unknown formats fall back to the raw value");
 });

@@ -310,10 +310,9 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .meta-row strong { color: var(--label); font-family: var(--mono); }
 .meta-row > span { min-width: 0; }
 
-/* Page head: title, one intro sentence, one data badge */
+/* Page head: title and (Recommendations) one data badge */
 .page-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s3); margin: 0 0 var(--s4); }
 .page-title { flex: 1 1 100%; font: var(--t-title); color: var(--label); }
-.page-intro { margin: 0; color: var(--label-2); max-width: 75ch; }
 
 /* Control bar (glass): model segmented control, session select, presenter tip. Only --label text on glass. */
 .control-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); padding: var(--s2) var(--s3); margin: 0 0 var(--s4); border-radius: var(--radius); }
@@ -447,6 +446,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .metric-table thead th:not(:first-child) .column-select { justify-content: flex-end; text-align: right; }
 .config-table tr.diff td { background: var(--danger-bg); }
 .config-bundle { margin-top: var(--s5); }
+.config-context { margin: var(--s3) 0 0; color: var(--label); font-weight: 600; }
 .config-run { margin-top: var(--s4); padding-top: var(--s3); border-top: 1px solid var(--separator); }
 .config-run h3 { margin: 0 0 var(--s3); }
 .config-runtime { margin-bottom: var(--s3); }
@@ -520,8 +520,6 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 
 /* Experiment panels */
 .experiment-head h2 { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-bottom: var(--s1); }
-.experiment-subtitle { color: var(--label-2); margin: 0 0 var(--s1); }
-.experiment-course { color: var(--label-2); margin: 0 0 var(--s3); }
 /* E4 fairness line: a plain check mark in --label (green is reserved for Hit). */
 .fairness-line { display: flex; align-items: baseline; gap: var(--s1); margin: 0 0 var(--s3); color: var(--label); font-weight: 600; }
 .fairness-mark { color: var(--label); }
@@ -628,7 +626,6 @@ footer code { overflow-wrap: anywhere; }
 .presenter .panel { padding: var(--s6); }
 .presenter .metric-table td.num, .presenter .e1-strip b, .presenter .hit-sentence { font: var(--t-lead); font-family: inherit; }
 .presenter .metric-table td.num { font-family: var(--mono); }
-.presenter .page-intro { max-width: 60ch; }
 
 /* Motion: none required; anything that moves is short and optional. */
 .segmented > a, .segmented > button { transition: background-color 120ms ease, color 120ms ease; }
