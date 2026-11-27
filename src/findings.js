@@ -5,7 +5,7 @@
 import { messages, t } from "./i18n.js";
 import { formatCount, formatPercent, formatPercentShare, formatRatio, formatSeconds, isMissing } from "./format.js";
 import { modelLabel } from "./data.js";
-import { compare, e3Takeaway, e4Pair, e4Takeaway, isSimilar, isSmallPart } from "./takeaways.js";
+import { compare, e3Pair, e3Takeaway, e4Pair, e4Takeaway, isSmallPart } from "./takeaways.js";
 
 const has = (value) => !isMissing(value);
 const sortBy = (rows, field) => [...rows].sort((a, b) => a[field] - b[field]);
@@ -34,11 +34,10 @@ export function e1Cheapest(runs) {
   return train && train === evaluation ? train : null;
 }
 
-export function e1Takeaway(runs) {
+/** "0.1249 for XLNet, 0.0883 for GRU, 0.0868 for Popularity": every model, highest Recall@20 first. */
+export function e1RecallList(runs) {
   const ranked = runs.filter((run) => has(run["Recall@20"])).sort((a, b) => b["Recall@20"] - a["Recall@20"]);
-  if (ranked.length < 2) return t("MISSING");
-  const name = (run) => modelLabel(run.model);
-  return t("e1_takeaway", name(ranked[0]), formatRatio(ranked[0]["Recall@20"]).text, name(ranked.at(-1)), formatRatio(ranked.at(-1)["Recall@20"]).text);
+  return ranked.map((run) => t("e1_kf_item", modelLabel(run.model), formatRatio(run["Recall@20"]).text)).join(", ");
 }
 
 export function e1Finding(results) {
@@ -51,10 +50,11 @@ export function e1Finding(results) {
       : cheapest ? t("e1_kf_headline_cheapest", name(cheapest)) : null;
   const byModel = (label) => runs.find((run) => modelLabel(run.model) === label);
   const pop = byModel("Popularity"), gru = byModel("GRU");
-  const body = [e1Takeaway(runs)];
+  const list = e1RecallList(runs);
+  const body = [list ? t("e1_kf_body", list) : t("MISSING")];
   if (best && pop && gru && best !== gru && best !== pop
     && pop["Recall@20"] < gru["Recall@20"] && gru["Recall@20"] < best["Recall@20"]) {
-    body.push(t("e1_kf_gru_vs_pop", formatRatio(gru["Recall@20"]).text, formatRatio(pop["Recall@20"]).text));
+    body.push(t("e1_kf_gru_vs_pop"));
   }
   return { headline, body: body.join(" "), caveat: t("e1_kf_caveat") };
 }
@@ -67,33 +67,30 @@ export function strictlyIncreasing(values) {
 
 export function e2Finding(results) {
   const runs = sortBy(results?.tables?.E2 ?? [], "subset");
-  if (runs.length < 2) return { headline: null, body: t("MISSING"), caveat: t("e2_kf_caveat") };
+  if (runs.length < 2) return { headline: null, body: t("MISSING"), caveat: null };
   const first = runs[0], last = runs.at(-1);
+  const rises = compare(last["Recall@20"], first["Recall@20"]) === "higher";
   return {
     headline: strictlyIncreasing(runs.map((run) => run["Recall@20"])) ? t("e2_kf_headline") : null,
-    body: t("e2_kf_body", formatRatio(first["Recall@20"]).text, first.subset, formatRatio(last["Recall@20"]).text, last.subset),
-    caveat: t("e2_kf_caveat"),
+    body: t(rises ? "e2_kf_body" : "e2_kf_body_neutral", formatRatio(first["Recall@20"]).text, first.subset, formatRatio(last["Recall@20"]).text, last.subset),
+    caveat: null,
   };
 }
 
 // ---------------------------------------------------------------- E3
 
 export function e3Finding(results) {
-  const runs = sortBy(results?.tables?.E3 ?? [], "train_batch_size");
-  if (runs.length < 2) return { headline: null, body: t("MISSING"), caveat: t("e3_kf_caveat") };
-  const small = runs[0], large = runs.at(-1);
-  const tradeOff = compare(large.process_wall_seconds, small.process_wall_seconds) === "lower"
+  const pair = e3Pair(results);
+  if (!pair) return { headline: null, body: t("MISSING"), caveat: t("e3_kf_caveat") };
+  const [small, large] = pair;
+  // Headline: the larger batch has a shorter training time AND a lower validation Recall@20.
+  const tradeOff = compare(large.train_seconds_including_sequence_io, small.train_seconds_including_sequence_io) === "lower"
     && compare(large["Recall@20"], small["Recall@20"]) === "lower";
   const config = (run) => results?.configs?.[run.run_id]?.actual ?? {};
   const body = [e3Takeaway(results)];
   const epochs = [config(small).epochs, config(large).epochs];
   if (epochs.every(has) && epochs[0] === epochs[1]) body.push(t("e3_kf_updates"));
-  const evalBatch = [config(small).eval_batch_size, config(large).eval_batch_size];
-  if (evalBatch.every(has) && evalBatch[0] === evalBatch[1]
-    && isSimilar(small.final_evaluation_seconds, large.final_evaluation_seconds)) {
-    body.push(t("e3_kf_eval", formatSeconds(small.final_evaluation_seconds).text, formatSeconds(large.final_evaluation_seconds).text, evalBatch[0]));
-  }
-  return { headline: tradeOff ? t("e3_kf_headline") : null, body: body.join(" "), caveat: t("e3_kf_caveat") };
+  return { headline: tradeOff ? t("e3_kf_headline", large.train_batch_size) : null, body: body.join(" "), caveat: t("e3_kf_caveat") };
 }
 
 // ---------------------------------------------------------------- E4
@@ -109,7 +106,6 @@ export function e4Finding(results) {
     const smallReads = isSmallPart(subject.read_seconds, subject.preprocessing_wall_seconds_including_read)
       && isSmallPart(base.read_seconds, base.preprocessing_wall_seconds_including_read);
     if (smaller && faster && smallReads) headline = t("e4_kf_headline");
-    body.push(t("e4_kf_steps"));
   }
   return { headline, body: body.join(" "), caveat: t("e4_kf_caveat") };
 }
@@ -122,22 +118,20 @@ export function stageShort(value) {
   return Object.hasOwn(messages.en, key) ? t(key) : String(value ?? t("MISSING")).replaceAll("_", " ");
 }
 
+const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
 export function e5Finding(results) {
   const runs = sortBy(results?.tables?.E5 ?? [], "subset");
   const shares = new Map((results?.stage_shares?.rows ?? []).map((row) => [row.subset, row]));
   if (runs.length < 2) return { headline: null, body: t("MISSING"), caveat: t("e5_kf_caveat") };
   const first = runs[0], last = runs.at(-1);
   const headline = !has(first.bottleneck) || !has(last.bottleneck) ? null
-    : first.bottleneck === last.bottleneck ? t("e5_kf_headline_same", stageShort(last.bottleneck))
-      : t("e5_kf_headline", stageShort(first.bottleneck), stageShort(last.bottleneck));
+    : first.bottleneck === last.bottleneck ? t("e5_kf_headline_same", capitalise(stageShort(last.bottleneck)))
+      : t("e5_kf_headline", stageShort(last.bottleneck));
   const body = [];
   const pre = shares.get(first.subset)?.preprocessing, train = shares.get(last.subset)?.train;
   if (has(pre) && has(train)) {
     body.push(t("e5_kf_shares", formatPercentShare(pre).text, first.subset, formatPercentShare(train).text, last.subset));
-  }
-  if (last.bottleneck === "train_including_sequence_io" && has(train) && has(shares.get(last.subset)?.raw_read)
-    && shares.get(last.subset).raw_read < train) {
-    body.push(t("e5_kf_reading"));
   }
   if (compare(last.seconds_per_million_events, first.seconds_per_million_events) === "lower") {
     body.push(t("e5_kf_per_million", formatSeconds(first.seconds_per_million_events).text,
@@ -148,6 +142,9 @@ export function e5Finding(results) {
 
 // ---------------------------------------------------------------- Dataset
 
+/** "Almost every event is a view" needs the view share at or above this percentage, raw and cleaned. */
+export const ALMOST_ALL_PCT = 90;
+
 export function datasetFindings(overview) {
   const subsets = sortBy(overview?.subsets ?? [], "subset");
   const smallest = subsets[0], full = subsets.find((row) => row.subset === 100) ?? subsets.at(-1);
@@ -156,7 +153,7 @@ export function datasetFindings(overview) {
   if (view && has(view.raw_week_pct) && has(view.clean_100_pct)) {
     findings.push({
       key: "d1",
-      headline: view.clean_100_pct > view.raw_week_pct ? t("d1_kf_headline") : null,
+      headline: view.raw_week_pct >= ALMOST_ALL_PCT && view.clean_100_pct >= ALMOST_ALL_PCT ? t("d1_kf_headline") : null,
       body: t("d1_kf_body", formatPercent(view.raw_week_pct).text, formatPercent(view.clean_100_pct).text),
     });
   }
@@ -169,15 +166,13 @@ export function datasetFindings(overview) {
   }
   if (smallest && full && smallest !== full && has(smallest.catalog_items) && has(full.catalog_items)) {
     const coverage = smallest.catalog_coverage_of_100_pct;
-    // "Still shares many products": the subset's product share is larger than its session share.
+    // "Still has many products": the subset's product share is larger than its session share.
     const share = has(coverage) ? coverage : (100 * smallest.catalog_items) / full.catalog_items;
     const manyProducts = has(smallest.actual_raw_session_pct) && share > smallest.actual_raw_session_pct;
     findings.push({
       key: "d3",
-      headline: manyProducts ? t("d3_kf_headline", smallest.subset) : null,
-      body: has(coverage)
-        ? t("d3_kf_body", smallest.subset, formatCount(smallest.catalog_items).text, formatCount(full.catalog_items).text, formatPercent(coverage).text)
-        : t("d3_kf_body_no_coverage", smallest.subset, formatCount(smallest.catalog_items).text, formatCount(full.catalog_items).text),
+      headline: manyProducts ? t("d3_kf_headline", smallest.subset, formatCount(smallest.catalog_items).text, formatCount(full.catalog_items).text) : null,
+      body: t("d3_kf_body"),
     });
   }
   return findings;

@@ -536,7 +536,8 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .kf-label { color: var(--label-2); font: var(--t-footnote); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .key-finding .kf-headline { display: block; margin: var(--s2) 0 0; color: var(--label); font: var(--t-lead); font-weight: 600; }
 .kf-body { color: var(--label); font: var(--t-body); }
-.kf-caveat, .kf-source { color: var(--label-2); font: var(--t-footnote); }
+.kf-caveat { color: var(--label-2); font: var(--t-footnote); }
+.kf-footnote { font: var(--t-footnote); margin: var(--s4) 0 0; }
 .key-findings-group { display: grid; gap: var(--s4); }
 .key-findings-group .key-finding { margin: 0; max-width: none; }
 .fair-note { margin: 0 0 var(--s2); font-weight: 600; display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }

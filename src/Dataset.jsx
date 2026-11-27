@@ -8,7 +8,7 @@ import { DataLoadFailure, Select } from "./ui.jsx";
 import { DATASET_SECTIONS, datasetHref, experimentHref } from "./navigation.js";
 import { useStickyBar } from "./sticky.js";
 import { datasetFindings } from "./findings.js";
-import { KeyFinding } from "./KeyFinding.jsx";
+import { KeyFinding, KeyFindingSource } from "./KeyFinding.jsx";
 
 const SUBSET_FIELDS = () => [
   [t("raw_sessions"), "raw_sessions"], [t("actual_raw_session_pct"), "actual_raw_session_pct"],
@@ -179,6 +179,7 @@ export default function Dataset({ state, e2Levels = [], section = null }) {
         <ol className="pipeline">{PIPELINE().map(([label, description, owner]) => <li key={label}><strong>{label}</strong> · {owner}<p>{description}</p></li>)}</ol>
       </section>
       <section className="panel"><EvaluationProtocol protocol={overview.evaluation_protocol} diagram /></section>
+      {findings.length > 0 && <KeyFindingSource />}
     </>
   );
 }

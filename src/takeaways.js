@@ -1,4 +1,4 @@
-// Takeaway sentences for E3 and E4. Every comparison word is chosen here by comparing the delivered
+// Key finding body sentences for E3 and E4. Every comparison word is chosen here by comparing the delivered
 // JSON values; equal or missing values give a neutral sentence that only lists the values.
 // All numbers are formatted by src/format.js; templates live in src/i18n.js (no numeric literals there).
 import { messages, t } from "./i18n.js";
@@ -28,21 +28,23 @@ export function isSmallPart(part, whole, share = SMALL_PART_SHARE) {
   return part / whole < share;
 }
 
-const word = { lowerTime: "cmp_faster", higherTime: "cmp_slower", higherAmount: "cmp_more", lowerAmount: "cmp_less",
-  lowerScore: "cmp_lower", higherScore: "cmp_higher", lowerSize: "cmp_smaller", higherSize: "cmp_larger" };
-const timeWord = (direction) => t(direction === "lower" ? word.lowerTime : word.higherTime);
-const amountWord = (direction) => t(direction === "higher" ? word.higherAmount : word.lowerAmount);
-const scoreWord = (direction) => t(direction === "lower" ? word.lowerScore : word.higherScore);
-const sizeWord = (direction) => t(direction === "lower" ? word.lowerSize : word.higherSize);
 const decided = (...directions) => directions.every((direction) => direction === "higher" || direction === "lower");
+/** "drops/rises from a to b" (VI "giảm từ a xuống b" / "tăng từ a lên b"); `down` names the falling verb. */
+const change = (direction, from, to, down = "chg_drop") => t(direction === "lower" ? down : "chg_rise", from, to);
 
 const gpuBytes = (run) => (run?.sampled_gpu_status === "unavailable" ? null : run?.sampled_gpu_process_bytes);
 
-/** E3: the larger train batch (b2) compared with the smaller one (b1). */
-export function e3Takeaway(results) {
+/** E3 rows sorted by train batch: [smaller, larger], or null. */
+export function e3Pair(results) {
   const runs = [...(results?.tables?.E3 ?? [])].sort((a, b) => a.train_batch_size - b.train_batch_size);
-  if (runs.length < 2) return t("MISSING");
-  const [small, large] = [runs[0], runs.at(-1)];
+  return runs.length < 2 ? null : [runs[0], runs.at(-1)];
+}
+
+/** E3: how the larger train batch (b2) changes training time, GPU memory and validation Recall@20 from b1. */
+export function e3Takeaway(results) {
+  const pair = e3Pair(results);
+  if (!pair) return t("MISSING");
+  const [small, large] = pair;
   const unit = byteDisplayUnit([gpuBytes(small), gpuBytes(large)]);
   const time = (run) => formatSeconds(run.train_seconds_including_sequence_io).text;
   const gpu = (run) => formatBytes(gpuBytes(run), unit).text;
@@ -54,15 +56,15 @@ export function e3Takeaway(results) {
     return t("e3_takeaway_neutral", large.train_batch_size, time(large), gpu(large), recall(large),
       small.train_batch_size, time(small), gpu(small), recall(small));
   }
-  return t("e3_takeaway", large.train_batch_size, timeWord(dt), time(large), time(small),
-    amountWord(dg), gpu(large), gpu(small), scoreWord(dr), recall(large), recall(small));
+  return t("e3_kf_body", change(dt, time(small), time(large)), change(dg, gpu(small), gpu(large)),
+    change(dr, recall(small), recall(large), "chg_fall"));
 }
 
 /** E3 subtitle values: the two train batch sizes and the model, all from JSON. */
 export function e3Subtitle(results) {
-  const runs = [...(results?.tables?.E3 ?? [])].sort((a, b) => a.train_batch_size - b.train_batch_size);
-  if (runs.length < 2) return t("MISSING");
-  return t("e3_subtitle", modelLabel(runs[0].model), runs[0].train_batch_size, runs.at(-1).train_batch_size);
+  const pair = e3Pair(results);
+  if (!pair) return t("MISSING");
+  return t("e3_subtitle", modelLabel(pair[0].model), pair[0].train_batch_size, pair[1].train_batch_size);
 }
 
 /** Hardware named in the limitation note, read from the package environment; null when absent. */
@@ -103,7 +105,12 @@ export function e4Pair(results) {
   return csv && parquet ? [csv, parquet] : null;
 }
 
-/** E4: Parquet (s2/r2/p2) compared with CSV (s1/r1/p1). */
+/**
+ * E4: CSV (baseline) to Parquet (subject). "File size goes from … and read time from …" only when Parquet is
+ * smaller and reads faster; otherwise a neutral sentence that lists the values. "Total preprocessing only
+ * drops from …" when it is lower but within 10%, with "because reading is a small part of it" only if each
+ * read is < 10% of its own preprocessing time; any other case lists the two values.
+ */
 export function e4Takeaway(results) {
   const pair = e4Pair(results);
   if (!pair) return t("MISSING");
@@ -113,19 +120,17 @@ export function e4Takeaway(results) {
   const prep = (run) => formatSeconds(run.preprocessing_wall_seconds_including_read).text;
   const ds = compare(subject.bytes, base.bytes);
   const dr = compare(subject.read_seconds, base.read_seconds);
-  const dp = compare(subject.preprocessing_wall_seconds_including_read, base.preprocessing_wall_seconds_including_read);
-  if (!decided(ds, dr)) {
+  if (ds !== "lower" || dr !== "lower") {
     return t("e4_takeaway_neutral", formatLabel(subject.format), size(subject), read(subject), prep(subject),
       formatLabel(base.format), size(base), read(base), prep(base));
   }
-  const head = [formatLabel(subject.format), sizeWord(ds), size(subject), size(base), timeWord(dr), read(subject), read(base)];
-  if (isSimilar(subject.preprocessing_wall_seconds_including_read, base.preprocessing_wall_seconds_including_read)) {
-    const because = isSmallPart(subject.read_seconds, subject.preprocessing_wall_seconds_including_read)
-      && isSmallPart(base.read_seconds, base.preprocessing_wall_seconds_including_read) ? t("e4_because") : "";
-    return t("e4_takeaway_similar", ...head, prep(subject), prep(base), because);
+  const pb = base.preprocessing_wall_seconds_including_read, ps = subject.preprocessing_wall_seconds_including_read;
+  const head = t("e4_kf_body", size(base), size(subject), read(base), read(subject));
+  if (compare(ps, pb) === "lower" && isSimilar(ps, pb)) {
+    const because = isSmallPart(subject.read_seconds, ps) && isSmallPart(base.read_seconds, pb) ? t("e4_because") : "";
+    return `${head} ${t("e4_kf_prep_only", prep(base), prep(subject), because)}`;
   }
-  if (!decided(dp)) return t("e4_takeaway_similar", ...head, prep(subject), prep(base), "");
-  return t("e4_takeaway_differs", ...head, timeWord(dp), prep(subject), prep(base));
+  return `${head} ${t("e4_kf_prep", prep(base), prep(subject))}`;
 }
 
 export function e4Subtitle(results) {

@@ -13,7 +13,7 @@ import { usePresenter } from "./presenter.js";
 import { Glossary } from "./Glossary.jsx";
 import { e3Limitation, e3Subtitle, e4Fairness, e4Pair, e4Subtitle, formatLabel } from "./takeaways.js";
 import { e1Finding, e2Finding, e3Finding, e4Finding, e5Finding } from "./findings.js";
-import { KeyFinding } from "./KeyFinding.jsx";
+import { KeyFinding, KeyFindingSource } from "./KeyFinding.jsx";
 import { modelColourKey } from "./Recommendation.jsx";
 
 const basename = (value) => (typeof value === "string" && value ? value.split("/").at(-1) : null);
@@ -303,5 +303,6 @@ export default function Experiments({ state, active, select = null }) {
           : active === "E4" ? <E4Panel results={results} />
             : <E5Panel results={results} />}
     <EnvironmentCard results={results} />
+    <KeyFindingSource />
   </>;
 }

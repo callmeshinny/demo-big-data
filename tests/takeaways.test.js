@@ -23,10 +23,10 @@ test("compare: higher, lower, equal, missing", () => {
 test("E3 takeaway with the shipped data: words follow the values, numbers via format.js", () => {
   setLanguage("en");
   assert.equal(e3Takeaway(official),
-    "Train batch 128 trains faster (30.6 s vs 51.7 s) and uses more GPU memory (3.9 GiB vs 2.2 GiB), with lower validation Recall@20 (0.1299 vs 0.1964).");
+    "Training time drops from 51.7 s to 30.6 s and GPU memory rises from 2.2 GiB to 3.9 GiB, while validation Recall@20 falls from 0.1964 to 0.1299.");
   setLanguage("vi");
   assert.equal(e3Takeaway(official),
-    "Batch 128 huấn luyện nhanh hơn (30.6 s so với 51.7 s), dùng nhiều hơn bộ nhớ GPU (3.9 GiB so với 2.2 GiB), và Recall@20 trên validation thấp hơn (0.1299 so với 0.1964).");
+    "Thời gian huấn luyện giảm từ 51.7 s xuống 30.6 s, bộ nhớ GPU tăng từ 2.2 GiB lên 3.9 GiB, còn Recall@20 trên validation giảm từ 0.1964 xuống 0.1299.");
   setLanguage("en");
 });
 
@@ -37,9 +37,9 @@ test("E3 takeaway flips every word when the values flip", () => {
     128: { train_seconds_including_sequence_io: 20, sampled_gpu_process_bytes: 2 * 1024 ** 3, "Recall@20": 0.2 },
   });
   const text = e3Takeaway(flipped);
-  assert.match(text, /trains slower/);
-  assert.match(text, /uses less GPU memory/);
-  assert.match(text, /with higher validation Recall@20/);
+  assert.match(text, /Training time rises from 10\.0 s to 20\.0 s/);
+  assert.match(text, /GPU memory drops from 4\.0 GiB to 2\.0 GiB/);
+  assert.match(text, /validation Recall@20 rises from 0\.1000 to 0\.2000/);
 });
 
 test("E3 takeaway is neutral when a value is equal or missing", () => {
@@ -48,7 +48,7 @@ test("E3 takeaway is neutral when a value is equal or missing", () => {
   const missing = withE3({ 128: { sampled_gpu_status: "unavailable", sampled_gpu_process_bytes: null } });
   for (const results of [equal, missing]) {
     const text = e3Takeaway(results);
-    assert.ok(!/faster|slower|\bmore\b|\bless\b|lower|higher/.test(text), text);
+    assert.ok(!/drops|rises|falls/.test(text), text);
     assert.match(text, /^Train batch 128: training time /);
   }
   assert.match(e3Takeaway(missing), /GPU memory Not available yet/);
@@ -86,32 +86,32 @@ const withE4 = (patch) => {
   return copy;
 };
 
-test("E4 takeaway with the shipped data: similar preprocessing, 'because' clause applies", () => {
+test("E4 takeaway with the shipped data: preprocessing only drops a little, 'because' clause applies", () => {
   setLanguage("en");
   assert.equal(e4Takeaway(official),
-    "Parquet is smaller (24.2 MiB vs 127.8 MiB) and reads faster (0.109 s vs 0.454 s); total preprocessing time is similar (33.6 s vs 35.0 s) because reading is only a small part of it.");
+    "File size goes from 127.8 MiB to 24.2 MiB and read time from 0.454 s to 0.109 s. Total preprocessing only drops from 35.0 s to 33.6 s, because reading is a small part of it.");
   setLanguage("vi");
   assert.equal(e4Takeaway(official),
-    "Parquet nhỏ hơn (24.2 MiB so với 127.8 MiB) và đọc nhanh hơn (0.109 s so với 0.454 s); tổng thời gian tiền xử lý gần như tương đương (33.6 s so với 35.0 s) vì bước đọc chỉ chiếm một phần nhỏ.");
+    "Dung lượng giảm từ 127.8 MiB xuống 24.2 MiB, thời gian đọc từ 0.454 s xuống 0.109 s. Tổng thời gian tiền xử lý chỉ giảm từ 35.0 s xuống 33.6 s, vì bước đọc chỉ chiếm phần nhỏ.");
   setLanguage("en");
   assert.equal(e4Subtitle(official), "The same 882,808 events stored as CSV and as Parquet: file size, read time, preprocessing time");
   assert.equal(formatLabel("parquet"), "Parquet");
   assert.equal(formatLabel("orc"), "ORC", "unknown formats fall back to the raw value");
 });
 
-test("E4: >= 10% preprocessing difference names the faster one; no 'because' then", () => {
+test("E4: 'only drops' needs lower preprocessing within 10%; otherwise both values are listed", () => {
   setLanguage("en");
   const text = e4Takeaway(withE4({ parquet: { preprocessing_wall_seconds_including_read: 20 } }));
-  assert.match(text, /total preprocessing is faster \(20\.0 s vs 35\.0 s\)\.$/);
-  assert.ok(!text.includes("because"));
-  const slower = e4Takeaway(withE4({ parquet: { preprocessing_wall_seconds_including_read: 50 } }));
-  assert.match(slower, /total preprocessing is slower/);
+  assert.match(text, /Total preprocessing goes from 35\.0 s to 20\.0 s\.$/);
+  assert.ok(!text.includes("because") && !text.includes("only drops"));
+  const slower = e4Takeaway(withE4({ parquet: { preprocessing_wall_seconds_including_read: 36 } }));
+  assert.match(slower, /Total preprocessing goes from 35\.0 s to 36\.0 s\.$/);
 });
 
 test("E4: 'because' only when each read is < 10% of its preprocessing time", () => {
   setLanguage("en");
   const bigRead = e4Takeaway(withE4({ csv: { read_seconds: 5 } }));
-  assert.match(bigRead, /similar \(33\.6 s vs 35\.0 s\)\.$/, bigRead);
+  assert.match(bigRead, /only drops from 35\.0 s to 33\.6 s\.$/, bigRead);
   assert.ok(!bigRead.includes("because"));
 });
 
@@ -119,11 +119,11 @@ test("E4: equal or missing size/read values give a neutral sentence", () => {
   setLanguage("en");
   for (const results of [withE4({ parquet: { bytes: 134004153 } }), withE4({ parquet: { read_seconds: null } })]) {
     const text = e4Takeaway(results);
-    assert.ok(!/smaller|larger|faster|slower|similar/.test(text), text);
+    assert.ok(!/goes from|drops/.test(text), text);
     assert.match(text, /^Parquet: file size /);
   }
   const flipped = e4Takeaway(withE4({ parquet: { bytes: 300000000, read_seconds: 1 } }));
-  assert.match(flipped, /Parquet is larger .* reads slower/);
+  assert.match(flipped, /^Parquet: file size /, "no direction words when Parquet is larger");
 });
 
 import { e4Fairness } from "../src/takeaways.js";
