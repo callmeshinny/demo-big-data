@@ -78,7 +78,7 @@ const PAIRS = [
   ["label-2", "surface", GRAPHIC, "select chevron on a select (graphic)"],
   ["label-2", "selected-bg", TEXT, "column sub-label (N events) in a selected column"],
   ["label", "selected-bg", TEXT, "cell text in a selected column"],
-  ["on-finding", "finding", TEXT, "white Key finding text (incl. 13 px caveat) on the red E1–E5 callout"],
+  ["on-finding", "finding", TEXT, "white Key finding text (incl. 13 px caveat) on the burgundy E1–E5 callout"],
 ];
 
 const REQUIRED = ["bg", "bg-tint", "surface", "label", "label-2", "control-border", "accent", "fill", "segment",
@@ -95,8 +95,8 @@ for (const [scheme, theme] of Object.entries(themes)) {
   });
 }
 
-test("high contrast: white on the red Key finding reaches 7:1", () => {
-  for (const scheme of ["high contrast light", "high contrast dark"]) {
+test("white on the burgundy Key finding reaches 7:1 in every scheme", () => {
+  for (const scheme of Object.keys(themes)) {
     const value = ratio(themes[scheme]["on-finding"], themes[scheme].finding);
     assert.ok(value >= 7, `${scheme}: on-finding on finding = ${value.toFixed(2)}`);
   }

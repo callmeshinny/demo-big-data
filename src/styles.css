@@ -30,9 +30,10 @@
   --danger-bg: #fdeceb;
   --caution: #a15c00;
   --caution-bg: #fdf2e0;
-  /* Key finding fill on E1–E5: Bulgarian flag red with white text (its own token, not --danger). */
-  --finding: #d62612;
+  /* Key finding fill on E1–E5: burgundy red with white text (its own token, not --danger). */
+  --finding: #800020;
   --on-finding: #ffffff;
+  --finding-glow: rgb(128 0 32 / .38);
   /* Three fixed model colours, used in charts, legends and badges; never green or red. */
   --model-popularity: #5e7387;
   --model-gru: #c4610a;
@@ -74,6 +75,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --finding-glow: rgb(214 60 96 / .45);
     --bg: #000000;
     --bg-tint: #02090f;
     --surface: #1c1c1e;
@@ -108,7 +110,6 @@
     --separator: var(--control-border);
     --label-2: #48484d;
     --control-border: #6e6e73;
-    --finding: #ab1d0e;
   }
 }
 
@@ -550,9 +551,12 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .kf-body { color: var(--label); font: var(--t-body); }
 .kf-caveat { color: var(--label-2); font: var(--t-footnote); }
 .kf-footnote { font: var(--t-footnote); margin: var(--s4) 0 0; }
-/* E1–E5: the Key finding is the one bright block on the panel. Solid Bulgarian red, white text,
-   soft red glow; no glass. White on --finding >= 4.5:1 (>= 7:1 in high contrast), tested. */
-.experiment-panel .key-finding { background: var(--finding); border-left: 0; box-shadow: 0 10px 28px rgb(214 38 18 / .30), 0 1px 3px rgb(0 0 0 / .12); }
+/* E1–E5: the Key finding is the one bright block on the panel. Solid burgundy, white text and an even
+   outer glow on all sides (no offset); no glass. White on --finding >= 7:1 in every scheme, tested.
+   Headline two sizes up (18 -> 22 px, --t-section); body and caveat keep their sizes. */
+.experiment-panel .key-finding { background: var(--finding); border-left: 0;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .06) inset, 0 0 0 4px rgb(128 0 32 / .14), 0 0 28px 6px var(--finding-glow); }
+.experiment-panel .key-finding .kf-headline { font: var(--t-section); }
 .experiment-panel .key-finding :is(.kf-label, .kf-headline, .kf-body, .kf-caveat) { color: var(--on-finding); }
 .experiment-panel .key-finding .kf-label { letter-spacing: .08em; }
 @media (forced-colors: active) { .experiment-panel .key-finding { border: 2px solid CanvasText; } }
