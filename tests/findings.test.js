@@ -85,7 +85,7 @@ test("E5: bottleneck headline from the first and last subset; shares from stage_
   const finding = e5Finding(official);
   assert.equal(finding.headline, "As data grows, the bottleneck shifts to training");
   const shares = Object.fromEntries(official.stage_shares.rows.map((row) => [row.subset, row]));
-  assert.ok(finding.body.startsWith(`Preprocessing takes ${formatPercentShare(shares[10].preprocessing).text} of the time at 10%; training takes ${formatPercentShare(shares[100].train).text} at 100%.`));
+  assert.ok(finding.body.startsWith(`Preprocessing takes ${formatPercentShare(shares[10].preprocessing).text} of the combined stage time at 10%; training takes ${formatPercentShare(shares[100].train).text} at 100%.`));
   assert.match(finding.body, /Time per million events falls from 66\.7 s to 55\.6 s, which fits fixed costs being shared across more data\.$/);
   assert.equal(finding.caveat, "Four sizes on one machine; says nothing about multi-machine scaling.");
   const same = patchTable("E5", "subset", { 10: { bottleneck: "train_including_sequence_io" } });
