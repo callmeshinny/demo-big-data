@@ -354,3 +354,17 @@ test("E2 has processing-time charts: preprocessing and training per subset, neve
     for (const key of ["e2_chart_time_pre", "e2_chart_time_train"]) assert.ok(html.includes(`<figcaption>${m.i18n.t(key)}</figcaption>`), `${locale} ${key}`);
   }
 });
+
+test("Key finding bodies: metric values are bold (decimals and values with units); plain counts are not", async () => {
+  const { metricParts } = await load("/src/KeyFinding.jsx");
+  const metrics = (text) => metricParts(text).filter((part) => part.metric).map((part) => part.text.replaceAll("\u00A0", " "));
+  assert.deepEqual(metrics("Training time drops from 51.7\u00A0s to 30.6\u00A0s and GPU memory rises from 2.2\u00A0GiB to 3.9\u00A0GiB, while validation Recall@20 falls from 0.1964 to 0.1299."),
+    ["51.7 s", "30.6 s", "2.2 GiB", "3.9 GiB", "0.1964", "0.1299"]);
+  assert.deepEqual(metrics("Recall@20 rises from 0.0883 at 10% to 0.3899 at 100%. Training from 27.6\u00A0s to 433\u00A0s."), ["0.0883", "0.3899", "27.6 s", "433 s"]);
+  assert.deepEqual(metrics("Preprocessing takes 51.7% of the combined stage time at 10%."), ["51.7%"]);
+  assert.equal(metricParts("No numbers here.").map((part) => part.text).join(""), "No numbers here.");
+  const i18n = await load("/src/i18n.js");
+  i18n.setLanguage("en");
+  const html = dom.renderToStaticMarkup(React.createElement((await load("/src/Experiments.jsx")).default, { state: { results: official }, active: "E3" }));
+  for (const value of ["51.7", "30.6", "2.2", "3.9", "0.1964", "0.1299"]) assert.match(html, new RegExp(`<strong class="kf-num">${value.replace(".", "\\.")}`), value);
+});

@@ -78,12 +78,22 @@ const PAIRS = [
   ["label-2", "surface", GRAPHIC, "select chevron on a select (graphic)"],
   ["label-2", "selected-bg", TEXT, "column sub-label (N events) in a selected column"],
   ["label", "selected-bg", TEXT, "cell text in a selected column"],
-  ["on-finding", "finding", TEXT, "white Key finding text (incl. 13 px caveat) on the burgundy E1–E5 callout"],
+  ["kf-eyebrow", "kf-bg-from", TEXT, "Key finding eyebrow label (13 px) on the peach end of the gradient"],
+  ["kf-eyebrow", "kf-bg-to", TEXT, "Key finding eyebrow label (13 px) on the white end of the gradient"],
+  ["kf-heading", "kf-bg-from", TEXT, "Key finding headline on the peach end of the gradient"],
+  ["kf-heading", "kf-bg-to", TEXT, "Key finding headline on the white end of the gradient"],
+  ["kf-body", "kf-bg-from", TEXT, "Key finding body on the peach end of the gradient"],
+  ["kf-body", "kf-bg-to", TEXT, "Key finding body on the white end of the gradient"],
+  ["kf-number", "kf-bg-from", TEXT, "Key finding bold metric number on the peach end of the gradient"],
+  ["kf-number", "kf-bg-to", TEXT, "Key finding bold metric number on the white end of the gradient"],
+  ["kf-note", "kf-bg-from", TEXT, "Key finding footnote (13 px) on the peach end of the gradient"],
+  ["kf-note", "kf-bg-to", TEXT, "Key finding footnote (13 px) on the white end of the gradient"],
 ];
 
 const REQUIRED = ["bg", "bg-tint", "surface", "label", "label-2", "control-border", "accent", "fill", "segment",
   "positive", "positive-text", "positive-bg", "on-positive", "selected-bg", "danger", "danger-bg", "caution", "caution-bg",
-  "model-popularity", "model-gru", "model-xlnet", "chart-neutral", "finding", "on-finding"];
+  "model-popularity", "model-gru", "model-xlnet", "chart-neutral",
+  "kf-bg-from", "kf-bg-to", "kf-border", "kf-eyebrow", "kf-heading", "kf-body", "kf-note", "kf-number"];
 
 for (const [scheme, theme] of Object.entries(themes)) {
   test(`${scheme} tokens meet contrast minimums`, () => {
@@ -94,13 +104,6 @@ for (const [scheme, theme] of Object.entries(themes)) {
     assert.deepEqual(failures, [], scheme);
   });
 }
-
-test("white on the burgundy Key finding reaches 7:1 in every scheme", () => {
-  for (const scheme of Object.keys(themes)) {
-    const value = ratio(themes[scheme]["on-finding"], themes[scheme].finding);
-    assert.ok(value >= 7, `${scheme}: on-finding on finding = ${value.toFixed(2)}`);
-  }
-});
 
 test("high contrast: secondary text reaches 7:1 on page and card", () => {
   for (const scheme of ["high contrast light", "high contrast dark"]) {

@@ -30,10 +30,16 @@
   --danger-bg: #fdeceb;
   --caution: #a15c00;
   --caution-bg: #fdf2e0;
-  /* Key finding fill on E1–E5: burgundy red with white text (its own token, not --danger). */
-  --finding: #800020;
-  --on-finding: #ffffff;
-  --finding-glow: rgb(128 0 32 / .38);
+  /* Key finding callout: peach-to-white card, burnt-orange eyebrow and metric numbers (not an alert colour).
+     #b65418 and #627288 are #c2591a and #64748b darkened just enough for >= 4.5:1 on #fff7ed (tested). */
+  --kf-bg-from: #fff7ed;
+  --kf-bg-to: #ffffff;
+  --kf-border: #fed7aa;
+  --kf-eyebrow: #b65418;
+  --kf-heading: #0f172a;
+  --kf-body: #334155;
+  --kf-note: #627288;
+  --kf-number: #b65418;
   /* Three fixed model colours, used in charts, legends and badges; never green or red. */
   --model-popularity: #5e7387;
   --model-gru: #c4610a;
@@ -75,7 +81,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --finding-glow: rgb(214 60 96 / .45);
+    --kf-bg-from: #2b1a0f;
+    --kf-bg-to: #1c1c1e;
+    --kf-border: #9a4a17;
+    --kf-eyebrow: #fb923c;
+    --kf-heading: #f5f5f7;
+    --kf-body: #cbd5e1;
+    --kf-note: #94a3b8;
+    --kf-number: #fdba74;
     --bg: #000000;
     --bg-tint: #02090f;
     --surface: #1c1c1e;
@@ -542,24 +555,19 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .e4-config h3 { margin-top: var(--s3); }
 /* At most two charts per row (E3/E4 have three: the third wraps, left-aligned, same width), so every
    chart card is wide enough (>= 440 px at 1280) for the compact two-column detail area. */
-/* Key finding callout: neutral highlight (no new colour meaning). Presenter mode enlarges it via the tokens. */
-.key-finding { margin: var(--s4) 0; padding: var(--s5); background: var(--surface); border-left: 4px solid var(--label); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .08), 0 0 0 1px var(--separator); max-width: 80ch; }
+/* Key finding callout (E1–E5 and Dataset): refined, not an alert. Peach-to-white gradient, thin peach border,
+   very soft neutral shadow; burnt-orange eyebrow; near-black headline two sizes up (22 px); slate body with
+   metric numbers in bold burnt orange; muted footnote. Presenter mode enlarges it through the type tokens. */
+.key-finding { margin: var(--s4) 0; padding: var(--s5); background: linear-gradient(90deg, var(--kf-bg-from), var(--kf-bg-to)); border: 1px solid var(--kf-border); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .05); max-width: 80ch; }
 .key-finding > * { margin: 0; }
 .key-finding > * + * { margin-top: var(--s2); }
-.kf-label { color: var(--label-2); font: var(--t-footnote); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.key-finding .kf-headline { display: block; margin: var(--s2) 0 0; color: var(--label); font: var(--t-lead); font-weight: 600; }
-.kf-body { color: var(--label); font: var(--t-body); }
-.kf-caveat { color: var(--label-2); font: var(--t-footnote); }
+.kf-label { color: var(--kf-eyebrow); font: var(--t-footnote); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.key-finding .kf-headline { display: block; margin: var(--s2) 0 0; color: var(--kf-heading); font: var(--t-section); font-weight: 700; }
+.kf-body { color: var(--kf-body); font: var(--t-body); }
+.kf-body .kf-num { color: var(--kf-number); font-weight: 700; }
+.kf-caveat { color: var(--kf-note); font: var(--t-footnote); }
 .kf-footnote { font: var(--t-footnote); margin: var(--s4) 0 0; }
-/* E1–E5: the Key finding is the one bright block on the panel. Solid burgundy, white text and an even
-   outer glow on all sides (no offset); no glass. White on --finding >= 7:1 in every scheme, tested.
-   Headline two sizes up (18 -> 22 px, --t-section); body and caveat keep their sizes. */
-.experiment-panel .key-finding { background: var(--finding); border-left: 0;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / .06) inset, 0 0 0 4px rgb(128 0 32 / .14), 0 0 28px 6px var(--finding-glow); }
-.experiment-panel .key-finding .kf-headline { font: var(--t-section); }
-.experiment-panel .key-finding :is(.kf-label, .kf-headline, .kf-body, .kf-caveat) { color: var(--on-finding); }
-.experiment-panel .key-finding .kf-label { letter-spacing: .08em; }
-@media (forced-colors: active) { .experiment-panel .key-finding { border: 2px solid CanvasText; } }
+@media (forced-colors: active) { .key-finding { border: 1px solid CanvasText; } .kf-body .kf-num { color: CanvasText; } }
 .key-findings-group { display: grid; gap: var(--s4); }
 .key-findings-group .key-finding { margin: 0; max-width: none; }
 .fair-note { margin: 0 0 var(--s2); font-weight: 600; display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
