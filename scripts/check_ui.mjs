@@ -398,6 +398,22 @@ try {
     await page.context().close();
   });
 
+  await check("static loading message before the bundle runs; replaced after mount", async () => {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    let release;
+    const gate = new Promise((resolve) => { release = resolve; });
+    await page.route(/\/assets\/.*\.js$/, async (route) => { await gate; await route.continue(); });
+    // Module scripts delay DOMContentLoaded, so wait only for the response and the static markup.
+    await page.goto(`${home}#recommendation`, { waitUntil: "commit" });
+    await page.waitForSelector("#root .boot");
+    assert.equal((await page.locator("#root .boot").innerText()).trim(), "Loading the demo…");
+    release();
+    await page.waitForSelector(".page-title");
+    assert.equal(await page.locator("#root .boot").count(), 0);
+    await context.close();
+  });
+
   await check("glossary popover: opens, Esc closes and returns focus", async () => {
     const page = await open("#recommendation");
     const button = page.locator(".history-panel .glossary .popover-button");
