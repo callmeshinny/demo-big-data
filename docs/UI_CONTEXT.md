@@ -48,6 +48,7 @@ Snapshot: 27/11/2026. Describes local `main` after the plain-language Key findin
 | `--on-positive` | `#ffffff` | `#000000` | ✓ glyph on the green Hit badge (≥ 3:1) |
 | `--selected-bg` | `#eef5fc` | `#1d2835` | selected table column (`--label-2` on it ≥ 4.5:1) |
 | `--danger`, `--danger-bg` | `#d70015`, `#fdeceb` | `#ff453a`, `#3b1210` | problems only |
+| `--finding`, `--on-finding` | `#d62612` (Bulgarian red), `#ffffff` | same | E1–E5 Key finding fill and its text (5.07:1; high contrast `#ab1d0e`, 7.2:1) |
 | `--caution` | `#a15c00` | `#ffb340` | warnings |
 | `--model-popularity/-gru/-xlnet` | `#5e7387` / `#c4610a` / `#8e44ad` | `#9fb4c7` / `#ff9f0a` / `#bf5af2` | fixed model colours |
 | `--glass` | `rgba(255,255,255,.72)` | `rgba(28,28,30,.72)` | translucent surfaces |
@@ -60,7 +61,7 @@ Snapshot: 27/11/2026. Describes local `main` after the plain-language Key findin
 - Accent blue is for interactive elements only.
 - Green means Hit. Hit text uses `--positive-text`. The ✓ glyph uses `--on-positive` (white in light mode, black in dark mode).
 - A miss is neutral: grey text, ✕, and the word "Miss". Never red.
-- Red is for load errors, failed or excluded runs, and config "Differs".
+- Red is for load errors, failed or excluded runs, and config "Differs" (`--danger`). The only other red is `--finding`, the solid Bulgarian-red fill of the E1–E5 Key finding callouts (user decision 28/11); it always carries the "Key finding" label, so it is not read as an error.
 - "In history" is a neutral grey outline.
 - Model colours always appear next to a text label or marker shape (● Popularity, ■ GRU, ◆ XLNet). Never rely on colour alone.
 
@@ -128,7 +129,7 @@ Acceptance: at 1280×800, in EN and VI, steps 3 and the Hit/Miss sentence are vi
 - Never plot a series that is not in the JSON.
 
 **Key finding callouts.** From TV2's `reports/tables/tv2-20261124/analysis.md` (findings 1–7 and section 8); add no claim that is not in that file.
-- `KeyFinding` (`<aside aria-label="Key finding">`): label "Key finding" / "Đúc kết" (13 px, `--label-2`, letter-spaced), optional headline (`--t-lead`, a heading one level below the panel title), body (`--t-body`), at most one caveat (13 px, `--label-2`). No source line inside the callout: `KeyFindingSource` renders it once at the bottom of the Experiments tab and once at the bottom of the Dataset tab. Neutral highlight with no new colour meaning: solid `--surface`, 4 px `--label` left border, 14 px radius, shadow, 24 px padding; no glass, no accent, no green/red. Presenter mode enlarges it through the type tokens (headline 22 px, body 18 px).
+- `KeyFinding` (`<aside aria-label="Key finding">`): label "Key finding" / "Đúc kết" (13 px, `--label-2`, letter-spaced), optional headline (`--t-lead`, a heading one level below the panel title), body (`--t-body`), at most one caveat (13 px, `--label-2`). No source line inside the callout: `KeyFindingSource` renders it once at the bottom of the Experiments tab and once at the bottom of the Dataset tab. On E1–E5 the callout is a bright solid block: `--finding` (Bulgarian red `#d62612`) fill, all text `--on-finding` white, no left border, soft red glow shadow, 14 px radius, 24 px padding; forced colours draw a 2 px `CanvasText` border. The Dataset tab's three callouts keep the neutral style (solid `--surface`, 4 px `--label` left border). No glass on either. Presenter mode enlarges it through the type tokens (headline 22 px, body 18 px).
 - One per experiment panel, directly under the title (and the E4 fairness line), before the charts. The Dataset tab has a "Key findings" group of three callouts after the 5V summary.
 - **Writing style.** Plain and short: headline ≤ 10 words, no colon; body ≤ 2 short sentences; caveat ≤ 1 short sentence or none (E2 has none); no em dashes; no "not X but Y"; no hedging chains. Every number is a `{n}` placeholder filled from JSON through `src/format.js`; never type a number into JSX or `i18n.js`, and never render a new ratio ("5×", "4×"): show both values.
 - Current EN headlines: E1 "{best} predicts best; {cheapest} is cheapest to run"; E2 "Larger subsets score higher"; E3 "Batch {b2} trains faster but predicts worse"; E4 "Parquet is much smaller and faster to read"; E5 "As data grows, the bottleneck shifts to {stage}" (or "{Stage} stays the main cost"); D1 "Almost every event is a product view"; D2 "Only sessions with two or more interactions can be tested"; D3 "The {n}% subset still has {items} of {items100} products".
