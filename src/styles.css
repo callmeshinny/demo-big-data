@@ -31,15 +31,15 @@
   --caution: #a15c00;
   --caution-bg: #fdf2e0;
   /* Key finding callout: peach-to-white card, burnt-orange eyebrow and metric numbers (not an alert colour).
-     #b65418 and #627288 are #c2591a and #64748b darkened just enough for >= 4.5:1 on #fff7ed (tested). */
-  --kf-bg-from: #fff7ed;
-  --kf-bg-to: #ffffff;
-  --kf-border: #fed7aa;
-  --kf-eyebrow: #b65418;
+     Orange and gray are #c2591a and #64748b darkened just enough for >= 4.5:1 on #ffedd5 (tested). */
+  --kf-bg-from: #ffedd5;
+  --kf-bg-to: #fff7ed;
+  --kf-border: #fdba74;
+  --kf-eyebrow: #a84d16;
   --kf-heading: #0f172a;
   --kf-body: #334155;
-  --kf-note: #627288;
-  --kf-number: #b65418;
+  --kf-note: #5b687c;
+  --kf-number: #a84d16;
   /* Three fixed model colours, used in charts, legends and badges; never green or red. */
   --model-popularity: #5e7387;
   --model-gru: #c4610a;
@@ -81,9 +81,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --kf-bg-from: #2b1a0f;
-    --kf-bg-to: #1c1c1e;
-    --kf-border: #9a4a17;
+    --kf-bg-from: #3a2210;
+    --kf-bg-to: #24180f;
+    --kf-border: #b45a1c;
     --kf-eyebrow: #fb923c;
     --kf-heading: #f5f5f7;
     --kf-body: #cbd5e1;
@@ -558,7 +558,7 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 /* Key finding callout (E1–E5 and Dataset): refined, not an alert. Peach-to-white gradient, thin peach border,
    very soft neutral shadow; burnt-orange eyebrow; near-black headline two sizes up (22 px); slate body with
    metric numbers in bold burnt orange; muted footnote. Presenter mode enlarges it through the type tokens. */
-.key-finding { margin: var(--s4) 0; padding: var(--s5); background: linear-gradient(90deg, var(--kf-bg-from), var(--kf-bg-to)); border: 1px solid var(--kf-border); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .05); max-width: 80ch; }
+.key-finding { margin: var(--s4) 0; padding: var(--s5); background: linear-gradient(90deg, var(--kf-bg-from), var(--kf-bg-to)); border: 1px solid var(--kf-border); border-radius: var(--radius); box-shadow: 0 1px 3px rgb(0 0 0 / .08); max-width: 80ch; }
 .key-finding > * { margin: 0; }
 .key-finding > * + * { margin-top: var(--s2); }
 .kf-label { color: var(--kf-eyebrow); font: var(--t-footnote); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
