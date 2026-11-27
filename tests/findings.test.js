@@ -47,10 +47,14 @@ test("E2: headline only when Recall@20 rises strictly with subset size", () => {
   assert.equal(strictlyIncreasing([1, 3, 2]), false);
   assert.equal(strictlyIncreasing([1, null]), false);
   assert.equal(e2Finding(official).headline, "Larger subsets score higher");
-  assert.match(e2Finding(official).body, /^Recall@20 rises from 0\.0883 at 10% to 0\.3899 at 100%\. Each subset also has its own test sessions and catalog/);
+  assert.match(e2Finding(official).body, /^Recall@20 rises from 0\.0883 at 10% to 0\.3899 at 100%\. Preprocessing grows/);
   assert.equal(e2Finding(official).caveat, null);
   const dip = patchTable("E2", "subset", { 50: { "Recall@20": 0.01 } });
   assert.equal(e2Finding(dip).headline, null);
+  assert.match(e2Finding(official).body, /Preprocessing grows from 30\.4 s to 45\.4 s and training from 27\.6 s to 433 s between 10% and 100%\. Each subset/);
+  const flatPre = patchTable("E2", "subset", { 100: { preprocessing_seconds: 1 } });
+  assert.ok(!e2Finding(flatPre).body.includes("grows"), "no 'grows' when preprocessing is not higher at 100%");
+  assert.match(e2Finding(flatPre).body, /Preprocessing is 30\.4 s at 10% and 1\.00 s at 100%; training is 27\.6 s and 433 s\./);
   const fall = patchTable("E2", "subset", { 100: { "Recall@20": 0.01 } });
   assert.ok(!e2Finding(fall).body.includes("rises"), "no 'rises' when the last value is not higher");
 });

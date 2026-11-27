@@ -342,3 +342,13 @@ test("product cards: ID, brand · category, price from product-info.json; Method
   const bare = m.dom.renderToStaticMarkup(m.React.createElement(m.Recommendation, { state: m.data.normalizeDemo(demo), productInfo: {}, protocol: overview.evaluation_protocol, official }));
   assert.ok(!bare.includes("product-meta") && !bare.includes(m.i18n.t("product_details_note")));
 });
+
+test("E2 has processing-time charts: preprocessing and training per subset, never summed", async () => {
+  const m = await modules();
+  for (const locale of ["en", "vi"]) {
+    m.i18n.setLanguage(locale);
+    const html = m.dom.renderToStaticMarkup(m.React.createElement(m.Experiments, { state: { results: official }, active: "E2" }));
+    assert.equal((html.match(/<figure class="chart/g) ?? []).length, 4, locale);
+    for (const key of ["e2_chart_time_pre", "e2_chart_time_train"]) assert.ok(html.includes(`<figcaption>${m.i18n.t(key)}</figcaption>`), `${locale} ${key}`);
+  }
+});

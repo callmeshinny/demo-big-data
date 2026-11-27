@@ -70,9 +70,15 @@ export function e2Finding(results) {
   if (runs.length < 2) return { headline: null, body: t("MISSING"), caveat: null };
   const first = runs[0], last = runs.at(-1);
   const rises = compare(last["Recall@20"], first["Recall@20"]) === "higher";
+  const recall = t(rises ? "e2_kf_recall" : "e2_kf_recall_neutral", formatRatio(first["Recall@20"]).text, first.subset, formatRatio(last["Recall@20"]).text, last.subset);
+  // Processing time: two delivered fields, never summed. "grows" only if both are higher at the largest subset.
+  const pre = "preprocessing_seconds", train = "train_seconds_including_sequence_io";
+  const grows = compare(last[pre], first[pre]) === "higher" && compare(last[train], first[train]) === "higher";
+  const time = t(grows ? "e2_kf_time" : "e2_kf_time_neutral", formatSeconds(first[pre]).text, formatSeconds(last[pre]).text,
+    formatSeconds(first[train]).text, formatSeconds(last[train]).text, first.subset, last.subset);
   return {
     headline: strictlyIncreasing(runs.map((run) => run["Recall@20"])) ? t("e2_kf_headline") : null,
-    body: t(rises ? "e2_kf_body" : "e2_kf_body_neutral", formatRatio(first["Recall@20"]).text, first.subset, formatRatio(last["Recall@20"]).text, last.subset),
+    body: [recall, time, t(rises ? "e2_kf_scope" : "e2_kf_scope_neutral")].join(" "),
     caveat: null,
   };
 }

@@ -106,7 +106,7 @@ try {
     assert.equal(await link.getAttribute("href"), "#experiments/e2/25");
     await link.click();
     await page.waitForFunction(() => location.hash === "#experiments/e2/25");
-    assert.equal(await page.locator("[data-mark='25'][aria-pressed='true']").count(), 2);
+    assert.equal(await page.locator("[data-mark='25'][aria-pressed='true']").count(), 4, "all four E2 charts preselect the level");
     assert.equal(await page.locator("a[href^='#experiments/e3']:not(.subtabs a)").count(), 0);
     await page.goBack();
     await page.waitForFunction(() => location.hash === "#experiments/e5");

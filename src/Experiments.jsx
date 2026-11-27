@@ -135,11 +135,16 @@ function E2Panel({ results, initial }) {
   const chartPoints = (field) => runs.map((run) => point({
     key: String(run.subset), label: `${run.subset}%`, value: run[field], formatter: formatRatio, runId: run.run_id, source: basename(run.source_metrics), colour,
   }));
-  const first = runs[0], last = runs.at(-1);
+  // Processing time (course item): the two delivered time fields in two linked charts, never summed.
+  const timePoints = (field) => runs.map((run) => point({
+    key: String(run.subset), label: `${run.subset}%`, value: run[field], formatter: formatSeconds, unit: "s", runId: run.run_id, source: basename(run.source_metrics), colour,
+  }));
   return <Panel id="E2" title={`E2 · ${t("experiment_nav_e2")}`} finding={e2Finding(results)}>
     <div className="charts">
       <BarChart title={`${t("e1_recall_20")} (${t("test_split")})`} metric={t("e1_recall_20")} yLabel={t("e1_recall_20")} points={chartPoints("Recall@20")} selected={selected} onSelect={setSelected} />
       <BarChart title={`${t("e1_ndcg_20")} (${t("test_split")})`} metric={t("e1_ndcg_20")} yLabel={t("e1_ndcg_20")} points={chartPoints("NDCG@20")} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e2_chart_time_pre")} metric={t("e2_preprocessing_metric")} yLabel={t("seconds_axis")} points={timePoints("preprocessing_seconds")} selected={selected} onSelect={setSelected} />
+      <BarChart title={t("e2_chart_time_train")} metric={t("e1_train_time_s")} yLabel={t("seconds_axis")} points={timePoints("train_seconds_including_sequence_io")} selected={selected} onSelect={setSelected} />
     </div>
     <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)} />
     <MetricTable caption={t("e2_effect_of_dataset_size")} className="scaling-table" selected={selected} onSelect={setSelected}
