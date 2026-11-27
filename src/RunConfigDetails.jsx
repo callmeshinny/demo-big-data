@@ -2,7 +2,7 @@ import React from "react";
 import { t } from "./i18n.js";
 import { formatValue } from "./data.js";
 import { configurationRows, runtimeRows } from "./run-config.js";
-import { formatCount } from "./format.js";
+import { formatCount, keepUnitsTogether } from "./format.js";
 import { formatLabel } from "./takeaways.js";
 
 function ConfigRun({ runId, config }) {
@@ -111,7 +111,7 @@ export function EnvironmentCard({ results }) {
   ];
   return <details className="panel environment-card">
     <summary><span className="summary-title">{t("environment")}</span> <span className="summary-sub">{t("environment_summary")}</span></summary>
-    <dl className="env">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value ?? t("MISSING")}</dd></div>)}</dl>
+    <dl className="env">{rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{keepUnitsTogether(value) ?? t("MISSING")}</dd></div>)}</dl>
     <p className="environment-source">{t("environment_source_note", vm.source ?? t("MISSING"), vm.checksum_note ?? t("MISSING"))}</p>
   </details>;
 }

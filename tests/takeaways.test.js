@@ -3,7 +3,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { setLanguage } from "../src/i18n.js";
-import { compare, e3Hardware, e3Limitation, e3Takeaway, isSimilar, isSmallPart } from "../src/takeaways.js";
+import { compare, e3Hardware, e3Limitation, e3Takeaway as e3TakeawayRaw, isSimilar, isSmallPart } from "../src/takeaways.js";
+import { plain } from "./helpers.js";
+// Sentences are compared through plain(): it first asserts U+00A0 between every number and unit.
+const e3Takeaway = (results) => plain(e3TakeawayRaw(results));
 
 const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));
 const withE3 = (patch) => {
@@ -78,7 +81,8 @@ test("10% rules: similar and small part", () => {
   assert.equal(isSmallPart(1, null), false);
 });
 
-import { e4Takeaway, formatLabel } from "../src/takeaways.js";
+import { e4Takeaway as e4TakeawayRaw, formatLabel } from "../src/takeaways.js";
+const e4Takeaway = (results) => plain(e4TakeawayRaw(results));
 const withE4 = (patch) => {
   const copy = structuredClone(official);
   copy.tables.E4 = copy.tables.E4.map((run) => ({ ...run, ...(patch[run.format] ?? {}) }));

@@ -3,7 +3,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { setLanguage } from "../src/i18n.js";
-import { datasetFindings, e1Best, e1Cheapest, e1Finding, e2Finding, e3Finding, e4Finding, e5Finding, stageShort, strictlyIncreasing } from "../src/findings.js";
+import { datasetFindings, e1Best, e1Cheapest, e1Finding, e2Finding as e2Raw, e3Finding as e3Raw, e4Finding as e4Raw, e5Finding as e5Raw, stageShort, strictlyIncreasing } from "../src/findings.js";
+import { plain } from "./helpers.js";
+// Bodies are compared through plain(): it first asserts U+00A0 between every number and unit.
+const viaPlain = (finding) => (results) => { const f = finding(results); return { ...f, body: plain(f.body) }; };
+const e2Finding = viaPlain(e2Raw), e3Finding = viaPlain(e3Raw), e4Finding = viaPlain(e4Raw), e5Finding = viaPlain(e5Raw);
 import { formatPercentShare } from "../src/format.js";
 
 const official = JSON.parse(readFileSync(new URL("../public/official-results.json", import.meta.url), "utf8"));

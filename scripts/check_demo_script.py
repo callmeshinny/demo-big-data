@@ -93,8 +93,9 @@ def english_walkthrough(text):
     if len(section) != 2:
         return ""
     walkthrough = section[1].split("## Likely questions", 1)[0]
+    # A value copied from the UI may contain U+00A0 between number and unit; compare it as a space.
     return " ".join(
-        line.removeprefix("**English.**").strip()
+        line.removeprefix("**English.**").replace("\u00a0", " ").strip()
         for line in walkthrough.splitlines()
         if line.startswith("**English.**")
     )

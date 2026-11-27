@@ -13,6 +13,18 @@ import { t } from "./i18n.js";
  *   null / undefined / "" / NaN / ±Infinity -> "Not available yet" / "Chưa có", never "NaN"
  */
 
+/** Joins a number and its unit so a line never breaks between them ("0.454 s", "24.2 MiB"). Percent stays attached ("51.7%"). */
+export const NBSP = "\u00A0";
+/** "882,808" + "events" -> "882,808 events" with a non-breaking space. */
+export const joinUnit = (number, unit) => `${number}${NBSP}${unit}`;
+
+/**
+ * For delivered free-text values shown verbatim (e.g. vm_environment "Tesla T4 15360 MiB"): only the space
+ * between a number and a following unit becomes U+00A0. The text is otherwise unchanged.
+ */
+export const keepUnitsTogether = (text) => (typeof text === "string"
+  ? text.replace(/(\d) (s|ms|KB|MB|GB|MiB|GiB|vCPU)\b/g, `$1${NBSP}$2`) : text);
+
 const MISSING = () => t("MISSING");
 const MIB = 1024 ** 2;
 const GIB = 1024 ** 3;
@@ -59,17 +71,17 @@ export function formatRatio(value) {
 
 export function formatSeconds(value) {
   if (isMissing(value)) return missing(value);
-  return result(value, `${significant3(value)} s`);
+  return result(value, joinUnit(significant3(value), "s"));
 }
 
 export function formatSecondsPerMillionEvents(value) {
   if (isMissing(value)) return missing(value);
-  return result(value, `${significant3(value)} s/million events`);
+  return result(value, joinUnit(significant3(value), "s/million events"));
 }
 
 export function formatMsPerSession(value) {
   if (isMissing(value)) return missing(value);
-  return result(value, `${significant3(value)} ms/session`);
+  return result(value, joinUnit(significant3(value), "ms/session"));
 }
 
 export function byteDisplayUnit(values) {
@@ -79,7 +91,7 @@ export function byteDisplayUnit(values) {
 export function formatBytes(value, displayUnit) {
   if (isMissing(value)) return missing(value);
   const unit = displayUnit ?? byteDisplayUnit([value]);
-  return result(value, `${(value / (unit === "GiB" ? GIB : MIB)).toFixed(1)} ${unit}`);
+  return result(value, joinUnit((value / (unit === "GiB" ? GIB : MIB)).toFixed(1), unit));
 }
 
 /** Same text without the unit, for cells whose unit is already in the row or column header. */

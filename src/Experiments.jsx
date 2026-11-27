@@ -5,7 +5,7 @@ import { EXPERIMENTS, modelLabel } from "./data.js";
 import { DataLoadFailure, InterpretationNote, Notice } from "./ui.jsx";
 import { buildE1View, formatE1Context } from "./e1.js";
 import { buildE3E4View, buildScalingView, formatE3Context } from "./scaling.js";
-import { byteDisplayUnit, formatBytes, formatCount, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
+import { byteDisplayUnit, formatBytes, formatCount, joinUnit, formatMsPerSession, formatRatio, formatSeconds, formatSecondsPerMillionEvents, formatNumberOnly, isMissing } from "./format.js";
 import { E4ConfigDetails, EnvironmentCard, PanelConfigDetails } from "./RunConfigDetails.jsx";
 import { experimentHref } from "./navigation.js";
 import { BarChart, LineChart, useSelection } from "./Chart.jsx";
@@ -148,7 +148,7 @@ function E2Panel({ results, initial }) {
     </div>
     <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)} />
     <MetricTable caption={t("e2_effect_of_dataset_size")} className="scaling-table" selected={selected} onSelect={setSelected}
-      columns={e2Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: `${column.events.text} ${t("events")}`, title: column.runId }))}
+      columns={e2Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: joinUnit(column.events.text, t("events")), title: column.runId }))}
       rows={e2Table.rows.map((row, rowIndex) => ({ ...row, cells: e2Table.columns.map((column) => column.cells[rowIndex]) }))} />
     <Notes>
       <InterpretationNote dictionaryKey="E2_accuracy" />
@@ -247,7 +247,7 @@ function E5Panel({ results }) {
   const e5 = [...(results?.tables?.E5 ?? [])].sort((a, b) => a.subset - b.subset);
   const events = new Map((results?.tables?.E2 ?? []).map((row) => [row.subset, row.n_events]));
   const chartPoints = (field, formatter, unit) => e5.map((run) => point({
-    key: String(run.subset), label: `${run.subset}% · ${formatCount(events.get(run.subset) ?? run.n_events).text} ${t("events")}`,
+    key: String(run.subset), label: `${run.subset}% · ${joinUnit(formatCount(events.get(run.subset) ?? run.n_events).text, t("events"))}`,
     value: run[field], formatter, runId: run.run_id, source: basename(run.source_log), x: events.get(run.subset) ?? run.n_events, unit,
   }));
   const first = e5[0], last = e5.at(-1);
@@ -262,7 +262,7 @@ function E5Panel({ results }) {
     <SelectionBar label={selected == null ? null : `${selected}%`} onClear={() => setSelected(null)}
       link={selected == null ? null : <a href={experimentHref("E2", selected)}>{t("open_in_e2", selected)}</a>} />
     <MetricTable caption={t("e5_scalability")} className="scaling-table e5-table" selected={selected} onSelect={setSelected}
-      columns={e5Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: `${formatCount(events.get(column.subset)).text} ${t("events")}`, title: column.runId }))}
+      columns={e5Table.columns.map((column) => ({ key: String(column.subset), header: `${column.subset}%`, sub: joinUnit(formatCount(events.get(column.subset)).text, t("events")), title: column.runId }))}
       rows={e5Table.rows.map((row) => ({ ...row, text: row.field === "bottleneck" }))} />
     <Notes>
       {results.E5_aggregation_only === true && <InterpretationNote dictionaryKey="E5_derived_from_E2" source={t("source_metrics_flag", "E5_aggregation_only")} />}

@@ -106,6 +106,8 @@ try {
     assert.equal(await link.getAttribute("href"), "#experiments/e2/25");
     await link.click();
     await page.waitForFunction(() => location.hash === "#experiments/e2/25");
+    // The lower E2 charts mount after measuring their width; wait (up to 5 s) until all four show the level.
+    await page.waitForFunction(() => document.querySelectorAll("[data-mark='25'][aria-pressed='true']").length === 4, null, { timeout: 5000 }).catch(() => {});
     assert.equal(await page.locator("[data-mark='25'][aria-pressed='true']").count(), 4, "all four E2 charts preselect the level");
     assert.equal(await page.locator("a[href^='#experiments/e3']:not(.subtabs a)").count(), 0);
     await page.goBack();
@@ -412,6 +414,35 @@ try {
     await page.waitForSelector(".page-title");
     assert.equal(await page.locator("#root .boot").count(), 0);
     await context.close();
+  });
+
+  await check("375 px: every number–unit pair uses U+00A0 and no unit starts a line (E1–E5, Recommendations, EN and VI)", async () => {
+    for (const lang of ["en", "vi"]) {
+      for (const hash of ["#recommendation", "#experiments/e1", "#experiments/e2", "#experiments/e3", "#experiments/e4", "#experiments/e5"]) {
+        const page = await open(hash, { width: 375, height: 812, lang });
+        const problems = await page.evaluate(() => {
+          const found = [];
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          const pair = /\d[\d.,]*([\s\u00A0])(s|ms|MiB|GiB|KB|MB)(?![\p{L}\p{N}])/gu;
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.parentElement?.closest("svg, script, style, code")) continue;
+            for (const match of node.data.matchAll(pair)) {
+              if (match[1] !== "\u00A0") { found.push(`ordinary space: "${match[0]}"`); continue; }
+              const range = document.createRange();
+              const unitStart = match.index + match[0].length - match[2].length;
+              range.setStart(node, match.index); range.setEnd(node, match.index + 1);
+              const number = range.getClientRects()[0];
+              range.setStart(node, unitStart); range.setEnd(node, unitStart + 1);
+              const unit = range.getClientRects()[0];
+              if (number && unit && Math.abs(number.top - unit.top) > 2 && unit.width > 0) found.push(`unit on a new line: "${match[0]}"`);
+            }
+          }
+          return found;
+        });
+        assert.deepEqual(problems, [], `${lang} ${hash}: ${problems.join(" | ")}`);
+        await page.context().close();
+      }
+    }
   });
 
   await check("glossary popover: opens, Esc closes and returns focus", async () => {
