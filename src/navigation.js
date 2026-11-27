@@ -28,7 +28,7 @@ export function experimentHref(id, select) {
 export const VIEW_IDS = ["recommendation", "dataset", "experiments"];
 
 /** In-page sections of the Dataset tab (#dataset/<slug>); element ids are `dataset-<slug>`. */
-export const DATASET_SECTIONS = ["overview", "subsets", "5v", "key-findings", "caveats", "splits", "pipeline"];
+export const DATASET_SECTIONS = ["key-findings", "overview", "subsets", "5v", "caveats", "splits", "pipeline"];
 
 export function datasetHref(section) {
   return `#dataset/${section}`;

@@ -109,6 +109,10 @@ export default function Dataset({ state, e2Levels = [], section = null }) {
         <h1 className="page-title">{t("dataset")}</h1>
       </div>
       <DatasetNav sticky={sticky} current={current} onPick={pick} />
+      {findings.length > 0 && <section className="panel" id="dataset-key-findings" aria-labelledby="dataset-key-findings-title">
+        <h2 id="dataset-key-findings-title">{t("key_findings")}</h2>
+        <div className="key-findings-group">{findings.map((finding) => <KeyFinding key={finding.key} finding={finding} level={3} />)}</div>
+      </section>}
       <section className="panel" id="dataset-overview">
         <h2>{t("e_commerce_dataset")}</h2>
         <p>{t("the_kaggle_ecommerce_dataset_records_activity")} {raw.min_timestamp_utc?.slice(0, 7) ?? t("not_available_yet")}{t("each_event_is_a_view_add")}</p>
@@ -124,10 +128,6 @@ export default function Dataset({ state, e2Levels = [], section = null }) {
       </section>
       <SubsetSelection sampling={overview.sampling} subsets={overview.subsets} source={overview.supplementary_sources?.sampling_population} distributionSource={overview.supplementary_sources?.subset_distribution} />
       <FiveVs overview={overview} />
-      {findings.length > 0 && <section className="panel" id="dataset-key-findings" aria-labelledby="dataset-key-findings-title">
-        <h2 id="dataset-key-findings-title">{t("key_findings")}</h2>
-        <div className="key-findings-group">{findings.map((finding) => <KeyFinding key={finding.key} finding={finding} level={3} />)}</div>
-      </section>}
       <section className="panel">
         <h2>{t("weekly_cudf_subsets")}</h2>
         <div className="table-scroll">
