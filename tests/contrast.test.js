@@ -67,6 +67,8 @@ const PAIRS = [
   ["control-border", "bg", GRAPHIC, "control boundary on page (WCAG 1.4.11)"],
   ["positive", "surface", GRAPHIC, "Hit marker on card"],
   ["positive", "positive-bg", GRAPHIC, "Hit marker on hit row"],
+  ["label", "positive-bg", TEXT, "product ID and price in the highlighted Top-20 row / Actual panel"],
+  ["label-2", "positive-bg", TEXT, "brand and category line in the highlighted row / Actual panel"],
   ["model-popularity", "surface", GRAPHIC, "Popularity mark"],
   ["model-gru", "surface", GRAPHIC, "GRU mark"],
   ["model-xlnet", "surface", GRAPHIC, "XLNet mark"],

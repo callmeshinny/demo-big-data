@@ -150,6 +150,8 @@ test("one colour, one meaning: neutral history tag, accent chart, shared hit mar
     assert.ok(!/--danger|--positive|--accent\)/.test(rule(selector)), selector);
   }
   assert.match(rule(".ranking tr.is-hit td"), /var\(--positive-bg\)/);
+  assert.match(rule(".ranking tr.is-hit .rank"), /font-weight: 700/);
+  assert.match(css, /@media \(forced-colors: active\) \{\n  \.ranking tr\.is-hit td, \.actual-panel\.is-hit \{ forced-color-adjust: none; background: Mark; color: MarkText; \}/);
   assert.match(rule(".ranking tr.is-hit td:first-child"), /inset 4px 0 0 var\(--positive\)/);
   assert.match(rule(".actual-panel.is-hit"), /inset 4px 0 0 var\(--positive\)/);
   assert.match(rule(".miss"), /var\(--label-2\)/, "a miss is neutral, not a problem colour");

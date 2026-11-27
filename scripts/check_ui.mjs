@@ -362,6 +362,33 @@ try {
     await tip.context().close();
   });
 
+  await check("session 21546: exactly one Top-20 row has the hit background, and it is the actual next item (each model)", async () => {
+    const page = await open("#recommendation", { search: "?session=21546" });
+    for (const model of ["Popularity", "GRU", "XLNet"]) {
+      await page.locator(".model-picker button", { hasText: model }).click();
+      const result = await page.evaluate(() => {
+        const panelBg = getComputedStyle(document.querySelector(".actual-panel")).backgroundColor;
+        const target = document.querySelector(".actual-panel .product-id")?.textContent.trim();
+        const rows = [...document.querySelectorAll(".ranking tbody tr")];
+        const highlighted = rows.filter((row) => getComputedStyle(row.querySelector("td")).backgroundColor === panelBg);
+        return { panelBg, target, ids: highlighted.map((row) => row.querySelector(".product-id")?.textContent.trim()),
+          bold: highlighted.map((row) => getComputedStyle(row.querySelector(".rank")).fontWeight) };
+      });
+      assert.notEqual(result.panelBg, "rgba(0, 0, 0, 0)", `${model}: Actual panel has the hit background`);
+      assert.deepEqual(result.ids, [result.target], `${model}: highlighted rows`);
+      assert.deepEqual(result.bold, ["700"], `${model}: bold rank`);
+    }
+    await page.context().close();
+  });
+
+  await check("miss session 46465: no highlighted row, neutral Actual panel", async () => {
+    const page = await open("#recommendation", { search: "?session=46465" });
+    const result = await page.evaluate(() => ({ rows: document.querySelectorAll(".ranking tr.is-hit").length, panel: document.querySelector(".actual-panel").className }));
+    assert.equal(result.rows, 0);
+    assert.ok(!result.panel.includes("is-hit"), result.panel);
+    await page.context().close();
+  });
+
   await check("glossary popover: opens, Esc closes and returns focus", async () => {
     const page = await open("#recommendation");
     const button = page.locator(".history-panel .glossary .popover-button");

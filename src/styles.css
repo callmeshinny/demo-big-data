@@ -417,9 +417,17 @@ select { width: 100%; height: var(--control-height); border: 1px solid var(--con
 .ranking th:first-child, .ranking td:first-child { width: 52px; text-align: center; padding-inline: var(--s1); white-space: nowrap; }
 .ranking .rank { color: var(--label-2); font-weight: 600; }
 .ranking th.score-col, .ranking td.score { width: 120px; padding-inline: var(--s2); white-space: nowrap; }
-.ranking tr.is-hit td { background: var(--positive-bg); }
+/* Actual next item inside the Top-20: full-row --positive-bg, 4 px --positive left bar, bold rank, ✓ tag.
+   The Actual-next-item panel uses the same background and bar, so both read as the same item. */
+.ranking tr.is-hit td { background: var(--positive-bg); color: var(--label); }
 .ranking tr.is-hit td:first-child { box-shadow: inset 4px 0 0 var(--positive); }
-.ranking tr.is-hit .rank { color: var(--positive-text); }
+.ranking tr.is-hit .rank { color: var(--positive-text); font-weight: 700; }
+@media (forced-colors: active) {
+  .ranking tr.is-hit td, .actual-panel.is-hit { forced-color-adjust: none; background: Mark; color: MarkText; }
+  .ranking tr.is-hit td *, .actual-panel.is-hit * { color: MarkText; background: Mark; border-color: MarkText; }
+  .ranking tr.is-hit td:first-child, .actual-panel.is-hit { border-left: 4px solid MarkText; }
+  .ranking tr.is-hit .tag-hit { outline: 1px solid MarkText; }
+}
 
 /* Metric and config tables */
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
