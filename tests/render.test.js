@@ -283,7 +283,9 @@ test("E3 keeps the Validation badge next to its renamed title (EN and VI)", asyn
     i18n.setLanguage(locale);
     const html = dom.renderToStaticMarkup(React.createElement(Experiments, { state: { results: official }, active: "E3" }));
     const heading = html.slice(html.indexOf('<h2 id="title-E3"'), html.indexOf("</h2>", html.indexOf('<h2 id="title-E3"')));
-    assert.ok(heading.includes(i18n.t("e3_panel_title", "GRU")), locale);
+    assert.ok(heading.includes(i18n.t("e3_panel_title", "GRU", 32, 128)), locale);
+    if (locale === "en") assert.ok(heading.startsWith('<h2 id="title-E3">E3 · Compute resources: GRU batch 32 vs 128<span'), heading);
+    if (locale === "vi") assert.ok(heading.startsWith('<h2 id="title-E3">E3 · Tài nguyên tính toán: batch GRU 32 và 128<span'), heading);
     assert.ok(heading.includes(`<span class="badge badge-validation">${i18n.t("validation_badge")}</span>`), `${locale}: badge inside the title`);
     assert.ok(text(html).includes(`E3 · ${i18n.t("experiment_nav_e3")}`), `${locale}: sub-tab`);
   }

@@ -172,12 +172,13 @@ function E3Panel({ results }) {
   const batchOf = (run) => results?.configs?.[run.run_id]?.actual?.batch_size ?? results?.configs?.[run.run_id]?.planned?.batch_size ?? run.train_batch_size;
   const header = (run) => t("e3_train_batch_header", batchOf(run) ?? missingText());
   const colour = modelColourKey(runs[0]?.model);
+  const title = t("e3_panel_title", modelLabel(runs[0]?.model), runs[0]?.train_batch_size ?? missingText(), runs.at(-1)?.train_batch_size ?? missingText());
   const gpuBytes = (run) => (run.sampled_gpu_status === "unavailable" ? null : run.sampled_gpu_process_bytes);
   const gpuUnit = byteDisplayUnit(runs.map(gpuBytes));
   const chartPoints = (read, formatter, unit, displayUnit) => runs.map((run) => point({
     key: run.run_id, label: header(run), value: read(run), formatter, displayUnit, unit, runId: run.run_id, source: basename(run.source_metrics), colour,
   }));
-  return <Panel id="E3" title={t("e3_panel_title", modelLabel(runs[0]?.model))} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
+  return <Panel id="E3" title={title} badge={<span className="badge badge-validation">{t("validation_badge")}</span>}
     subtitle={e3Subtitle(results)} course={t("e3_course_item")} finding={e3Finding(results)}>
     <p className="fair-note">{t("e3_not_beside_test")} <Glossary term="validation" /></p>
     <div className="charts charts-3">
@@ -189,7 +190,7 @@ function E3Panel({ results }) {
         points={chartPoints((run) => run["Recall@20"], formatRatio)} selected={selected} onSelect={setSelected} />
     </div>
     <SelectionBar label={runs.find((run) => run.run_id === selected) ? header(runs.find((run) => run.run_id === selected)) : null} onClear={() => setSelected(null)} />
-    <MetricTable caption={t("e3_panel_title", modelLabel(runs[0]?.model))} className="e3-table" selected={selected} onSelect={setSelected}
+    <MetricTable caption={title} className="e3-table" selected={selected} onSelect={setSelected}
       columns={runs.map((run) => ({ key: run.run_id, header: header(run), colour, title: run.run_id }))}
       rows={e3.rows.map((row, rowIndex) => ({ ...row, cells: e3.models.map((model) => model.cells[rowIndex]) }))} />
     <Notes>
